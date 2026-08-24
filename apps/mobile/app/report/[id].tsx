@@ -1,29 +1,18 @@
-import { colors, radius, spacing } from '@trending-map/ui-tokens';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import * as Crypto from 'expo-crypto';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, Check, Clock3, MapPin, X } from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { StatusBadge } from '@/components/StatusBadge';
-import { confirmReport, getReportById } from '@/features/reports/report.service';
+import { StatusBadge } from '@/components/atoms';
+import { useConfirmReport, useReport } from '@/hooks/domain';
+import { colors, radius, spacing } from '@/theme';
 
 export default function ReportDetailRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
-  const reportQuery = useQuery({
-    queryKey: ['report', id],
-    queryFn: () => getReportById(id),
-    enabled: Boolean(id),
-  });
-  const confirmation = useMutation({
-    mutationFn: (kind: 'seen' | 'not_there') =>
-      confirmReport({ reportId: id, kind, idempotencyKey: Crypto.randomUUID() }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['report', id] }),
-  });
+  const reportQuery = useReport(id);
+  const confirmation = useConfirmReport(id);
 
   const report = reportQuery.data;
   if (!report) {

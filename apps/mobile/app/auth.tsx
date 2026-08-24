@@ -1,4 +1,3 @@
-import { colors, radius, spacing } from '@trending-map/ui-tokens';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, ShieldCheck } from 'lucide-react-native';
 import { useState } from 'react';
@@ -14,6 +13,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useAuth } from '@/providers/AuthProvider';
+import { colors, radius, spacing } from '@/theme';
 
 export default function AuthRoute() {
   const router = useRouter();

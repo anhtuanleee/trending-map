@@ -1,6 +1,7 @@
 import type { VerificationStatus } from '@trending-map/contracts';
-import { colors, radius, spacing } from '@trending-map/ui-tokens';
 import { StyleSheet, Text, View } from 'react-native';
+
+import { colors, radius, spacing } from '@/theme';
 
 const labels: Record<VerificationStatus, string> = {
   unverified: 'Chưa xác minh',

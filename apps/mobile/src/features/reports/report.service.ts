@@ -1,6 +1,6 @@
 import type { ConfirmationInput, ReportDetail, SubmitReportInput } from '@trending-map/contracts';
 
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/services/supabase';
 
 import { demoReports } from '../map/demo-data';
 

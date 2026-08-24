@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
-import { isDemoMode, supabase } from '@/lib/supabase';
+import { isDemoMode, supabase } from '@/services/supabase';
 
 type AppUser = {
   id: string;

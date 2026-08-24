@@ -42,3 +42,19 @@ pnpm build:admin
 ## Branch convention
 
 Feature work uses `feat/(...)`, for example `feat/(community-map-foundation)`.
+
+## Mobile architecture and AI guidance
+
+The Expo app keeps file-based routes in `apps/mobile/app` and separates reusable UI, domain hooks,
+external services, providers, and theme access under `apps/mobile/src`. Project-specific agent
+instructions, portable skills, and focused agent roles live in:
+
+```text
+AGENTS.md
+apps/mobile/src/AGENTS.md
+apps/mobile/src/skills/
+apps/mobile/src/agents/
+```
+
+The structure adapts separation-of-concerns patterns from TheCodingMachine and Ignite while retaining
+Expo Router, TanStack Query, Supabase/PostGIS, and MapLibre.

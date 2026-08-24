@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Build Mobile Feature'
+  short_description: 'Build features within mobile architecture'
+  default_prompt: 'Use $build-mobile-feature to implement this mobile feature with the project conventions.'
