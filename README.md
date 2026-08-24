@@ -2,6 +2,14 @@
 
 Community-powered live map for local events, incidents, and official alerts.
 
+The product is currently presented as **Mạch Phố** in the mobile and admin UI.
+
+## Documentation
+
+Start with [`docs/README.md`](docs/README.md) for the current feature matrix, FE–BE architecture,
+mobile structure, authentication/authorization, data model, API contracts, development guide, and
+roadmap. The docs distinguish working end-to-end features from foundations and planned work.
+
 ## What is included
 
 - Expo React Native app with guest-first browsing, map clustering, auth gate, and report composer.
