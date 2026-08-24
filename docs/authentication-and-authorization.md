@@ -22,15 +22,15 @@ sequenceDiagram
   participant A as Supabase Auth
   U->>M: Bấm contribution
   M->>M: Lưu return URL
-  M->>A: signInWithOtp(phone)
-  A-->>U: SMS OTP
+  M->>A: signInWithOtp(email)
+  A-->>U: Email OTP
   U->>M: Nhập OTP
-  M->>A: verifyOtp(phone, token)
+  M->>A: verifyOtp(email, token, type=email)
   A-->>M: Session
   M-->>U: Quay lại intent
 ```
 
-Trong demo mode, không có SMS: chuỗi đúng sáu chữ số tạo `demo-user` trong memory. Đây chỉ là developer convenience, không phải security implementation.
+Trong demo mode, không gửi email: chuỗi đúng sáu chữ số tạo `demo-user` trong memory. Đây chỉ là developer convenience, không phải security implementation.
 
 ## Session lifecycle
 
@@ -39,9 +39,31 @@ Trong demo mode, không có SMS: chuỗi đúng sáu chữ số tạo `demo-user
 1. Lấy session hiện tại khi Supabase client tồn tại.
 2. Subscribe `onAuthStateChange` để đồng bộ user.
 3. Expose `requestOtp`, `verifyOtp`, `signOut` và `demoMode`.
-4. Chỉ đưa `id` và `phone` cần thiết vào app-level user model.
+4. Chỉ đưa `id` và `email` cần thiết vào app-level user model.
+
+Auth gate hiển thị bottom sheet giải thích quyền guest trước khi chuyển sang OTP. Route `/account`
+hiển thị trạng thái guest hoặc member. Logout yêu cầu xác nhận, gọi Supabase
+`signOut`, xóa TanStack Query cache và chuyển sang `/signed-out`; người dùng vẫn có thể quay lại map
+ở chế độ guest.
 
 Supabase React Native client dùng SecureStore adapter cho session persistence. Không tự lưu access token trong Zustand/AsyncStorage hoặc log token.
+
+## Cấu hình Email OTP
+
+Client không cần API key của dịch vụ gửi email. `EXPO_PUBLIC_SUPABASE_URL` và
+`EXPO_PUBLIC_SUPABASE_ANON_KEY` là đủ; SMTP credential chỉ được cấu hình phía Supabase:
+
+1. Trong Supabase Dashboard, bật Email provider ở **Authentication → Providers**.
+2. Ở **Authentication → Emails → SMTP Settings**, dùng SMTP của Resend: host
+   `smtp.resend.com`, port `465`, username `resend`, password là Resend API key và sender thuộc
+   domain đã xác minh.
+3. Ở **Authentication → Email Templates → Magic Link**, dùng nội dung tương đương
+   `supabase/templates/magic-link.html`; template bắt buộc chứa `{{ .Token }}` để gửi mã sáu số
+   thay vì link.
+4. Giữ resend cooldown tối thiểu 60 giây và cấu hình rate limit/CAPTCHA trước public launch.
+
+`supabase/config.toml` đã trỏ local Supabase vào email template trong repo. Hosted Supabase không
+tự đọc file này sau khi deploy; cần đồng bộ template qua Dashboard hoặc Management API.
 
 ## Public anonymity
 
@@ -67,7 +89,8 @@ Client-side auth gate chỉ phục vụ UX. Nó không phải security boundary;
 
 ## Việc cần hoàn thiện trước production
 
-- Cấu hình SMS provider, rate limit và OTP abuse protection.
+- Cấu hình custom SMTP, rate limit và Email OTP abuse protection.
+- Xác minh sender domain; không đưa Resend API key vào mobile `.env.local`.
 - Thêm admin authentication/role gate cho Next dashboard.
 - Chuẩn hóa error codes thay vì trả raw database error message.
 - Thêm CAPTCHA/device risk cho hành vi spam cao.

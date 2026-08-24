@@ -1,7 +1,14 @@
 import type { ReportDetail } from '@trending-map/contracts';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { Bell, LocateFixed, MapPinPlus, Search, SlidersHorizontal } from 'lucide-react-native';
+import {
+  Bell,
+  LocateFixed,
+  MapPinPlus,
+  Search,
+  SlidersHorizontal,
+  UserRound,
+} from 'lucide-react-native';
 import { useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Camera, GeoJSONSource, Layer, Map, UserLocation } from '@maplibre/maplibre-react-native';
@@ -11,6 +18,7 @@ import type { PressEventWithFeatures } from '@maplibre/maplibre-react-native';
 
 import { useAuthGate } from '@/features/auth/useAuthGate';
 import { useMapReports } from '@/hooks/domain';
+import { useAuth } from '@/providers/AuthProvider';
 import { colors, mapLayout, radius, spacing } from '@/theme';
 
 import { ReportPreviewCard } from './ReportPreviewCard';
@@ -22,6 +30,7 @@ export function MapScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ submitted?: string }>();
   const requireAuth = useAuthGate();
+  const { user } = useAuth();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showUserLocation, setShowUserLocation] = useState(false);
   const { data = [], isLoading, isError } = useMapReports();
@@ -59,9 +68,19 @@ export function MapScreen() {
   };
 
   const handleConfirm = (report: ReportDetail) => {
-    requireAuth(`/?reportId=${report.id}`, () => {
-      router.push({ pathname: '/report/[id]', params: { id: report.id } });
-    });
+    requireAuth(
+      `/?reportId=${report.id}`,
+      () => router.push({ pathname: '/report/[id]', params: { id: report.id } }),
+      'Đăng nhập để xác nhận',
+    );
+  };
+
+  const handleAccount = () => {
+    if (user) {
+      router.push('/account');
+      return;
+    }
+    router.push({ pathname: '/auth', params: { returnTo: '/account' } });
   };
 
   return (
@@ -119,9 +138,19 @@ export function MapScreen() {
           <Text style={styles.brand}>Mạch Phố</Text>
           <Text style={styles.subtitle}>Quận 1 · trực tiếp</Text>
         </View>
-        <Pressable accessibilityLabel="Thông báo" style={styles.iconButton}>
-          <Bell color={colors.ink} size={20} />
-        </Pressable>
+        <View style={styles.headerActions}>
+          <Pressable accessibilityLabel="Thông báo" style={styles.iconButton}>
+            <Bell color={colors.ink} size={20} />
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Tài khoản"
+            style={styles.iconButton}
+            onPress={handleAccount}
+          >
+            <UserRound color={user ? colors.primary : colors.ink} size={20} />
+            {user ? <View style={styles.accountDot} /> : null}
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.searchBar}>
@@ -159,7 +188,9 @@ export function MapScreen() {
 
       <Pressable
         style={styles.reportButton}
-        onPress={() => requireAuth('/report/new', () => router.push('/report/new'))}
+        onPress={() =>
+          requireAuth('/report/new', () => router.push('/report/new'), 'Đăng nhập để báo cáo')
+        }
       >
         <MapPinPlus color="#fff" size={20} />
         <Text style={styles.reportButtonText}>Báo cáo tại đây</Text>
@@ -203,6 +234,18 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  headerActions: { flexDirection: 'row', gap: spacing.sm },
+  accountDot: {
+    position: 'absolute',
+    right: 9,
+    bottom: 9,
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: colors.surface,
+    backgroundColor: colors.primary,
   },
   searchBar: {
     position: 'absolute',

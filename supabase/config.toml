@@ -21,6 +21,10 @@ site_url = "trendingmap://auth"
 additional_redirect_urls = ["trendingmap://**", "http://localhost:3000/**"]
 enable_signup = true
 
+[auth.email.template.magic_link]
+subject = "Mã đăng nhập Mạch Phố"
+content_path = "./supabase/templates/magic-link.html"
+
 [functions.submit-report]
 verify_jwt = true
 

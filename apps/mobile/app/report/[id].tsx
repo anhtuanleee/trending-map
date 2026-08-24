@@ -4,6 +4,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/atoms';
+import { useAuthGate } from '@/features/auth/useAuthGate';
 import { useConfirmReport, useReport } from '@/hooks/domain';
 import { colors, radius, spacing } from '@/theme';
 
@@ -11,8 +12,13 @@ export default function ReportDetailRoute() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const requireAuth = useAuthGate();
   const reportQuery = useReport(id);
   const confirmation = useConfirmReport(id);
+
+  const handleConfirmation = (kind: 'seen' | 'not_there') => {
+    requireAuth(`/report/${id}`, () => confirmation.mutate(kind), 'Đăng nhập để xác nhận');
+  };
 
   const report = reportQuery.data;
   if (!report) {
@@ -51,13 +57,18 @@ export default function ReportDetailRoute() {
         <Text style={styles.description}>{report.description}</Text>
 
         <View style={styles.actionRow}>
-          <Pressable style={styles.primaryAction} onPress={() => confirmation.mutate('seen')}>
+          <Pressable
+            style={[styles.primaryAction, confirmation.isPending && styles.disabled]}
+            disabled={confirmation.isPending}
+            onPress={() => handleConfirmation('seen')}
+          >
             <Check color="#fff" size={18} />
             <Text style={styles.primaryActionText}>Tôi cũng thấy</Text>
           </Pressable>
           <Pressable
-            style={styles.secondaryAction}
-            onPress={() => confirmation.mutate('not_there')}
+            style={[styles.secondaryAction, confirmation.isPending && styles.disabled]}
+            disabled={confirmation.isPending}
+            onPress={() => handleConfirmation('not_there')}
           >
             <X color={colors.ink} size={18} />
             <Text style={styles.secondaryActionText}>Không còn</Text>
@@ -141,4 +152,5 @@ const styles = StyleSheet.create({
   secondaryActionText: { color: colors.ink, fontWeight: '800' },
   success: { marginTop: spacing.md, color: colors.primary, textAlign: 'center' },
   error: { marginTop: spacing.md, color: colors.danger, textAlign: 'center' },
+  disabled: { opacity: 0.6 },
 });
