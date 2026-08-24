@@ -13,7 +13,7 @@ export type LocationTrackingStatus =
   | 'services_disabled'
   | 'error';
 
-type LocationSource = 'last-known' | 'live' | null;
+type LocationSource = 'last-known' | 'current' | 'live' | null;
 
 function permissionPrecision(permission: Location.LocationPermissionResponse) {
   if (permission.android?.accuracy === 'coarse' || permission.ios?.accuracy === 'reduced') {
@@ -118,6 +118,18 @@ export function useCurrentLocation() {
       if (!isActive()) return null;
       if (lastKnown) updateLocation(lastKnown, 'last-known');
 
+      let currentPosition: Location.LocationObject | null = null;
+      try {
+        currentPosition = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+          mayShowUserSettingsDialog: true,
+        });
+        if (!isActive()) return null;
+        updateLocation(currentPosition, 'current');
+      } catch {
+        if (!isActive()) return null;
+      }
+
       const subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Balanced,
@@ -146,7 +158,7 @@ export function useCurrentLocation() {
       subscriptionRef.current = subscription;
 
       setStatus('tracking');
-      return lastKnown;
+      return currentPosition ?? lastKnown;
     } catch (caught) {
       if (!isActive()) return null;
       setStatus('error');

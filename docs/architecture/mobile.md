@@ -63,8 +63,9 @@ Report được đổi sang GeoJSON `FeatureCollection<Point>`. `GeoJSONSource` 
 
 Location tracking chỉ chạy foreground sau khi người dùng bấm locate. App kiểm tra permission và
 Location Services, dùng last-known location tối đa năm phút/độ chính xác 1 km để phản hồi nhanh,
-sau đó theo dõi vị trí cân bằng mỗi 20 m hoặc khoảng 10 giây. Camera follow có thể bật lại bằng nút
-locate và tự nhường quyền điều khiển khi người dùng pan map. Tracking raw không được persist.
+sau đó lấy một current position với `Accuracy.High` trước khi theo dõi vị trí cân bằng mỗi 20 m hoặc
+khoảng 10 giây. Camera follow có thể bật lại bằng nút locate và tự nhường quyền điều khiển khi người
+dùng pan map. Tracking raw không được persist.
 
 `Map.onRegionDidChange` lấy bounds thật sau khi camera dừng. Client debounce 350 ms, làm tròn bốn
 chữ số thập phân cho query key rồi gọi `get_map_items`; TanStack Query giữ dữ liệu cũ trong lúc
