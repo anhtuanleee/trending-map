@@ -64,7 +64,7 @@ export function AuthGateProvider({ children }: { children: React.ReactNode }) {
               giá.
             </Text>
             <Pressable style={styles.primaryButton} onPress={continueToAuth}>
-              <Text style={styles.primaryButtonText}>Đăng nhập bằng số điện thoại</Text>
+              <Text style={styles.primaryButtonText}>Đăng nhập bằng email</Text>
             </Pressable>
             <Pressable style={styles.secondaryButton} onPress={close}>
               <Text style={styles.secondaryButtonText}>Để sau</Text>

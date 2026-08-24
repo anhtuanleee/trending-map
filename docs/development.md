@@ -23,6 +23,9 @@ Mobile có thể chạy demo mode nếu không khai báo Supabase URL/key. Admin
 ### Mobile
 
 Xem `apps/mobile/.env.example`. Các biến client phải dùng prefix `EXPO_PUBLIC_`. Không đặt service-role key trong mobile app.
+Email OTP không cần thêm biến client: Resend/SMTP API key được cấu hình trong Supabase Dashboard,
+không đặt trong `.env` hoặc `EXPO_PUBLIC_*`. Xem hướng dẫn chi tiết tại
+[`authentication-and-authorization.md`](./authentication-and-authorization.md#cấu-hình-email-otp).
 
 ### Admin
 

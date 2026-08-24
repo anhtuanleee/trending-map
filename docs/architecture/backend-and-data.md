@@ -2,7 +2,7 @@
 
 ## Thành phần backend
 
-- Supabase Auth quản lý session và Phone OTP.
+- Supabase Auth quản lý session và Email OTP; custom SMTP giữ email credential ở server-side.
 - PostgreSQL giữ dữ liệu ứng dụng.
 - PostGIS lưu report geometry và followed-area polygons.
 - RLS + grants xác định quyền table-level.

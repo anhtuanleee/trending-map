@@ -5,15 +5,15 @@ import { isDemoMode, supabase } from '@/services/supabase';
 
 type AppUser = {
   id: string;
-  phone?: string;
+  email?: string;
 };
 
 type AuthContextValue = {
   user: AppUser | null;
   loading: boolean;
   demoMode: boolean;
-  requestOtp: (phone: string) => Promise<void>;
-  verifyOtp: (phone: string, token: string) => Promise<void>;
+  requestOtp: (email: string) => Promise<void>;
+  verifyOtp: (email: string, token: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -21,7 +21,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function userFromSession(session: Session | null): AppUser | null {
   if (!session?.user) return null;
-  return { id: session.user.id, phone: session.user.phone };
+  return { id: session.user.id, email: session.user.email };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -44,20 +44,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => data.subscription.unsubscribe();
   }, []);
 
-  const requestOtp = useCallback(async (phone: string) => {
+  const requestOtp = useCallback(async (email: string) => {
     if (!supabase) return;
-    const { error } = await supabase.auth.signInWithOtp({ phone });
+    const { error } = await supabase.auth.signInWithOtp({ email });
     if (error) throw error;
   }, []);
 
-  const verifyOtp = useCallback(async (phone: string, token: string) => {
+  const verifyOtp = useCallback(async (email: string, token: string) => {
     if (!supabase) {
       if (!/^\d{6}$/.test(token)) throw new Error('Mã OTP gồm 6 chữ số.');
-      setUser({ id: 'demo-user', phone });
+      setUser({ id: 'demo-user', email });
       return;
     }
 
-    const { data, error } = await supabase.auth.verifyOtp({ phone, token, type: 'sms' });
+    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
     if (error) throw error;
     setUser(userFromSession(data.session));
   }, []);

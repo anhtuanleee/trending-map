@@ -21,6 +21,7 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 - Media upload pipeline: signed upload, metadata, thumbnail, moderation và public URL.
 - Scheduled invocation cho `expire_stale_reports`.
 - Rate limiting và abuse controls cho submit/confirmation/OTP.
+- Đánh giá Google OAuth sau pilot; Email OTP là phương thức đăng nhập MVP để giảm chi phí và scope.
 
 ## P2 — engagement
 
@@ -49,4 +50,4 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 | Performance       | P95 map query latency và time-to-first-map-item             |
 | Contribution      | Submit completion rate sau auth gate                        |
 
-Không thu thập analytics chứa raw phone, access token hoặc exact historical location ngoài mục đích sản phẩm đã công bố.
+Không thu thập analytics chứa raw email, access token hoặc exact historical location ngoài mục đích sản phẩm đã công bố.

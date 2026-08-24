@@ -37,7 +37,7 @@ flowchart TB
 | Route          | Vai trò                            | Auth                              |
 | -------------- | ---------------------------------- | --------------------------------- |
 | `/`            | Live map và report preview         | Public                            |
-| `/auth`        | Request/verify phone OTP           | Public                            |
+| `/auth`        | Request/verify email OTP           | Public                            |
 | `/account`     | Trạng thái guest/member và logout  | Public shell; data theo session   |
 | `/signed-out`  | Logout success và lối về guest map | Public                            |
 | `/report/new`  | Composer tạo report                | Auth gate từ entry point          |

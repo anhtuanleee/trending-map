@@ -6,9 +6,9 @@ import {
   ChevronRight,
   FileText,
   LogOut,
+  Mail,
   MapPinned,
   ShieldCheck,
-  Smartphone,
 } from 'lucide-react-native';
 import { useState } from 'react';
 import {
@@ -94,7 +94,7 @@ export function AccountScreen() {
             style={styles.primaryButton}
             onPress={() => router.push({ pathname: '/auth', params: { returnTo: '/account' } })}
           >
-            <Text style={styles.primaryButtonText}>Đăng nhập bằng số điện thoại</Text>
+            <Text style={styles.primaryButtonText}>Đăng nhập bằng email</Text>
           </Pressable>
           <Pressable style={styles.secondaryButton} onPress={() => router.replace('/')}>
             <Text style={styles.secondaryButtonText}>Quay lại bản đồ</Text>
@@ -105,7 +105,7 @@ export function AccountScreen() {
   }
 
   const userSuffix = user.id.slice(-4).toUpperCase();
-  const avatarLabel = user.phone?.slice(-2) ?? userSuffix.slice(-2);
+  const avatarLabel = user.email?.slice(0, 2).toUpperCase() ?? userSuffix.slice(-2);
 
   return (
     <ScrollView
@@ -129,7 +129,7 @@ export function AccountScreen() {
         </View>
         <View style={styles.profileCopy}>
           <Text style={styles.profileName}>Người dùng {userSuffix}</Text>
-          <Text style={styles.profileMeta}>{user.phone ?? 'Tài khoản Mạch Phố'}</Text>
+          <Text style={styles.profileMeta}>{user.email ?? 'Tài khoản Mạch Phố'}</Text>
           {demoMode ? <Text style={styles.demoBadge}>DEMO MODE</Text> : null}
         </View>
       </View>
@@ -137,10 +137,10 @@ export function AccountScreen() {
       <Text style={styles.sectionLabel}>TÀI KHOẢN</Text>
       <View style={styles.card}>
         <View style={styles.infoRow}>
-          <Smartphone color={colors.inkMuted} size={20} />
+          <Mail color={colors.inkMuted} size={20} />
           <View style={styles.rowCopy}>
-            <Text style={styles.rowTitle}>Số điện thoại</Text>
-            <Text style={styles.rowMeta}>{user.phone ?? 'Chưa có thông tin'}</Text>
+            <Text style={styles.rowTitle}>Email</Text>
+            <Text style={styles.rowMeta}>{user.email ?? 'Chưa có thông tin'}</Text>
           </View>
         </View>
       </View>

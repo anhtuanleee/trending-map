@@ -68,5 +68,5 @@ Mobile/admin có demo data khi thiếu env. Demo mode giúp dựng UI nhanh, nh�
 - Route files mỏng; logic dùng lại nằm trong `src`.
 - Server state đi qua TanStack Query, không sao chép vào global store.
 - Input mutation phải có idempotency key.
-- Public payload không lộ `created_by`, phone, role hoặc `trust_score_internal`.
+- Public payload không lộ `created_by`, email, role hoặc `trust_score_internal`.
 - Schema/policy thay đổi bằng migration; không sửa production trực tiếp.

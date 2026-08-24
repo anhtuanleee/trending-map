@@ -16,26 +16,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors, radius, spacing } from '@/theme';
 
-type AuthStep = 'phone' | 'otp';
+type AuthStep = 'email' | 'otp';
 
 type Props = {
   returnTo: string;
 };
 
-const resendDelaySeconds = 30;
+const resendDelaySeconds = 60;
 
 export function AuthScreen({ returnTo }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { requestOtp, verifyOtp, demoMode, loading: sessionLoading, user } = useAuth();
-  const [phone, setPhone] = useState('+84');
+  const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<AuthStep>('phone');
+  const [step, setStep] = useState<AuthStep>('email');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
 
-  const normalizedPhone = useMemo(() => phone.replace(/[\s()-]/g, ''), [phone]);
+  const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
   const safeReturnTo = useMemo(() => (returnTo.startsWith('/') ? returnTo : '/'), [returnTo]);
 
   useEffect(() => {
@@ -45,19 +45,19 @@ export function AuthScreen({ returnTo }: Props) {
   }, [resendIn]);
 
   useEffect(() => {
-    if (!sessionLoading && user && step === 'phone') router.replace(safeReturnTo as never);
+    if (!sessionLoading && user && step === 'email') router.replace(safeReturnTo as never);
   }, [router, safeReturnTo, sessionLoading, step, user]);
 
   const sendOtp = async () => {
-    if (!/^\+[1-9]\d{7,14}$/.test(normalizedPhone)) {
-      setError('Nhập số điện thoại kèm mã quốc gia, ví dụ +84 912 345 678.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Nhập email hợp lệ, ví dụ ban@domain.com.');
       return;
     }
 
     setLoading(true);
     setError(null);
     try {
-      await requestOtp(normalizedPhone);
+      await requestOtp(normalizedEmail);
       setStep('otp');
       setResendIn(resendDelaySeconds);
     } catch (caught) {
@@ -76,7 +76,7 @@ export function AuthScreen({ returnTo }: Props) {
     setLoading(true);
     setError(null);
     try {
-      await verifyOtp(normalizedPhone, otp);
+      await verifyOtp(normalizedEmail, otp);
       router.replace(safeReturnTo as never);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'OTP không hợp lệ.');
@@ -88,7 +88,7 @@ export function AuthScreen({ returnTo }: Props) {
   const goBack = () => {
     setError(null);
     if (step === 'otp') {
-      setStep('phone');
+      setStep('email');
       setOtp('');
       return;
     }
@@ -117,26 +117,28 @@ export function AuthScreen({ returnTo }: Props) {
           </View>
           <Text style={styles.eyebrow}>CỘNG ĐỒNG TIN CẬY</Text>
           <Text style={styles.title}>
-            {step === 'phone' ? 'Đăng nhập để đóng góp' : 'Nhập mã xác minh'}
+            {step === 'email' ? 'Đăng nhập để đóng góp' : 'Nhập mã xác minh'}
           </Text>
           <Text style={styles.description}>
-            {step === 'phone'
+            {step === 'email'
               ? 'Không cần mật khẩu. Mọi người vẫn xem được bản đồ, tài khoản chỉ cần khi báo cáo hoặc xác nhận.'
-              : `Mã OTP đã được gửi tới ${phone}.`}
+              : `Mã OTP đã được gửi tới ${normalizedEmail}.`}
           </Text>
 
-          {step === 'phone' ? (
+          {step === 'email' ? (
             <>
-              <Text style={styles.label}>Số điện thoại</Text>
+              <Text style={styles.label}>Email</Text>
               <TextInput
-                accessibilityLabel="Số điện thoại"
+                accessibilityLabel="Email"
                 autoFocus
-                autoComplete="tel"
-                keyboardType="phone-pad"
-                value={phone}
-                onChangeText={setPhone}
+                autoCapitalize="none"
+                autoComplete="email"
+                autoCorrect={false}
+                keyboardType="email-address"
+                value={email}
+                onChangeText={setEmail}
                 style={styles.input}
-                placeholder="+84 912 345 678"
+                placeholder="ban@domain.com"
                 placeholderTextColor={colors.inkMuted}
               />
               <Pressable
@@ -159,7 +161,7 @@ export function AuthScreen({ returnTo }: Props) {
               <TextInput
                 accessibilityLabel="Mã OTP"
                 autoFocus
-                autoComplete="sms-otp"
+                autoComplete="one-time-code"
                 keyboardType="number-pad"
                 maxLength={6}
                 value={otp}
@@ -188,7 +190,7 @@ export function AuthScreen({ returnTo }: Props) {
                 </Text>
               </Pressable>
               <Pressable onPress={goBack}>
-                <Text style={styles.link}>Đổi số điện thoại</Text>
+                <Text style={styles.link}>Đổi email</Text>
               </Pressable>
             </>
           )}
