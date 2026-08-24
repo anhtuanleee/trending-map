@@ -58,6 +58,10 @@ npx uri-scheme open 'trendingmap://auth/callback' --android
 npx uri-scheme open 'trendingmap://auth/callback' --ios
 ```
 
+Location tracking cần test trên device/development build với các case: precise, approximate, denied,
+blocked, Location Services tắt, không có last-known location và app quay lại sau khi mở Settings.
+Tracking hiện chỉ chạy khi map screen còn mounted; không yêu cầu background permission.
+
 ## Supabase local
 
 ```bash

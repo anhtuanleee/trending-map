@@ -61,13 +61,24 @@ middleware/router guard tổng quát.
 
 Report được đổi sang GeoJSON `FeatureCollection<Point>`. `GeoJSONSource` bật cluster với radius 44; hai layer tách cluster và report point. Point color phản ánh severity.
 
+Location tracking chỉ chạy foreground sau khi người dùng bấm locate. App kiểm tra permission và
+Location Services, dùng last-known location tối đa năm phút/độ chính xác 1 km để phản hồi nhanh,
+sau đó theo dõi vị trí cân bằng mỗi 20 m hoặc khoảng 10 giây. Camera follow có thể bật lại bằng nút
+locate và tự nhường quyền điều khiển khi người dùng pan map. Tọa độ raw không được persist; app chỉ
+gửi bounding box 5 km được tạo từ tâm đã làm tròn để tải report quanh người dùng.
+
+Khi có tọa độ, map query chuyển sang bounding box khoảng 5 km quanh tâm đã làm tròn 0,01 độ để
+tránh refetch theo từng bước chân. Đây là nearby query; viewport query theo camera vẫn là bước tiếp
+theo.
+
 Giới hạn hiện tại:
 
 - Camera mặc định ở khu vực thí điểm TP.HCM.
-- Service query đang dùng bounding box cố định, chưa lắng nghe camera idle/bounds.
+- Khi chưa có vị trí, service fallback về bounding box TP.HCM; query chưa lắng nghe camera
+  idle/bounds.
 - Cluster tap chưa zoom/explode cluster.
 - Search và filter chips chưa nối state/query.
-- User location chỉ hiện sau permission; chưa recenter camera hoặc dùng làm report coordinate.
+- Tracking chưa được dùng làm report coordinate; composer vẫn yêu cầu location picker riêng.
 
 ## Form và mutation
 

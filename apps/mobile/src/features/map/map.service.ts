@@ -1,4 +1,4 @@
-import type { ReportDetail } from '@trending-map/contracts';
+import type { MapBounds, ReportDetail } from '@trending-map/contracts';
 
 import { supabase } from '@/services/supabase';
 
@@ -20,14 +20,29 @@ type PublicMapRow = {
   confirmation_count: number;
 };
 
-export async function getMapReports(): Promise<ReportDetail[]> {
-  if (!supabase) return demoReports;
+const defaultBounds: MapBounds = {
+  west: 106.63,
+  south: 10.72,
+  east: 106.76,
+  north: 10.84,
+};
+
+export async function getMapReports(bounds: MapBounds = defaultBounds): Promise<ReportDetail[]> {
+  if (!supabase) {
+    return demoReports.filter(
+      (report) =>
+        report.coordinate.longitude >= bounds.west &&
+        report.coordinate.longitude <= bounds.east &&
+        report.coordinate.latitude >= bounds.south &&
+        report.coordinate.latitude <= bounds.north,
+    );
+  }
 
   const { data, error } = await supabase.rpc('get_map_items', {
-    p_west: 106.63,
-    p_south: 10.72,
-    p_east: 106.76,
-    p_north: 10.84,
+    p_west: bounds.west,
+    p_south: bounds.south,
+    p_east: bounds.east,
+    p_north: bounds.north,
     p_category_slugs: [],
   });
   if (error) throw error;

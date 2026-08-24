@@ -1,5 +1,4 @@
 import type { ReportDetail } from '@trending-map/contracts';
-import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   Bell,
@@ -9,9 +8,10 @@ import {
   SlidersHorizontal,
   UserRound,
 } from 'lucide-react-native';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Camera, GeoJSONSource, Layer, Map, UserLocation } from '@maplibre/maplibre-react-native';
+import type { CameraRef, TrackUserLocationChangeEvent } from '@maplibre/maplibre-react-native';
 import type { NativeSyntheticEvent } from 'react-native';
 import type { FeatureCollection, Point } from 'geojson';
 import type { PressEventWithFeatures } from '@maplibre/maplibre-react-native';
@@ -22,6 +22,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { colors, mapLayout, radius, spacing } from '@/theme';
 
 import { ReportPreviewCard } from './ReportPreviewCard';
+import { useCurrentLocation } from './useCurrentLocation';
 
 const mapStyleUrl =
   process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://demotiles.maplibre.org/style.json';
@@ -31,9 +32,18 @@ export function MapScreen() {
   const params = useLocalSearchParams<{ submitted?: string }>();
   const requireAuth = useAuthGate();
   const { user } = useAuth();
+  const cameraRef = useRef<CameraRef>(null);
+  const hasCenteredOnLocation = useRef(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [showUserLocation, setShowUserLocation] = useState(false);
-  const { data = [], isLoading, isError } = useMapReports();
+  const [followingUser, setFollowingUser] = useState(false);
+  const currentLocation = useCurrentLocation();
+  const currentCoordinate = currentLocation.location
+    ? {
+        latitude: currentLocation.location.coords.latitude,
+        longitude: currentLocation.location.coords.longitude,
+      }
+    : null;
+  const { data = [], isLoading, isError } = useMapReports(currentCoordinate);
 
   const geoJson = useMemo<FeatureCollection<Point>>(
     () => ({
@@ -57,14 +67,39 @@ export function MapScreen() {
 
   const selected = data.find((report) => report.id === selectedId) ?? null;
 
+  useEffect(() => {
+    if (!currentLocation.location || hasCenteredOnLocation.current) return;
+    hasCenteredOnLocation.current = true;
+    setFollowingUser(true);
+    cameraRef.current?.easeTo({
+      center: [currentLocation.location.coords.longitude, currentLocation.location.coords.latitude],
+      zoom: 15,
+      duration: 700,
+    });
+  }, [currentLocation.location]);
+
   const handleShapePress = (event: NativeSyntheticEvent<PressEventWithFeatures>) => {
     const id = event.nativeEvent.features[0]?.properties?.id;
     if (typeof id === 'string') setSelectedId(id);
   };
 
   const handleLocate = async () => {
-    const permission = await Location.requestForegroundPermissionsAsync();
-    if (permission.granted) setShowUserLocation(true);
+    if (currentLocation.isBusy) return;
+    const resolved = await currentLocation.startTracking();
+    const target = resolved ?? currentLocation.location;
+    if (!target) return;
+
+    hasCenteredOnLocation.current = true;
+    setFollowingUser(true);
+    cameraRef.current?.easeTo({
+      center: [target.coords.longitude, target.coords.latitude],
+      zoom: 15,
+      duration: 700,
+    });
+  };
+
+  const handleTrackingChange = (event: NativeSyntheticEvent<TrackUserLocationChangeEvent>) => {
+    setFollowingUser(event.nativeEvent.trackUserLocation !== null);
   };
 
   const handleConfirm = (report: ReportDetail) => {
@@ -87,10 +122,15 @@ export function MapScreen() {
     <View style={styles.container}>
       <Map style={styles.map} mapStyle={mapStyleUrl} compass={false}>
         <Camera
+          ref={cameraRef}
           initialViewState={{ center: mapLayout.defaultCenter, zoom: mapLayout.defaultZoom }}
           minZoom={mapLayout.minimumZoom}
+          trackUserLocation={followingUser ? 'default' : undefined}
+          onTrackUserLocationChange={handleTrackingChange}
         />
-        {showUserLocation ? <UserLocation animated accuracy /> : null}
+        {currentLocation.location ? (
+          <UserLocation animated accuracy heading minDisplacement={10} />
+        ) : null}
         <GeoJSONSource
           id="community-reports"
           data={geoJson}
@@ -136,7 +176,17 @@ export function MapScreen() {
       <View style={styles.header}>
         <View style={styles.brandBlock}>
           <Text style={styles.brand}>Mạch Phố</Text>
-          <Text style={styles.subtitle}>Quận 1 · trực tiếp</Text>
+          <Text style={styles.subtitle}>
+            {currentLocation.source === 'last-known'
+              ? `Vị trí gần nhất · ${currentLocation.accuracyLabel ?? 'đang cập nhật'}`
+              : currentLocation.isTracking
+                ? `Quanh bạn · ${
+                    currentLocation.precision === 'approximate'
+                      ? 'vị trí gần đúng'
+                      : (currentLocation.accuracyLabel ?? 'đang cập nhật')
+                  }`
+                : 'Quận 1 · trực tiếp'}
+          </Text>
         </View>
         <View style={styles.headerActions}>
           <Pressable accessibilityLabel="Thông báo" style={styles.iconButton}>
@@ -174,16 +224,38 @@ export function MapScreen() {
         </View>
       ) : null}
       {isError ? <Text style={styles.error}>Không thể tải bản đồ. Hãy thử lại.</Text> : null}
+      {currentLocation.error ? (
+        <Pressable
+          style={styles.locationError}
+          onPress={() =>
+            currentLocation.status === 'blocked' || currentLocation.status === 'services_disabled'
+              ? void currentLocation.openSettings()
+              : void currentLocation.startTracking()
+          }
+        >
+          <Text style={styles.locationErrorText}>{currentLocation.error}</Text>
+          <Text style={styles.locationErrorAction}>
+            {currentLocation.status === 'blocked' || currentLocation.status === 'services_disabled'
+              ? 'Mở Cài đặt'
+              : 'Thử lại'}
+          </Text>
+        </Pressable>
+      ) : null}
       {params.submitted ? (
         <Text style={styles.success}>Báo cáo đã được gửi để xác minh.</Text>
       ) : null}
 
       <Pressable
         style={styles.locate}
+        disabled={currentLocation.isBusy}
         onPress={handleLocate}
         accessibilityLabel="Về vị trí của tôi"
       >
-        <LocateFixed color={colors.ink} size={21} />
+        {currentLocation.isBusy ? (
+          <ActivityIndicator color={colors.primary} />
+        ) : (
+          <LocateFixed color={currentLocation.isTracking ? colors.primary : colors.ink} size={21} />
+        )}
       </Pressable>
 
       <Pressable
@@ -297,6 +369,20 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: spacing.sm,
   },
+  locationError: {
+    position: 'absolute',
+    top: 276,
+    left: spacing.lg,
+    right: spacing.lg,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+  },
+  locationErrorText: { flex: 1, color: colors.danger, fontSize: 12, lineHeight: 17 },
+  locationErrorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
   success: {
     position: 'absolute',
     top: 236,

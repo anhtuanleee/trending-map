@@ -14,32 +14,33 @@ Nguyên tắc sản phẩm cốt lõi:
 
 ## Ma trận feature
 
-| Khu vực       | Capability                    | Trạng thái     | Ghi chú hiện tại                                                                 |
-| ------------- | ----------------------------- | -------------- | -------------------------------------------------------------------------------- |
-| Mobile map    | Xem map khi chưa đăng nhập    | **Hoạt động**  | Dùng demo data khi thiếu Supabase env.                                           |
-| Mobile map    | Hiển thị marker và cluster    | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                          |
-| Mobile map    | Xem vị trí thiết bị           | **Hoạt động**  | Xin foreground permission khi người dùng bấm locate.                             |
-| Mobile map    | Preview và mở chi tiết report | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                               |
-| Mobile map    | Search, category filter       | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                        |
-| Mobile map    | Query theo viewport thật      | **Foundation** | Backend hỗ trợ bounds; mobile service hiện hard-code bounding box TP.HCM.        |
-| Auth          | Đăng nhập OTP qua email       | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.         |
-| Auth          | Đăng nhập Google OAuth        | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.  |
-| Auth          | Auth gate có return URL       | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.       |
-| Auth          | Tài khoản và đăng xuất        | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.   |
-| Reporting     | Tạo report                    | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                      |
-| Reporting     | Chọn vị trí report            | **Foundation** | Form đang dùng vị trí mẫu Nguyễn Huệ; chưa kéo pin/chọn GPS.                     |
-| Reporting     | Ẩn tên công khai              | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.            |
-| Reporting     | Upload ảnh/video              | **Foundation** | Có bảng `report_media`; chưa có upload UI, storage workflow hay moderation.      |
-| Trust         | “Tôi cũng thấy” / “Không còn” | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.             |
-| Trust         | Community verification        | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`. |
-| Trust         | Official verification         | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.         |
-| Comments      | Bình luận report              | **Foundation** | Có schema; chưa có policy command và UI.                                         |
-| Follow        | Theo dõi khu vực              | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                     |
-| Notifications | Push notification             | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                  |
-| Admin         | Danh sách moderation          | **Hoạt động**  | Next dashboard đọc Supabase bằng service role hoặc demo rows.                    |
-| Admin         | Filter/approve/reject/merge   | **Foundation** | UI shell đã có; button/filter chưa thực thi command.                             |
-| Admin         | Duplicate risk                | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                   |
-| Operations    | Auto-expire report            | **Foundation** | Có RPC `expire_stale_reports`; chưa có scheduled job trong repo.                 |
+| Khu vực       | Capability                    | Trạng thái     | Ghi chú hiện tại                                                                       |
+| ------------- | ----------------------------- | -------------- | -------------------------------------------------------------------------------------- |
+| Mobile map    | Xem map khi chưa đăng nhập    | **Hoạt động**  | Dùng demo data khi thiếu Supabase env.                                                 |
+| Mobile map    | Hiển thị marker và cluster    | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                                |
+| Mobile map    | Tracking vị trí hiện tại      | **Hoạt động**  | Foreground-only, last-known fallback, live update và camera follow khi người dùng bật. |
+| Mobile map    | Báo cáo quanh vị trí          | **Hoạt động**  | Khi có GPS, query report trong vùng khoảng 5 km; demo data cũng được lọc theo vùng.    |
+| Mobile map    | Preview và mở chi tiết report | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                                     |
+| Mobile map    | Search, category filter       | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                              |
+| Mobile map    | Query theo viewport thật      | **Foundation** | Backend hỗ trợ bounds; app query quanh GPS nhưng chưa lắng nghe bounds của camera.     |
+| Auth          | Đăng nhập OTP qua email       | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.               |
+| Auth          | Đăng nhập Google OAuth        | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.        |
+| Auth          | Auth gate có return URL       | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.             |
+| Auth          | Tài khoản và đăng xuất        | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.         |
+| Reporting     | Tạo report                    | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                            |
+| Reporting     | Chọn vị trí report            | **Foundation** | Form đang dùng vị trí mẫu Nguyễn Huệ; chưa kéo pin/chọn GPS.                           |
+| Reporting     | Ẩn tên công khai              | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                  |
+| Reporting     | Upload ảnh/video              | **Foundation** | Có bảng `report_media`; chưa có upload UI, storage workflow hay moderation.            |
+| Trust         | “Tôi cũng thấy” / “Không còn” | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                   |
+| Trust         | Community verification        | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`.       |
+| Trust         | Official verification         | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.               |
+| Comments      | Bình luận report              | **Foundation** | Có schema; chưa có policy command và UI.                                               |
+| Follow        | Theo dõi khu vực              | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                           |
+| Notifications | Push notification             | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                        |
+| Admin         | Danh sách moderation          | **Hoạt động**  | Next dashboard đọc Supabase bằng service role hoặc demo rows.                          |
+| Admin         | Filter/approve/reject/merge   | **Foundation** | UI shell đã có; button/filter chưa thực thi command.                                   |
+| Admin         | Duplicate risk                | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                         |
+| Operations    | Auto-expire report            | **Foundation** | Có RPC `expire_stale_reports`; chưa có scheduled job trong repo.                       |
 
 ## Luồng người dùng chính
 
