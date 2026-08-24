@@ -63,7 +63,8 @@ Mỗi category định nghĩa `default_expiry_minutes`, `duplicate_radius_meters
 
 Public clients chỉ đọc:
 
-- `get_map_items`: dữ liệu tối thiểu cho viewport.
+- `get_map_items`: dữ liệu tối thiểu cho viewport/nearby, optional `distance_meters`, radius và
+  category filter; không trả reporter identity.
 - `public_report_details`: detail đã loại reporter identity, internal score và media chưa approved.
 
 `anonymous_publicly` không xóa `created_by`. Đây là privacy presentation flag; backend vẫn giữ actor để thực thi suspension, idempotency, trust và moderation.

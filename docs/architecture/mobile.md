@@ -68,14 +68,20 @@ khoảng 10 giây. Camera follow có thể bật lại bằng nút locate và t�
 dùng pan map. Tracking raw không được persist.
 
 `Map.onRegionDidChange` lấy bounds thật sau khi camera dừng. Client debounce 350 ms, làm tròn bốn
-chữ số thập phân cho query key rồi gọi `get_map_items`; TanStack Query giữ dữ liệu cũ trong lúc
-refetch. Khi map chưa emit bounds đầu tiên, service fallback về bounding box TP.HCM.
+chữ số thập phân cho query key rồi gọi `get_map_items`; query key gồm bounds, zoom, category filter
+và tâm tính distance. TanStack Query giữ dữ liệu cũ trong lúc refetch. Khi map chưa emit bounds đầu
+tiên, service fallback về bounding box TP.HCM.
+
+Map luôn fetch theo viewport. Nearby sheet dùng query riêng theo tâm GPS hoặc camera với ba bán kính
+1/5/15 km; backend trả `distance_meters` và ưu tiên severity, distance, freshness, verification.
+Category chips truyền filter xuống cả hai query. Khi user pan khỏi GPS, camera mode chuyển từ “Quanh
+tôi” sang “Khu vực trên bản đồ”.
 
 Giới hạn hiện tại:
 
 - Camera mặc định ở khu vực thí điểm TP.HCM.
 - Cluster tap chưa zoom/explode cluster.
-- Search và filter chips chưa nối state/query.
+- Search text chưa nối query hoặc deep-link; category chips đã nối server filter.
 - Reverse geocode phụ thuộc dịch vụ của thiết bị và fallback về chuỗi tọa độ khi không có địa chỉ.
 
 ## Form và mutation

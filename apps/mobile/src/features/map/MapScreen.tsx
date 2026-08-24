@@ -2,6 +2,7 @@ import type { MapBounds, ReportDetail } from '@trending-map/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   Bell,
+  ListFilter,
   LocateFixed,
   MapPinPlus,
   Search,
@@ -21,15 +22,23 @@ import type { FeatureCollection, Point } from 'geojson';
 import type { PressEventWithFeatures } from '@maplibre/maplibre-react-native';
 
 import { useAuthGate } from '@/features/auth/useAuthGate';
-import { useMapReports } from '@/hooks/domain';
+import { useMapReports, useNearbyReports } from '@/hooks/domain';
 import { useCurrentLocation } from '@/hooks/useCurrentLocation';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors, mapLayout, radius, spacing } from '@/theme';
 
 import { ReportPreviewCard } from './ReportPreviewCard';
+import { NearbyReportsSheet } from './NearbyReportsSheet';
 
 const mapStyleUrl =
   process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://demotiles.maplibre.org/style.json';
+
+const categoryFilters = [
+  { label: 'Tất cả', slugs: [] },
+  { label: 'Giao thông', slugs: ['pothole'] },
+  { label: 'Thời tiết', slugs: ['flood', 'storm'] },
+  { label: 'Sự kiện', slugs: ['music'] },
+] as const;
 
 export function MapScreen() {
   const router = useRouter();
@@ -39,11 +48,39 @@ export function MapScreen() {
   const cameraRef = useRef<CameraRef>(null);
   const hasCenteredOnLocation = useRef(false);
   const viewportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportDetail | null>(null);
   const [followingUser, setFollowingUser] = useState(false);
   const [viewportBounds, setViewportBounds] = useState<MapBounds | null>(null);
+  const [viewportZoom, setViewportZoom] = useState<number>(mapLayout.defaultZoom);
+  const [viewportCenter, setViewportCenter] = useState({
+    longitude: mapLayout.defaultCenter[0],
+    latitude: mapLayout.defaultCenter[1],
+  });
+  const [activeFilterIndex, setActiveFilterIndex] = useState(0);
+  const [nearbyRadiusKm, setNearbyRadiusKm] = useState(5);
+  const [nearbyVisible, setNearbyVisible] = useState(false);
   const currentLocation = useCurrentLocation();
-  const { data = [], isLoading, isError, refetch } = useMapReports(viewportBounds);
+  const activeCategorySlugs = [...categoryFilters[activeFilterIndex].slugs];
+  const referenceCenter =
+    followingUser && currentLocation.location
+      ? {
+          latitude: currentLocation.location.coords.latitude,
+          longitude: currentLocation.location.coords.longitude,
+        }
+      : viewportCenter;
+  const modeLabel = followingUser && currentLocation.location ? 'Quanh tôi' : 'Khu vực trên bản đồ';
+  const {
+    data = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useMapReports({
+    bounds: viewportBounds,
+    zoom: viewportZoom,
+    categorySlugs: activeCategorySlugs,
+    center: referenceCenter,
+  });
+  const nearbyQuery = useNearbyReports(referenceCenter, nearbyRadiusKm, activeCategorySlugs);
 
   const geoJson = useMemo<FeatureCollection<Point>>(
     () => ({
@@ -65,8 +102,6 @@ export function MapScreen() {
     [data],
   );
 
-  const selected = data.find((report) => report.id === selectedId) ?? null;
-
   useEffect(() => {
     if (!currentLocation.location || hasCenteredOnLocation.current) return;
     hasCenteredOnLocation.current = true;
@@ -87,7 +122,9 @@ export function MapScreen() {
 
   const handleShapePress = (event: NativeSyntheticEvent<PressEventWithFeatures>) => {
     const id = event.nativeEvent.features[0]?.properties?.id;
-    if (typeof id === 'string') setSelectedId(id);
+    if (typeof id !== 'string') return;
+    const report = data.find((item) => item.id === id);
+    if (report) setSelectedReport(report);
   };
 
   const handleLocate = async () => {
@@ -111,12 +148,28 @@ export function MapScreen() {
 
   const handleRegionDidChange = (event: NativeSyntheticEvent<ViewStateChangeEvent>) => {
     const [west, south, east, north] = event.nativeEvent.bounds;
+    const [longitude, latitude] = event.nativeEvent.center;
+    const zoom = event.nativeEvent.zoom;
     if (west >= east || south >= north) return;
+    if (event.nativeEvent.userInteraction) setFollowingUser(false);
 
     if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
     viewportTimerRef.current = setTimeout(() => {
       setViewportBounds({ west, south, east, north });
+      setViewportZoom(zoom);
+      setViewportCenter({ longitude, latitude });
     }, 350);
+  };
+
+  const handleNearbySelect = (report: ReportDetail) => {
+    setNearbyVisible(false);
+    setFollowingUser(false);
+    setSelectedReport(report);
+    cameraRef.current?.easeTo({
+      center: [report.coordinate.longitude, report.coordinate.latitude],
+      zoom: Math.max(15, viewportZoom),
+      duration: 500,
+    });
   };
 
   const handleConfirm = (report: ReportDetail) => {
@@ -199,15 +252,17 @@ export function MapScreen() {
         <View style={styles.brandBlock}>
           <Text style={styles.brand}>Mạch Phố</Text>
           <Text style={styles.subtitle}>
-            {currentLocation.source === 'last-known'
-              ? `Vị trí gần nhất · ${currentLocation.accuracyLabel ?? 'đang cập nhật'}`
-              : currentLocation.isTracking
-                ? `Quanh bạn · ${
-                    currentLocation.precision === 'approximate'
-                      ? 'vị trí gần đúng'
-                      : (currentLocation.accuracyLabel ?? 'đang cập nhật')
-                  }`
-                : 'Quận 1 · trực tiếp'}
+            {!followingUser && viewportBounds
+              ? 'Khu vực trên bản đồ'
+              : currentLocation.source === 'last-known'
+                ? `Vị trí gần nhất · ${currentLocation.accuracyLabel ?? 'đang cập nhật'}`
+                : followingUser && currentLocation.location
+                  ? `Quanh tôi · ${
+                      currentLocation.precision === 'approximate'
+                        ? 'vị trí gần đúng'
+                        : (currentLocation.accuracyLabel ?? 'đang cập nhật')
+                    }`
+                  : 'Quận 1 · trực tiếp'}
           </Text>
         </View>
         <View style={styles.headerActions}>
@@ -232,10 +287,16 @@ export function MapScreen() {
       </View>
 
       <View style={styles.chips}>
-        {['Tất cả', 'Giao thông', 'Thời tiết', 'Sự kiện'].map((label, index) => (
-          <View key={label} style={[styles.chip, index === 0 && styles.chipActive]}>
-            <Text style={[styles.chipText, index === 0 && styles.chipTextActive]}>{label}</Text>
-          </View>
+        {categoryFilters.map((filter, index) => (
+          <Pressable
+            key={filter.label}
+            style={[styles.chip, index === activeFilterIndex && styles.chipActive]}
+            onPress={() => setActiveFilterIndex(index)}
+          >
+            <Text style={[styles.chipText, index === activeFilterIndex && styles.chipTextActive]}>
+              {filter.label}
+            </Text>
+          </Pressable>
         ))}
       </View>
 
@@ -289,6 +350,20 @@ export function MapScreen() {
       </Pressable>
 
       <Pressable
+        accessibilityLabel="Mở danh sách báo cáo gần đây"
+        style={styles.nearbyButton}
+        onPress={() => setNearbyVisible(true)}
+      >
+        <ListFilter color={colors.ink} size={18} />
+        <View>
+          <Text style={styles.nearbyButtonTitle}>{modeLabel}</Text>
+          <Text style={styles.nearbyButtonMeta}>
+            {nearbyQuery.data?.length ?? 0} báo cáo · {nearbyRadiusKm} km
+          </Text>
+        </View>
+      </Pressable>
+
+      <Pressable
         style={styles.reportButton}
         onPress={() =>
           requireAuth('/report/new', () => router.push('/report/new'), 'Đăng nhập để báo cáo')
@@ -298,13 +373,26 @@ export function MapScreen() {
         <Text style={styles.reportButtonText}>Báo cáo tại đây</Text>
       </Pressable>
 
-      {selected ? (
+      {selectedReport ? (
         <ReportPreviewCard
-          report={selected}
-          onClose={() => setSelectedId(null)}
-          onConfirm={() => handleConfirm(selected)}
+          report={selectedReport}
+          onClose={() => setSelectedReport(null)}
+          onConfirm={() => handleConfirm(selectedReport)}
         />
       ) : null}
+
+      <NearbyReportsSheet
+        visible={nearbyVisible}
+        modeLabel={modeLabel}
+        reports={nearbyQuery.data ?? []}
+        radiusKm={nearbyRadiusKm}
+        isLoading={nearbyQuery.isLoading}
+        isError={nearbyQuery.isError}
+        onRadiusChange={setNearbyRadiusKm}
+        onRetry={() => void nearbyQuery.refetch()}
+        onSelect={handleNearbySelect}
+        onClose={() => setNearbyVisible(false)}
+      />
     </View>
   );
 }
@@ -452,6 +540,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  nearbyButton: {
+    position: 'absolute',
+    left: spacing.lg,
+    bottom: 146,
+    minHeight: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+  },
+  nearbyButtonTitle: { color: colors.ink, fontSize: 12, fontWeight: '900' },
+  nearbyButtonMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 10 },
   reportButton: {
     position: 'absolute',
     bottom: 78,

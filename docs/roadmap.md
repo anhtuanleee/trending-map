@@ -5,7 +5,7 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 ## P0 — hoàn thiện map/report core
 
 - [x] Truyền camera bounds thật vào `get_map_items`; debounce và giữ previous data khi pan.
-- Nối category filter, search state và URL/deep-link params.
+- Category filter đã nối query; còn search state và URL/deep-link params.
 - [x] Chọn report coordinate bằng pin hoặc GPS; reverse geocoding address best-effort.
 - Fetch categories từ backend, bỏ seed UUID hard-code khỏi form.
 - Chuẩn hóa Edge Function validation/error codes bằng shared contract.

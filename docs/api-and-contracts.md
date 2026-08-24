@@ -21,12 +21,17 @@
 
 Input:
 
-| Param                                    | Type     | Ghi chú                            |
-| ---------------------------------------- | -------- | ---------------------------------- |
-| `p_west`, `p_south`, `p_east`, `p_north` | number   | WGS84 viewport bounds              |
-| `p_category_slugs`                       | `text[]` | Mảng rỗng nghĩa là tất cả category |
+| Param                                     | Type             | Ghi chú                            |
+| ----------------------------------------- | ---------------- | ---------------------------------- |
+| `p_west`, `p_south`, `p_east`, `p_north`  | number           | WGS84 viewport/radius bounding box |
+| `p_category_slugs`                        | `text[]`         | Mảng rỗng nghĩa là tất cả category |
+| `p_center_longitude`, `p_center_latitude` | number, nullable | Tâm dùng để tính khoảng cách       |
+| `p_radius_meters`                         | number, nullable | Giới hạn vòng tròn cho nearby list |
 
-Output tối thiểu gồm ID, type/category, title, centroid coordinate, severity, verification/operational status, start/expiry và confirmation count. Query chỉ trả active/monitoring, chưa hết hạn, nằm trong viewport; giới hạn 1.000 rows.
+Output tối thiểu gồm ID, type/category, title, centroid coordinate, severity,
+verification/operational status, start/expiry, confirmation count và `distance_meters`. Query chỉ trả
+active/monitoring, chưa hết hạn, nằm trong bounds và bán kính nếu được truyền; giới hạn 1.000 rows.
+Thứ tự ưu tiên là severity, khoảng cách, độ mới rồi verification status.
 
 ### `public_report_details` view
 

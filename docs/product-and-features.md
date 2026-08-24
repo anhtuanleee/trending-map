@@ -20,9 +20,10 @@ Nguyên tắc sản phẩm cốt lõi:
 | Mobile map    | Hiển thị marker và cluster    | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                               |
 | Mobile map    | Tracking vị trí hiện tại      | **Hoạt động**  | Foreground-only, last-known → current high accuracy → live tracking và camera follow. |
 | Mobile map    | Báo cáo trong viewport        | **Hoạt động**  | Camera bounds được debounce rồi truyền vào RPC; demo data cũng lọc theo cùng vùng.    |
+| Mobile map    | Nearby reports                | **Hoạt động**  | List 1/5/15 km, distance backend và chuyển mode GPS/camera khi pan.                   |
 | Mobile map    | Preview và mở chi tiết report | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                                    |
-| Mobile map    | Search, category filter       | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                             |
-| Mobile map    | Query theo viewport thật      | **Hoạt động**  | Query key theo bounds đã làm tròn và giữ dữ liệu trước đó trong lúc pan/refetch.      |
+| Mobile map    | Search, category filter       | **Foundation** | Category filter đã hoạt động; search/deep-link params chưa nối.                       |
+| Mobile map    | Query theo viewport thật      | **Hoạt động**  | Query key gồm bounds, zoom, filter, center và giữ dữ liệu cũ khi pan/refetch.         |
 | Auth          | Đăng nhập OTP qua email       | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.              |
 | Auth          | Đăng nhập Google OAuth        | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.       |
 | Auth          | Auth gate có return URL       | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.            |
