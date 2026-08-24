@@ -1,0 +1,22 @@
+{
+  "name": "trending-map",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev:mobile": "pnpm --filter @trending-map/mobile start",
+    "dev:admin": "pnpm --filter @trending-map/admin dev",
+    "build:admin": "pnpm --filter @trending-map/admin build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r --if-present test",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "prettier": "3.8.2",
+    "typescript": "5.9.3"
+  }
+}

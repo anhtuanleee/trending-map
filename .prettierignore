@@ -1,0 +1,7 @@
+node_modules
+.expo
+.next
+dist
+coverage
+pnpm-lock.yaml
+apps/admin/next-env.d.ts
