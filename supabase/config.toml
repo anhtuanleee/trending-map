@@ -22,7 +22,7 @@ additional_redirect_urls = ["trendingmap://auth/callback", "http://localhost:300
 enable_signup = true
 
 [auth.email.template.magic_link]
-subject = "Mã đăng nhập Mạch Phố"
+subject = "Mã đăng nhập Trending Map"
 content_path = "./supabase/templates/magic-link.html"
 
 [functions.submit-report]

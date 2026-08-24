@@ -1,0 +1,193 @@
+import * as Location from 'expo-location';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Linking } from 'react-native';
+
+import { appConfig } from '@/config';
+import { formatAccuracy } from '@/lib/format';
+
+export type LocationTrackingStatus =
+  | 'idle'
+  | 'checking'
+  | 'requesting'
+  | 'locating'
+  | 'tracking'
+  | 'denied'
+  | 'blocked'
+  | 'services_disabled'
+  | 'error';
+
+type LocationSource = 'last-known' | 'current' | 'live' | null;
+
+function permissionPrecision(permission: Location.LocationPermissionResponse) {
+  if (permission.android?.accuracy === 'coarse' || permission.ios?.accuracy === 'reduced') {
+    return 'approximate' as const;
+  }
+  return 'precise' as const;
+}
+
+export function useCurrentLocation() {
+  const [status, setStatus] = useState<LocationTrackingStatus>('idle');
+  const [location, setLocation] = useState<Location.LocationObject | null>(null);
+  const [source, setSource] = useState<LocationSource>(null);
+  const [precision, setPrecision] = useState<'precise' | 'approximate' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
+  const locationRef = useRef<Location.LocationObject | null>(null);
+  const startingRef = useRef(false);
+  const requestIdRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  const updateLocation = useCallback(
+    (next: Location.LocationObject, nextSource: LocationSource) => {
+      locationRef.current = next;
+      setLocation(next);
+      setSource(nextSource);
+    },
+    [],
+  );
+
+  const stopTracking = useCallback(() => {
+    requestIdRef.current += 1;
+    subscriptionRef.current?.remove();
+    subscriptionRef.current = null;
+    setStatus('idle');
+    setError(null);
+  }, []);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      requestIdRef.current += 1;
+      subscriptionRef.current?.remove();
+      subscriptionRef.current = null;
+    };
+  }, []);
+
+  const startTracking = useCallback(async () => {
+    if (subscriptionRef.current) {
+      setStatus('tracking');
+      return locationRef.current;
+    }
+    if (startingRef.current) return locationRef.current;
+
+    startingRef.current = true;
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    const isActive = () => mountedRef.current && requestIdRef.current === requestId;
+    setStatus('checking');
+    setError(null);
+
+    try {
+      const servicesEnabled = await Location.hasServicesEnabledAsync();
+      if (!isActive()) return null;
+      if (!servicesEnabled) {
+        setStatus('services_disabled');
+        setError('Dịch vụ vị trí đang tắt. Hãy bật vị trí trong Cài đặt.');
+        return null;
+      }
+
+      let permission = await Location.getForegroundPermissionsAsync();
+      if (!isActive()) return null;
+      if (!permission.granted) {
+        if (!permission.canAskAgain) {
+          setStatus('blocked');
+          setError('Quyền vị trí đang bị chặn. Hãy mở Cài đặt để cấp lại quyền.');
+          return null;
+        }
+
+        setStatus('requesting');
+        permission = await Location.requestForegroundPermissionsAsync();
+        if (!isActive()) return null;
+      }
+
+      if (!permission.granted) {
+        setStatus(permission.canAskAgain ? 'denied' : 'blocked');
+        setError(
+          permission.canAskAgain
+            ? `${appConfig.name} cần quyền vị trí để hiển thị nội dung quanh bạn.`
+            : 'Quyền vị trí đang bị chặn. Hãy mở Cài đặt để cấp lại quyền.',
+        );
+        return null;
+      }
+
+      setPrecision(permissionPrecision(permission));
+      setStatus('locating');
+
+      const lastKnown = await Location.getLastKnownPositionAsync({
+        maxAge: 5 * 60 * 1_000,
+        requiredAccuracy: 1_000,
+      });
+      if (!isActive()) return null;
+      if (lastKnown) updateLocation(lastKnown, 'last-known');
+
+      let currentPosition: Location.LocationObject | null = null;
+      try {
+        currentPosition = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+          mayShowUserSettingsDialog: true,
+        });
+        if (!isActive()) return null;
+        updateLocation(currentPosition, 'current');
+      } catch {
+        if (!isActive()) return null;
+      }
+
+      const subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.Balanced,
+          distanceInterval: 20,
+          timeInterval: 10_000,
+          mayShowUserSettingsDialog: true,
+        },
+        (next) => {
+          if (!isActive()) return;
+          updateLocation(next, 'live');
+          setStatus('tracking');
+          setError(null);
+        },
+        (message) => {
+          if (!isActive()) return;
+          subscriptionRef.current?.remove();
+          subscriptionRef.current = null;
+          setStatus('error');
+          setError(message || 'Không thể cập nhật vị trí hiện tại.');
+        },
+      );
+      if (!isActive()) {
+        subscription.remove();
+        return null;
+      }
+      subscriptionRef.current = subscription;
+
+      setStatus('tracking');
+      return currentPosition ?? lastKnown;
+    } catch (caught) {
+      if (!isActive()) return null;
+      setStatus('error');
+      setError(caught instanceof Error ? caught.message : 'Không thể lấy vị trí hiện tại.');
+      return null;
+    } finally {
+      startingRef.current = false;
+    }
+  }, [updateLocation]);
+
+  const accuracyLabel = useMemo(
+    () => formatAccuracy(location?.coords.accuracy),
+    [location?.coords.accuracy],
+  );
+
+  return {
+    status,
+    location,
+    source,
+    precision,
+    error,
+    accuracyLabel,
+    isBusy: ['checking', 'requesting', 'locating'].includes(status),
+    isTracking: status === 'tracking',
+    startTracking,
+    stopTracking,
+    openSettings: () => Linking.openSettings(),
+  };
+}

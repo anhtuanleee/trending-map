@@ -1,4 +1,4 @@
-import { SignedOutScreen } from '@/features/auth/SignedOutScreen';
+import { SignedOutScreen } from '@/features/auth';
 
 export default function SignedOutRoute() {
   return <SignedOutScreen />;

@@ -29,7 +29,7 @@ export default async function DashboardPage() {
       <aside className="sidebar">
         <div className="brand">
           <span className="brand-mark">M</span>
-          <span>Mạch Phố</span>
+          <span>Trending Map</span>
         </div>
         <nav>
           <a className="active" href="#queue">

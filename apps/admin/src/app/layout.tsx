@@ -3,7 +3,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Mạch Phố · Moderation',
+  title: 'Trending Map · Moderation',
   description: 'Community map moderation console',
 };
 

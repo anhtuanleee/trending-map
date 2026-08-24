@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Mạch Phố",
+    "name": "Trending Map",
     "slug": "trending-map",
     "scheme": "trendingmap",
     "version": "0.1.0",
@@ -13,7 +13,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Cho phép Mạch Phố dùng vị trí khi ứng dụng đang mở để hiển thị nội dung quanh bạn. Vị trí chỉ được dùng cho báo cáo khi bạn chủ động chọn."
+          "locationWhenInUsePermission": "Cho phép Trending Map dùng vị trí khi ứng dụng đang mở để hiển thị nội dung quanh bạn. Vị trí chỉ được dùng cho báo cáo khi bạn chủ động chọn."
         }
       ],
       "@maplibre/maplibre-react-native"

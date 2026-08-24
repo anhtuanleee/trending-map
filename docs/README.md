@@ -1,4 +1,4 @@
-# Tài liệu Trending Map / Mạch Phố
+# Tài liệu Trending Map
 
 Tài liệu này mô tả đúng trạng thái code tại ngày 24/08/2026. Mỗi capability được gắn một mức độ hoàn thiện để phân biệt phần đã chạy end-to-end với UI hoặc data foundation.
 

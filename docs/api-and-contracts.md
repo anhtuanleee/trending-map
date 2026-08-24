@@ -19,6 +19,10 @@
 
 ### `get_map_items` RPC
 
+Mobile request shape được định nghĩa bởi `mapReportsRequestSchema`: bắt buộc viewport `bounds`, có
+`categorySlugs`, optional `center` và `radiusMeters`. Radius bị giới hạn tối đa 50 km ở contract để
+tránh client vô tình tạo nearby query quá rộng.
+
 Input:
 
 | Param                                     | Type             | Ghi chú                            |

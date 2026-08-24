@@ -11,6 +11,16 @@ export const colors = {
   danger: '#b63b3b',
   critical: '#7c2147',
   official: '#3159a4',
+  onPrimary: '#ffffff',
+  primarySoft: '#e5f1ec',
+  primarySubtle: '#dfece6',
+  officialSoft: '#e8eef9',
+  dangerSoft: '#fcebea',
+  overlay: 'rgba(16,35,31,0.38)',
+  overlayLight: 'rgba(16,35,31,0.25)',
+  mapOverlay: 'rgba(255,255,255,0.94)',
+  mapSurfaceStrong: 'rgba(255,255,255,0.96)',
+  shadow: '#000000',
 } as const;
 
 export const spacing = {

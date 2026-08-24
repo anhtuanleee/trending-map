@@ -7,11 +7,13 @@ Use this file as the routing layer for AI-assisted work in `apps/mobile/src`.
 The app combines TheCodingMachine's separation-of-concerns model, Ignite's service/theme conventions, and Expo Router's file-based routing:
 
 - `app/`: route adapters only. Read params and render a screen or feature entry point.
-- `src/components/`: reusable presentation. Use atomic folders only for genuinely shared UI.
-- `src/features/`: feature-local UI, adapters, and services.
-- `src/hooks/domain/`: TanStack Query orchestration, query keys, mutations, and invalidation.
+- `src/components/ui/`: reusable presentation with no domain I/O.
+- `src/config/`: validated build configuration, branding, and app-wide static settings.
+- `src/features/`: vertical slices. Use `api`, `components`, `hooks`, `model`, `screens`, and `lib` only when needed.
+- `src/lib/`: framework-light shared capabilities grouped by purpose, never generic `utils` or `helpers` buckets.
+- `src/mocks/`: demo data shared by more than one feature.
 - `src/services/`: configured external clients and app-wide infrastructure instances.
-- `src/providers/`: React provider composition and client-only session state.
+- `src/providers/`: app-wide provider composition only; feature providers stay with their feature.
 - `src/theme/`: the mobile-facing adapter over shared design tokens.
 - `src/skills/`: repeatable implementation playbooks.
 - `src/agents/`: focused agent role definitions.
@@ -39,6 +41,8 @@ Do not replace Expo Router with a manual React Navigation tree. Expo Router alre
 5. Keep server state in TanStack Query. Use Context only for small client/session state.
 6. Keep MapLibre rendering concerns inside the map feature and geospatial filtering in PostGIS.
 7. Preserve demo mode when Supabase environment variables are absent.
+8. Cross-feature imports must use the feature public `index.ts`; feature-internal imports stay relative.
+9. Do not add root `utils.ts`, `helpers.ts`, or `constants.ts`. Colocate feature logic and promote only proven reuse.
 
 ## Required checks
 
@@ -48,6 +52,7 @@ Run from the repository root:
 pnpm format:check
 pnpm typecheck
 pnpm test
+pnpm peers check
 pnpm build:admin
 EXPO_NO_TELEMETRY=1 EXPO_OFFLINE=1 pnpm --filter @trending-map/mobile exec expo export --platform android --output-dir /tmp/trending-map-export
 ```

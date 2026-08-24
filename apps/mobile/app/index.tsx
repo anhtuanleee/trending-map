@@ -1,4 +1,4 @@
-import { MapScreen } from '@/features/map/MapScreen';
+import { MapScreen } from '@/features/map';
 
 export default function HomeRoute() {
   return <MapScreen />;
