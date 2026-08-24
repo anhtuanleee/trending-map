@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { submitReport } from '../api/report.service';
+import { submitReport } from '../api/submit-report';
 import { reportQueryKeys } from '../model/report-query-keys';
 
 export function useSubmitReport() {

@@ -2,7 +2,8 @@ import type { ConfirmationInput } from '@trending-map/contracts';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 
-import { confirmReport, getReportById } from '../api/report.service';
+import { confirmReport } from '../api/confirm-report';
+import { getReportById } from '../api/get-report';
 import { reportQueryKeys } from '../model/report-query-keys';
 
 export function useReport(id: string) {
@@ -19,9 +20,6 @@ export function useConfirmReport(id: string) {
   return useMutation({
     mutationFn: (kind: ConfirmationInput['kind']) =>
       confirmReport({ reportId: id, kind, idempotencyKey: Crypto.randomUUID() }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: reportQueryKeys.detail(id) });
-      await queryClient.invalidateQueries({ queryKey: reportQueryKeys.all });
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: reportQueryKeys.all }),
   });
 }

@@ -76,6 +76,16 @@ export const confirmationInputSchema = z.object({
   idempotencyKey: z.string().uuid(),
 });
 
+export const submitReportResultSchema = z.object({
+  id: z.string().uuid(),
+  status: z.literal('unverified'),
+});
+
+export const confirmationResultSchema = z.object({
+  reportId: z.string().uuid(),
+  accepted: z.boolean(),
+});
+
 export type ReportType = z.infer<typeof reportTypeSchema>;
 export type Severity = z.infer<typeof severitySchema>;
 export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
@@ -85,3 +95,5 @@ export type MapItem = z.infer<typeof mapItemSchema>;
 export type ReportDetail = z.infer<typeof reportDetailSchema>;
 export type SubmitReportInput = z.infer<typeof submitReportInputSchema>;
 export type ConfirmationInput = z.infer<typeof confirmationInputSchema>;
+export type SubmitReportResult = z.infer<typeof submitReportResultSchema>;
+export type ConfirmationResult = z.infer<typeof confirmationResultSchema>;

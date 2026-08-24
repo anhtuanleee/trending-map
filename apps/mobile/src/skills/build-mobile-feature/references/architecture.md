@@ -8,19 +8,19 @@
 | `components/ui` | Shared presentational UI                              | Supabase calls, routing decisions        |
 | `config`        | Branding, build environment, app-wide static settings | React state or feature workflows         |
 | `features`      | Vertical slices and their API/hooks/model/screens     | Cross-feature infrastructure             |
-| `lib`           | Shared pure capabilities grouped by purpose           | Generic catch-all utility files          |
+| `lib`           | Configured clients and named shared capabilities      | Generic catch-all utility files          |
 | `mocks`         | Shared demo fixtures                                  | Production state or secrets              |
-| `services`      | Configured clients and external instances             | React state or visual feedback           |
 | `providers`     | App-wide provider composition                         | Feature-specific session logic           |
 | `theme`         | Mobile semantic access to shared tokens               | Screen-specific layout                   |
 
-Within a feature, create `api`, `components`, `hooks`, `model`, `screens`, or `lib` only when files
-exist for that responsibility. Internal imports are relative. Other features and route adapters use
-the feature's public `index.ts`.
+Within a feature, create `api`, `components`, `domain`, `hooks`, `model`, `screens`, or `lib` only
+when files exist for that responsibility. Internal imports are relative. Other features and route
+adapters use the feature's public `index.ts`.
 
-Do not create root `utils`, `helpers`, or `constants` buckets. Shared pure code belongs in a named
-`lib` capability; feature constants belong in `features/<name>/model`; environment and branding
-belong in `config`; design values belong in `theme`; network shapes belong in shared contracts.
+Do not create root `utils`, `helpers`, `constants`, or `services` buckets. Configured clients and
+shared pure code belong in a named `lib` capability; feature I/O belongs in `features/<name>/api`;
+feature constants belong in `features/<name>/model`; environment and branding belong in `config`;
+design values belong in `theme`; network shapes belong in shared contracts.
 
 ## State selection
 
@@ -36,6 +36,8 @@ Keep Expo Router. Route modules must remain discoverable and deep-linkable. Pref
 
 ## Source basis
 
+- [Obytes project structure](https://starter.obytes.com/getting-started/project-structure/): feature-oriented modules, thin Expo Router routes, feature-owned API and UI.
+- [Bulletproof React project structure](https://github.com/alan2207/bulletproof-react/blob/master/docs/project-structure.md): unidirectional shared → feature → app dependencies and explicit feature boundaries.
 - [TheCodingMachine project structure](https://thecodingmachine.github.io/react-native-boilerplate/docs/project-structure): separation of concerns, domain hooks/services, atomic shared UI, theme boundary.
 - [Ignite boilerplate](https://docs.infinite.red/ignite-cli/boilerplate/): services, screens, theme, test and E2E organization.
 - [Expo Router](https://docs.expo.dev/router/introduction/): file-based routes, typed routes, universal deep links, and production lazy evaluation.

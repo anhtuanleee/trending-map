@@ -2,10 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import type { Coordinate, MapBounds } from '@trending-map/contracts';
 
 import { mapConfig } from '@/config';
-import { reportQueryKeys } from '@/features/reports';
 import { boundsForRadius, roundBounds, roundCoordinate } from '@/lib/geo';
 
-import { getMapReports } from '../api/map-reports.service';
+import { getMapReports } from '../api/get-map-reports';
+import { mapReportQueryKeys } from '../model/map-report-query-keys';
 
 export type MapReportsQuery = {
   bounds: MapBounds | null;
@@ -25,7 +25,7 @@ export function useMapReports(query: MapReportsQuery) {
   const scope = `${boundsScope}:z${zoom}:f${filters.join(',') || 'all'}:c${center.latitude}:${center.longitude}`;
 
   return useQuery({
-    queryKey: reportQueryKeys.map(scope),
+    queryKey: mapReportQueryKeys.viewport(scope),
     queryFn: () =>
       getMapReports({
         bounds: bounds ?? mapConfig.defaultBounds,
@@ -48,7 +48,7 @@ export function useNearbyReports(
   const scope = `${center.latitude}:${center.longitude}:r${radiusKm}:f${filters.join(',') || 'all'}`;
 
   return useQuery({
-    queryKey: reportQueryKeys.nearby(scope),
+    queryKey: mapReportQueryKeys.nearby(scope),
     queryFn: () =>
       getMapReports({
         bounds: boundsForRadius(center, radiusKm),

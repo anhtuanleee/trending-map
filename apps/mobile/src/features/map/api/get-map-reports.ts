@@ -1,10 +1,10 @@
 import { mapItemSchema, type MapItem, type MapReportsRequest } from '@trending-map/contracts';
 
 import { distanceMeters } from '@/lib/geo';
+import { supabase } from '@/lib/supabase/client';
 import { demoReports } from '@/mocks/reports';
-import { supabase } from '@/services/supabase';
 
-import { sortNearbyReports } from '../model/report-ranking';
+import { sortNearbyReports } from '../domain/report-ranking';
 
 type PublicMapRow = {
   id: string;

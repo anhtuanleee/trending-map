@@ -10,12 +10,23 @@ import {
 } from 'react';
 import { Linking } from 'react-native';
 
+import { isDemoMode } from '@/lib/supabase/client';
+
+import {
+  createGoogleSignInUrl,
+  exchangeOAuthCode,
+  getAuthSession,
+  observeAuthSession,
+  requestEmailOtp,
+  restoreOAuthSession,
+  signOutCurrentUser,
+  verifyEmailOtp,
+} from '../api/auth.service';
 import {
   createGoogleOAuthRedirectUrl,
   isOAuthCallbackUrl,
   parseOAuthCallbackUrl,
 } from '../lib/oauth';
-import { isDemoMode, supabase } from '@/services/supabase';
 
 type AppUser = {
   id: string;
@@ -44,13 +55,13 @@ function userFromSession(session: Session | null): AppUser | null {
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(Boolean(supabase));
+  const [loading, setLoading] = useState(!isDemoMode);
   const [oauthStatus, setOAuthStatus] = useState<'idle' | 'processing' | 'error'>('idle');
   const [oauthError, setOAuthError] = useState<string | null>(null);
   const handledOAuthUrls = useRef(new Set<string>());
 
   const completeOAuthCallback = useCallback(async (url: string) => {
-    if (!supabase || !isOAuthCallbackUrl(url) || handledOAuthUrls.current.has(url)) return;
+    if (isDemoMode || !isOAuthCallbackUrl(url) || handledOAuthUrls.current.has(url)) return;
     handledOAuthUrls.current.add(url);
     setOAuthStatus('processing');
     setOAuthError(null);
@@ -60,16 +71,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (callbackError) throw new Error(callbackError);
 
       if (code) {
-        const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-        if (error) throw error;
-        setUser(userFromSession(data.session));
+        setUser(userFromSession(await exchangeOAuthCode(code)));
       } else if (accessToken && refreshToken) {
-        const { data, error } = await supabase.auth.setSession({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-        });
-        if (error) throw error;
-        setUser(userFromSession(data.session));
+        setUser(userFromSession(await restoreOAuthSession(accessToken, refreshToken)));
       } else {
         throw new Error('Google không trả về session hợp lệ. Hãy thử đăng nhập lại.');
       }
@@ -82,14 +86,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (isDemoMode) return;
 
-    void supabase.auth.getSession().then(({ data }) => {
-      setUser(userFromSession(data.session));
-      setLoading(false);
-    });
-
-    const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+    void getAuthSession()
+      .then((session) => setUser(userFromSession(session)))
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+    const stopObservingAuth = observeAuthSession((session) => {
       setUser(userFromSession(session));
       setLoading(false);
     });
@@ -102,31 +105,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     return () => {
-      data.subscription.unsubscribe();
+      stopObservingAuth();
       linkingSubscription.remove();
     };
   }, [completeOAuthCallback]);
 
   const requestOtp = useCallback(async (email: string) => {
-    if (!supabase) return;
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) throw error;
+    await requestEmailOtp(email);
   }, []);
 
   const verifyOtp = useCallback(async (email: string, token: string) => {
-    if (!supabase) {
+    if (isDemoMode) {
       if (!/^\d{6}$/.test(token)) throw new Error('Mã OTP gồm 6 chữ số.');
       setUser({ id: 'demo-user', email });
       return;
     }
 
-    const { data, error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
-    if (error) throw error;
-    setUser(userFromSession(data.session));
+    setUser(userFromSession(await verifyEmailOtp(email, token)));
   }, []);
 
   const signInWithGoogle = useCallback(async (returnTo: string) => {
-    if (!supabase) {
+    if (isDemoMode) {
       setUser({ id: 'demo-google-user', email: 'google.demo@trendingmap.local' });
       return;
     }
@@ -134,18 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setOAuthStatus('idle');
     setOAuthError(null);
     const redirectTo = createGoogleOAuthRedirectUrl(returnTo);
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo,
-        skipBrowserRedirect: true,
-        queryParams: { prompt: 'select_account' },
-      },
-    });
-    if (error) throw error;
-    if (!data.url) throw new Error('Không thể tạo đường dẫn Google OAuth.');
-
-    await Linking.openURL(data.url);
+    await Linking.openURL(await createGoogleSignInUrl(redirectTo));
   }, []);
 
   const resetOAuthError = useCallback(() => {
@@ -154,10 +142,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    if (supabase) {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-    }
+    await signOutCurrentUser();
     setUser(null);
   }, []);
 

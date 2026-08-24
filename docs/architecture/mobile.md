@@ -16,22 +16,21 @@ MapLibre dùng native module, vì vậy app cần Expo development build; Expo G
 ```mermaid
 flowchart TB
   Routes["app/ routes"] --> Features["src/features"]
-  Features --> Shared["config + lib + UI"]
-  Features --> Services["services + contracts"]
+  Features --> Shared["config + lib clients + UI"]
+  Features --> Contracts["shared contracts"]
   Routes --> Providers["provider composition"]
 ```
 
-| Layer            | Có thể chứa                                               | Không nên chứa                             |
-| ---------------- | --------------------------------------------------------- | ------------------------------------------ |
-| `app/`           | Route params và render feature screen                     | JSX screen lớn, data access, business rule |
-| `features/`      | `api/components/hooks/model/screens/lib` theo domain      | Global infrastructure không thuộc feature  |
-| `components/ui/` | UI thực sự dùng chung                                     | Supabase calls hoặc routing decision       |
-| `config/`        | Branding, map config và build-time environment            | React state và feature workflow            |
-| `lib/`           | Geo, format, navigation helpers thuần và có capability rõ | Generic `utils/helpers/constants` bucket   |
-| `mocks/`         | Demo fixtures dùng bởi nhiều feature                      | Production state hoặc secret               |
-| `services/`      | Supabase client, query client, external instances         | Screen state                               |
-| `providers/`     | Composition của provider toàn app                         | Feature provider hoặc server-state cache   |
-| `theme/`         | Semantic color, spacing, radius                           | Hard-coded business state                  |
+| Layer            | Có thể chứa                                                 | Không nên chứa                             |
+| ---------------- | ----------------------------------------------------------- | ------------------------------------------ |
+| `app/`           | Route params và render feature screen                       | JSX screen lớn, data access, business rule |
+| `features/`      | `api/components/domain/hooks/model/screens/lib` theo domain | Global infrastructure không thuộc feature  |
+| `components/ui/` | UI thực sự dùng chung                                       | Supabase calls hoặc routing decision       |
+| `config/`        | Branding, map config và build-time environment              | React state và feature workflow            |
+| `lib/`           | Configured clients; geo, query, format, navigation rõ nghĩa | Generic `utils/helpers/constants/services` |
+| `mocks/`         | Demo fixtures dùng bởi nhiều feature                        | Production state hoặc secret               |
+| `providers/`     | Composition của provider toàn app                           | Feature provider hoặc server-state cache   |
+| `theme/`         | Semantic color, spacing, radius                             | Hard-coded business state                  |
 
 Mỗi feature chỉ tạo subfolder khi có file thực tế. Import nội bộ dùng relative path; route hoặc
 feature khác chỉ đi qua public `index.ts`. Static option của feature nằm trong `model/*.config.ts`,
@@ -54,13 +53,27 @@ network schema nằm trong `packages/contracts`, còn design values nằm trong 
 processing/error. Route protection hiện được áp dụng ở action entry points, chưa có
 middleware/router guard tổng quát.
 
-## Data flow
+## Data flow và Supabase API
 
-- `features/map/hooks/useMapReports` và `features/reports/hooks/useReport` dùng stable query keys trong `features/reports/model/report-query-keys.ts`.
-- `useSubmitReport` gọi feature service, sau đó route hiển thị feedback thành công.
-- `useConfirmReport` gọi command và invalidates dữ liệu report tương ứng.
-- `features/map/api/map-reports.service.ts` chuyển snake_case database rows thành camelCase domain objects.
-- Khi Supabase client không được tạo, services trả demo data/delay mô phỏng.
+Luồng chuẩn là `route → screen → feature hook → feature api → Supabase`. Route và screen không gọi
+Supabase trực tiếp.
+
+| Trách nhiệm                                     | Vị trí                                       |
+| ----------------------------------------------- | -------------------------------------------- |
+| Tạo Supabase client và SecureStore auth storage | `src/lib/supabase/client.ts`                 |
+| Tạo TanStack Query client                       | `src/lib/query/client.ts`                    |
+| Auth OTP, Google OAuth, session và logout       | `src/features/auth/api/auth.service.ts`      |
+| Viewport/nearby RPC `get_map_items`             | `src/features/map/api/get-map-reports.ts`    |
+| Public report detail view                       | `src/features/reports/api/get-report.ts`     |
+| Edge Function `submit-report`                   | `src/features/reports/api/submit-report.ts`  |
+| Edge Function `confirm-report`                  | `src/features/reports/api/confirm-report.ts` |
+
+Map và detail có query key riêng trong feature. Cả hai cùng bắt đầu bằng cache root
+`public-reports` từ `src/lib/query/public-report-cache.ts`, vì vậy contribution mutation invalidate
+được toàn bộ public report data mà không import chéo `map` và `reports`.
+
+Mọi public response và command result được parse bằng shared Zod schema trước khi trả về UI. Khi
+Supabase client không được tạo, các API module giữ nguyên demo data/delay mô phỏng.
 
 ## Map rendering
 
@@ -112,10 +125,11 @@ categories thay vì giữ UUID trong source.
 
 - Không tạo `src/utils`, `src/helpers`, `utils.ts`, `helpers.ts` hoặc `constants.ts` cấp root.
 - Pure function dùng bởi nhiều domain nằm trong capability cụ thể dưới `src/lib`.
-- Logic chỉ thuộc một feature nằm trong `features/<feature>/lib`.
+- Logic chỉ thuộc một feature nằm trong `features/<feature>/lib` hoặc `domain`.
 - Feature constants và static options nằm trong `features/<feature>/model/*.config.ts`.
 - Branding/build/env nằm trong `src/config`; semantic design values nằm trong `src/theme`.
-- Function có I/O được đặt tên `service`, `repository` hoặc `api`, không gọi là utility.
+- External I/O nằm trong `features/<feature>/api`; native device I/O có thể nằm trong feature
+  `services`; configured client dùng chung nằm trong capability cụ thể của `src/lib`.
 
 ## Agent guidance trong source
 

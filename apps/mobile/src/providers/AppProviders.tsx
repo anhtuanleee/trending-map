@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { AuthGateProvider, AuthProvider } from '@/features/auth';
-import { createAppQueryClient } from '@/services/query-client';
+import { createAppQueryClient } from '@/lib/query/client';
 
 export function AppProviders({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(createAppQueryClient);
