@@ -34,6 +34,7 @@ export const mapItemSchema = z.object({
   startsAt: z.string().datetime(),
   expiresAt: z.string().datetime().nullable(),
   confirmationCount: z.number().int().nonnegative(),
+  distanceMeters: z.number().nonnegative().nullable().optional(),
 });
 
 export const reportDetailSchema = mapItemSchema.extend({

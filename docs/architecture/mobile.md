@@ -61,19 +61,47 @@ middleware/router guard tổng quát.
 
 Report được đổi sang GeoJSON `FeatureCollection<Point>`. `GeoJSONSource` bật cluster với radius 44; hai layer tách cluster và report point. Point color phản ánh severity.
 
+Location tracking chỉ chạy foreground sau khi người dùng bấm locate. App kiểm tra permission và
+Location Services, dùng last-known location tối đa năm phút/độ chính xác 1 km để phản hồi nhanh,
+sau đó lấy một current position với `Accuracy.High` trước khi theo dõi vị trí cân bằng mỗi 20 m hoặc
+khoảng 10 giây. Camera follow có thể bật lại bằng nút locate và tự nhường quyền điều khiển khi người
+dùng pan map. Tracking raw không được persist.
+
+`Map.onRegionDidChange` lấy bounds thật sau khi camera dừng. Client debounce 350 ms, làm tròn bốn
+chữ số thập phân cho query key rồi gọi `get_map_items`; query key gồm bounds, zoom, category filter
+và tâm tính distance. TanStack Query giữ dữ liệu cũ trong lúc refetch. Khi map chưa emit bounds đầu
+tiên, service fallback về bounding box TP.HCM.
+
+Map luôn fetch theo viewport. Nearby sheet dùng query riêng theo tâm GPS hoặc camera với ba bán kính
+1/5/15 km; backend trả `distance_meters` và ưu tiên severity, distance, freshness, verification.
+Category chips truyền filter xuống cả hai query. Khi user pan khỏi GPS, camera mode chuyển từ “Quanh
+tôi” sang “Khu vực trên bản đồ”.
+
+Recent areas chỉ được ghi sau thao tác pan/zoom của người dùng, không ghi từ camera follow GPS. Mỗi
+record chỉ chứa tên coarse, center làm tròn 0,01°, zoom làm tròn 0,5 và trạng thái pin; tối đa tám
+record trong SecureStore của thiết bị. Không có timestamp, polyline, raw GPS hay lịch sử di chuyển.
+Guest/member hiện cùng dùng local store; member sync sẽ đi cùng followed-areas workflow sau này.
+
 Giới hạn hiện tại:
 
 - Camera mặc định ở khu vực thí điểm TP.HCM.
-- Service query đang dùng bounding box cố định, chưa lắng nghe camera idle/bounds.
 - Cluster tap chưa zoom/explode cluster.
-- Search và filter chips chưa nối state/query.
-- User location chỉ hiện sau permission; chưa recenter camera hoặc dùng làm report coordinate.
+- Search text chưa nối query hoặc deep-link; category chips đã nối server filter.
+- Reverse geocode phụ thuộc dịch vụ của thiết bị và fallback về chuỗi tọa độ khi không có địa chỉ.
 
 ## Form và mutation
 
 `SubmitReportInput` được kiểm tra bằng `submitReportInputSchema`. Title dài 6–120 ký tự, description 12–1200, coordinate phải hợp lệ và scheduled event bắt buộc `endsAt`. Mỗi submission tạo UUID làm idempotency key.
 
-Composer hiện hard-code ba category seed IDs và một vị trí mẫu. Khi category trở thành dữ liệu động, UI phải fetch categories thay vì giữ UUID trong source.
+Composer bắt buộc người dùng xác nhận location picker trước khi submit. Nếu chưa có lựa chọn cũ,
+picker thử dùng foreground GPS làm điểm khởi tạo; denied/blocked vẫn cho kéo pin thủ công. GPS có
+accuracy lớn hơn 100 m không được xác nhận cho tới khi người dùng chỉnh pin. Reverse geocode chạy
+best-effort; chỉ coordinate/address đã xác nhận đi vào `SubmitReportInput`, không fallback âm thầm về
+center TP.HCM. Route adapter chỉ render `NewReportScreen`, còn auth gate được kiểm tra lại tại thời
+điểm submit để bảo vệ cả deep link trực tiếp.
+
+Composer vẫn hard-code ba category seed IDs. Khi category trở thành dữ liệu động, UI phải fetch
+categories thay vì giữ UUID trong source.
 
 ## Agent guidance trong source
 

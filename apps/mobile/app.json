@@ -13,7 +13,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Cho phép Trending Map dùng vị trí để hiển thị và gửi báo cáo gần bạn."
+          "locationWhenInUsePermission": "Cho phép Mạch Phố dùng vị trí khi ứng dụng đang mở để hiển thị nội dung quanh bạn. Vị trí chỉ được dùng cho báo cáo khi bạn chủ động chọn."
         }
       ],
       "@maplibre/maplibre-react-native"

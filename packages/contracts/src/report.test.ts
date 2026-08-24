@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { submitReportInputSchema } from './report';
+import { mapItemSchema, submitReportInputSchema } from './report';
 
 const baseInput = {
   type: 'incident',
@@ -26,5 +26,26 @@ describe('submitReportInputSchema', () => {
     });
 
     expect(result.success).toBe(false);
+  });
+
+  it('accepts public map distance without reporter identity', () => {
+    const result = mapItemSchema.parse({
+      id: '2e130699-a737-4942-bf43-f9f217bdf84b',
+      type: 'incident',
+      categorySlug: 'flood',
+      categoryName: 'Ngập nước',
+      title: 'Ngập sâu trên đường Nguyễn Huệ',
+      coordinate: { latitude: 10.7731, longitude: 106.7034 },
+      severity: 'high',
+      verificationStatus: 'community_verified',
+      operationalStatus: 'active',
+      startsAt: '2026-08-24T03:24:00.000Z',
+      expiresAt: null,
+      confirmationCount: 14,
+      distanceMeters: 248.5,
+    });
+
+    expect(result.distanceMeters).toBe(248.5);
+    expect('createdBy' in result).toBe(false);
   });
 });
