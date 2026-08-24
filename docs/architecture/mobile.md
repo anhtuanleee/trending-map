@@ -16,21 +16,26 @@ MapLibre dùng native module, vì vậy app cần Expo development build; Expo G
 ```mermaid
 flowchart TB
   Routes["app/ routes"] --> Features["src/features"]
-  Features --> Hooks["src/hooks/domain"]
-  Hooks --> Services["src/services"]
-  Features --> UI["components + theme"]
-  Hooks --> Contracts["shared contracts"]
+  Features --> Shared["config + lib + UI"]
+  Features --> Services["services + contracts"]
+  Routes --> Providers["provider composition"]
 ```
 
-| Layer           | Có thể chứa                                           | Không nên chứa                                |
-| --------------- | ----------------------------------------------------- | --------------------------------------------- |
-| `app/`          | Route params, screen composition, navigation boundary | Data access lặp lại, business rule dùng chung |
-| `features/`     | UI theo domain và feature-specific service            | Global infrastructure không thuộc feature     |
-| `hooks/domain/` | Query/mutation hooks, cache keys, invalidation        | JSX lớn, native UI details                    |
-| `services/`     | Supabase client, query client, external adapters      | Screen state                                  |
-| `components/`   | UI tái sử dụng                                        | Supabase calls                                |
-| `providers/`    | Auth/query/safe-area lifecycle                        | Domain command riêng lẻ                       |
-| `theme/`        | Semantic color, spacing, radius                       | Hard-coded business state                     |
+| Layer            | Có thể chứa                                               | Không nên chứa                             |
+| ---------------- | --------------------------------------------------------- | ------------------------------------------ |
+| `app/`           | Route params và render feature screen                     | JSX screen lớn, data access, business rule |
+| `features/`      | `api/components/hooks/model/screens/lib` theo domain      | Global infrastructure không thuộc feature  |
+| `components/ui/` | UI thực sự dùng chung                                     | Supabase calls hoặc routing decision       |
+| `config/`        | Branding, map config và build-time environment            | React state và feature workflow            |
+| `lib/`           | Geo, format, navigation helpers thuần và có capability rõ | Generic `utils/helpers/constants` bucket   |
+| `mocks/`         | Demo fixtures dùng bởi nhiều feature                      | Production state hoặc secret               |
+| `services/`      | Supabase client, query client, external instances         | Screen state                               |
+| `providers/`     | Composition của provider toàn app                         | Feature provider hoặc server-state cache   |
+| `theme/`         | Semantic color, spacing, radius                           | Hard-coded business state                  |
+
+Mỗi feature chỉ tạo subfolder khi có file thực tế. Import nội bộ dùng relative path; route hoặc
+feature khác chỉ đi qua public `index.ts`. Static option của feature nằm trong `model/*.config.ts`,
+network schema nằm trong `packages/contracts`, còn design values nằm trong `theme`.
 
 ## Routing hiện tại
 
@@ -51,15 +56,15 @@ middleware/router guard tổng quát.
 
 ## Data flow
 
-- `useMapReports` và `useReport` dùng stable query keys trong `query-keys.ts`.
+- `features/map/hooks/useMapReports` và `features/reports/hooks/useReport` dùng stable query keys trong `features/reports/model/report-query-keys.ts`.
 - `useSubmitReport` gọi feature service, sau đó route hiển thị feedback thành công.
 - `useConfirmReport` gọi command và invalidates dữ liệu report tương ứng.
-- `map.service.ts` chuyển snake_case database rows thành camelCase domain objects.
+- `features/map/api/map-reports.service.ts` chuyển snake_case database rows thành camelCase domain objects.
 - Khi Supabase client không được tạo, services trả demo data/delay mô phỏng.
 
 ## Map rendering
 
-Report được đổi sang GeoJSON `FeatureCollection<Point>`. `GeoJSONSource` bật cluster với radius 44; hai layer tách cluster và report point. Point color phản ánh severity.
+`CommunityReportsLayer` đổi report sang GeoJSON `FeatureCollection<Point>`. `GeoJSONSource` bật cluster với radius 44; hai layer tách cluster và report point. Point color phản ánh severity.
 
 Location tracking chỉ chạy foreground sau khi người dùng bấm locate. App kiểm tra permission và
 Location Services, dùng last-known location tối đa năm phút/độ chính xác 1 km để phản hồi nhanh,
@@ -67,7 +72,7 @@ sau đó lấy một current position với `Accuracy.High` trước khi theo d�
 khoảng 10 giây. Camera follow có thể bật lại bằng nút locate và tự nhường quyền điều khiển khi người
 dùng pan map. Tracking raw không được persist.
 
-`Map.onRegionDidChange` lấy bounds thật sau khi camera dừng. Client debounce 350 ms, làm tròn bốn
+`useMapViewport` nhận bounds thật từ `Map.onRegionDidChange` sau khi camera dừng. Hook debounce 350 ms, làm tròn bốn
 chữ số thập phân cho query key rồi gọi `get_map_items`; query key gồm bounds, zoom, category filter
 và tâm tính distance. TanStack Query giữ dữ liệu cũ trong lúc refetch. Khi map chưa emit bounds đầu
 tiên, service fallback về bounding box TP.HCM.
@@ -102,6 +107,15 @@ center TP.HCM. Route adapter chỉ render `NewReportScreen`, còn auth gate đư
 
 Composer vẫn hard-code ba category seed IDs. Khi category trở thành dữ liệu động, UI phải fetch
 categories thay vì giữ UUID trong source.
+
+## Quy tắc utility và constant
+
+- Không tạo `src/utils`, `src/helpers`, `utils.ts`, `helpers.ts` hoặc `constants.ts` cấp root.
+- Pure function dùng bởi nhiều domain nằm trong capability cụ thể dưới `src/lib`.
+- Logic chỉ thuộc một feature nằm trong `features/<feature>/lib`.
+- Feature constants và static options nằm trong `features/<feature>/model/*.config.ts`.
+- Branding/build/env nằm trong `src/config`; semantic design values nằm trong `src/theme`.
+- Function có I/O được đặt tên `service`, `repository` hoặc `api`, không gọi là utility.
 
 ## Agent guidance trong source
 

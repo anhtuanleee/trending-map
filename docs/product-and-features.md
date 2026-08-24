@@ -2,7 +2,7 @@
 
 ## Tầm nhìn
 
-Mạch Phố là bản đồ cộng đồng theo thời gian gần thực, giúp người dùng thấy sự kiện và tình trạng đang xảy ra quanh mình: ngập nước, ổ gà, cây đổ, cảnh báo thời tiết, ca nhạc và các sự kiện có lịch.
+Trending Map là bản đồ cộng đồng theo thời gian gần thực, giúp người dùng thấy sự kiện và tình trạng đang xảy ra quanh mình: ngập nước, ổ gà, cây đổ, cảnh báo thời tiết, ca nhạc và các sự kiện có lịch.
 
 Nguyên tắc sản phẩm cốt lõi:
 

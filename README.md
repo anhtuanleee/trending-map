@@ -2,7 +2,7 @@
 
 Community-powered live map for local events, incidents, and official alerts.
 
-The product is currently presented as **Mạch Phố** in the mobile and admin UI.
+The product is presented as **Trending Map** in the mobile and admin UI.
 
 ## Documentation
 
