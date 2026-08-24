@@ -26,6 +26,8 @@ Xem `apps/mobile/.env.example`. Các biến client phải dùng prefix `EXPO_PUB
 Email OTP không cần thêm biến client: Resend/SMTP API key được cấu hình trong Supabase Dashboard,
 không đặt trong `.env` hoặc `EXPO_PUBLIC_*`. Xem hướng dẫn chi tiết tại
 [`authentication-and-authorization.md`](./authentication-and-authorization.md#cấu-hình-email-otp).
+Google OAuth cũng không thêm mobile env: Google Web Client ID/secret được cấu hình trong Supabase.
+App dùng scheme `trendingmap` từ `app.json` và callback `trendingmap://auth/callback`.
 
 ### Admin
 
@@ -48,6 +50,14 @@ pnpm --filter @trending-map/mobile android
 pnpm --filter @trending-map/mobile ios
 ```
 
+Google OAuth cần development/production build để custom scheme quay lại app. Sau khi cài build,
+kiểm tra callback trên thiết bị bằng:
+
+```bash
+npx uri-scheme open 'trendingmap://auth/callback' --android
+npx uri-scheme open 'trendingmap://auth/callback' --ios
+```
+
 ## Supabase local
 
 ```bash
@@ -58,6 +68,10 @@ supabase functions serve confirm-report
 ```
 
 `db reset` áp dụng migrations và seed lại dữ liệu local. Không chạy với target production nếu chưa kiểm tra project ref.
+
+Muốn test Google với Supabase local, bật `[auth.external.google]` theo
+[`authentication-and-authorization.md`](./authentication-and-authorization.md#cấu-hình-google-oauth)
+và export `SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET` trong shell. Không commit secret vào repo.
 
 ## Quality gates
 

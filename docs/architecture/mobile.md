@@ -34,16 +34,20 @@ flowchart TB
 
 ## Routing hiện tại
 
-| Route          | Vai trò                            | Auth                              |
-| -------------- | ---------------------------------- | --------------------------------- |
-| `/`            | Live map và report preview         | Public                            |
-| `/auth`        | Request/verify email OTP           | Public                            |
-| `/account`     | Trạng thái guest/member và logout  | Public shell; data theo session   |
-| `/signed-out`  | Logout success và lối về guest map | Public                            |
-| `/report/new`  | Composer tạo report                | Auth gate từ entry point          |
-| `/report/[id]` | Chi tiết và confirmation actions   | Read public; action authenticated |
+| Route            | Vai trò                            | Auth                              |
+| ---------------- | ---------------------------------- | --------------------------------- |
+| `/`              | Live map và report preview         | Public                            |
+| `/auth`          | Request/verify email OTP           | Public                            |
+| `/auth/callback` | Hoàn tất Google OAuth callback     | Public callback                   |
+| `/account`       | Trạng thái guest/member và logout  | Public shell; data theo session   |
+| `/signed-out`    | Logout success và lối về guest map | Public                            |
+| `/report/new`    | Composer tạo report                | Auth gate từ entry point          |
+| `/report/[id]`   | Chi tiết và confirmation actions   | Read public; action authenticated |
 
-`useAuthGate` giữ return URL để người dùng quay lại intent ban đầu sau OTP. Route protection hiện được áp dụng ở action entry points, chưa có middleware/router guard tổng quát.
+`useAuthGate` giữ return URL để người dùng quay lại intent ban đầu sau Email OTP hoặc Google OAuth.
+`AuthProvider` lắng nghe custom-scheme callback và route `/auth/callback` xử lý trạng thái
+processing/error. Route protection hiện được áp dụng ở action entry points, chưa có
+middleware/router guard tổng quát.
 
 ## Data flow
 
