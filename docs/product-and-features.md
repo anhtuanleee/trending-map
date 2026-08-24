@@ -19,16 +19,16 @@ Nguyên tắc sản phẩm cốt lõi:
 | Mobile map    | Xem map khi chưa đăng nhập    | **Hoạt động**  | Dùng demo data khi thiếu Supabase env.                                                 |
 | Mobile map    | Hiển thị marker và cluster    | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                                |
 | Mobile map    | Tracking vị trí hiện tại      | **Hoạt động**  | Foreground-only, last-known fallback, live update và camera follow khi người dùng bật. |
-| Mobile map    | Báo cáo quanh vị trí          | **Hoạt động**  | Khi có GPS, query report trong vùng khoảng 5 km; demo data cũng được lọc theo vùng.    |
+| Mobile map    | Báo cáo trong viewport        | **Hoạt động**  | Camera bounds được debounce rồi truyền vào RPC; demo data cũng lọc theo cùng vùng.     |
 | Mobile map    | Preview và mở chi tiết report | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                                     |
 | Mobile map    | Search, category filter       | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                              |
-| Mobile map    | Query theo viewport thật      | **Foundation** | Backend hỗ trợ bounds; app query quanh GPS nhưng chưa lắng nghe bounds của camera.     |
+| Mobile map    | Query theo viewport thật      | **Hoạt động**  | Query key theo bounds đã làm tròn và giữ dữ liệu trước đó trong lúc pan/refetch.       |
 | Auth          | Đăng nhập OTP qua email       | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.               |
 | Auth          | Đăng nhập Google OAuth        | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.        |
 | Auth          | Auth gate có return URL       | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.             |
 | Auth          | Tài khoản và đăng xuất        | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.         |
 | Reporting     | Tạo report                    | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                            |
-| Reporting     | Chọn vị trí report            | **Foundation** | Form đang dùng vị trí mẫu Nguyễn Huệ; chưa kéo pin/chọn GPS.                           |
+| Reporting     | Chọn vị trí report            | **Hoạt động**  | Bắt buộc xác nhận pin; hỗ trợ kéo map, GPS và reverse geocode best-effort.             |
 | Reporting     | Ẩn tên công khai              | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                  |
 | Reporting     | Upload ảnh/video              | **Foundation** | Có bảng `report_media`; chưa có upload UI, storage workflow hay moderation.            |
 | Trust         | “Tôi cũng thấy” / “Không còn” | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                   |
@@ -55,9 +55,10 @@ Nguyên tắc sản phẩm cốt lõi:
 
 1. Auth gate lưu đường dẫn cần quay lại.
 2. Người dùng chọn Google OAuth hoặc nhận OTP qua email để đăng nhập không cần mật khẩu.
-3. Form kiểm tra payload bằng shared Zod schema.
-4. Edge Function giữ JWT của người dùng và gọi RPC `submit_report`.
-5. RPC kiểm tra suspension, category, coordinate, idempotency; sau đó tạo report ở trạng thái `unverified`.
+3. Người dùng kéo pin hoặc dùng GPS, sau đó xác nhận tọa độ và nhãn địa chỉ.
+4. Form kiểm tra payload bằng shared Zod schema; submit vẫn auth-gated với deep link trực tiếp.
+5. Edge Function giữ JWT của người dùng và gọi RPC `submit_report`.
+6. RPC kiểm tra suspension, category, coordinate, idempotency; sau đó tạo report ở trạng thái `unverified`.
 
 ### Cộng đồng xác nhận
 

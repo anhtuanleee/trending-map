@@ -1,37 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
-import type { Coordinate, MapBounds } from '@trending-map/contracts';
+import type { MapBounds } from '@trending-map/contracts';
 
 import { getMapReports } from '@/features/map/map.service';
 
 import { reportQueryKeys } from './query-keys';
 
-const nearbyRadiusKm = 5;
-
-function nearbyQuery(center: Coordinate | null): { scope: string; bounds?: MapBounds } {
-  if (!center) return { scope: 'hcm-center' };
-
-  const latitude = Number(center.latitude.toFixed(2));
-  const longitude = Number(center.longitude.toFixed(2));
-  const latitudeDelta = nearbyRadiusKm / 111;
-  const longitudeDelta = nearbyRadiusKm / Math.max(20, 111 * Math.cos((latitude * Math.PI) / 180));
-
+function normalizeBounds(bounds: MapBounds | null): MapBounds | null {
+  if (!bounds) return null;
   return {
-    scope: `nearby:${latitude}:${longitude}:${nearbyRadiusKm}`,
-    bounds: {
-      west: longitude - longitudeDelta,
-      south: latitude - latitudeDelta,
-      east: longitude + longitudeDelta,
-      north: latitude + latitudeDelta,
-    },
+    west: Number(bounds.west.toFixed(4)),
+    south: Number(bounds.south.toFixed(4)),
+    east: Number(bounds.east.toFixed(4)),
+    north: Number(bounds.north.toFixed(4)),
   };
 }
 
-export function useMapReports(center: Coordinate | null = null) {
-  const query = nearbyQuery(center);
+export function useMapReports(bounds: MapBounds | null = null) {
+  const normalized = normalizeBounds(bounds);
+  const scope = normalized
+    ? `viewport:${normalized.west}:${normalized.south}:${normalized.east}:${normalized.north}`
+    : 'hcm-center';
 
   return useQuery({
-    queryKey: reportQueryKeys.map(query.scope),
-    queryFn: () => getMapReports(query.bounds),
+    queryKey: reportQueryKeys.map(scope),
+    queryFn: () => getMapReports(normalized ?? undefined),
     placeholderData: (previous) => previous,
     staleTime: 30_000,
   });

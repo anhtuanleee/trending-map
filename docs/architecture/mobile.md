@@ -64,27 +64,30 @@ Report được đổi sang GeoJSON `FeatureCollection<Point>`. `GeoJSONSource` 
 Location tracking chỉ chạy foreground sau khi người dùng bấm locate. App kiểm tra permission và
 Location Services, dùng last-known location tối đa năm phút/độ chính xác 1 km để phản hồi nhanh,
 sau đó theo dõi vị trí cân bằng mỗi 20 m hoặc khoảng 10 giây. Camera follow có thể bật lại bằng nút
-locate và tự nhường quyền điều khiển khi người dùng pan map. Tọa độ raw không được persist; app chỉ
-gửi bounding box 5 km được tạo từ tâm đã làm tròn để tải report quanh người dùng.
+locate và tự nhường quyền điều khiển khi người dùng pan map. Tracking raw không được persist.
 
-Khi có tọa độ, map query chuyển sang bounding box khoảng 5 km quanh tâm đã làm tròn 0,01 độ để
-tránh refetch theo từng bước chân. Đây là nearby query; viewport query theo camera vẫn là bước tiếp
-theo.
+`Map.onRegionDidChange` lấy bounds thật sau khi camera dừng. Client debounce 350 ms, làm tròn bốn
+chữ số thập phân cho query key rồi gọi `get_map_items`; TanStack Query giữ dữ liệu cũ trong lúc
+refetch. Khi map chưa emit bounds đầu tiên, service fallback về bounding box TP.HCM.
 
 Giới hạn hiện tại:
 
 - Camera mặc định ở khu vực thí điểm TP.HCM.
-- Khi chưa có vị trí, service fallback về bounding box TP.HCM; query chưa lắng nghe camera
-  idle/bounds.
 - Cluster tap chưa zoom/explode cluster.
 - Search và filter chips chưa nối state/query.
-- Tracking chưa được dùng làm report coordinate; composer vẫn yêu cầu location picker riêng.
+- Reverse geocode phụ thuộc dịch vụ của thiết bị và fallback về chuỗi tọa độ khi không có địa chỉ.
 
 ## Form và mutation
 
 `SubmitReportInput` được kiểm tra bằng `submitReportInputSchema`. Title dài 6–120 ký tự, description 12–1200, coordinate phải hợp lệ và scheduled event bắt buộc `endsAt`. Mỗi submission tạo UUID làm idempotency key.
 
-Composer hiện hard-code ba category seed IDs và một vị trí mẫu. Khi category trở thành dữ liệu động, UI phải fetch categories thay vì giữ UUID trong source.
+Composer bắt buộc người dùng xác nhận location picker trước khi submit. Picker hỗ trợ kéo bản đồ,
+dùng foreground GPS và reverse geocode best-effort; chỉ coordinate/address đã xác nhận đi vào
+`SubmitReportInput`. Route adapter chỉ render `NewReportScreen`, còn auth gate được kiểm tra lại tại
+thời điểm submit để bảo vệ cả deep link trực tiếp.
+
+Composer vẫn hard-code ba category seed IDs. Khi category trở thành dữ liệu động, UI phải fetch
+categories thay vì giữ UUID trong source.
 
 ## Agent guidance trong source
 

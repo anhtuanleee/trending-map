@@ -1,6 +1,6 @@
 import * as Location from 'expo-location';
-import { Linking } from 'react-native';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Linking } from 'react-native';
 
 export type LocationTrackingStatus =
   | 'idle'
@@ -31,6 +31,7 @@ export function useCurrentLocation() {
   const subscriptionRef = useRef<Location.LocationSubscription | null>(null);
   const locationRef = useRef<Location.LocationObject | null>(null);
   const startingRef = useRef(false);
+  const requestIdRef = useRef(0);
   const mountedRef = useRef(true);
 
   const updateLocation = useCallback(
@@ -43,6 +44,7 @@ export function useCurrentLocation() {
   );
 
   const stopTracking = useCallback(() => {
+    requestIdRef.current += 1;
     subscriptionRef.current?.remove();
     subscriptionRef.current = null;
     setStatus('idle');
@@ -53,6 +55,7 @@ export function useCurrentLocation() {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      requestIdRef.current += 1;
       subscriptionRef.current?.remove();
       subscriptionRef.current = null;
     };
@@ -66,12 +69,15 @@ export function useCurrentLocation() {
     if (startingRef.current) return locationRef.current;
 
     startingRef.current = true;
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    const isActive = () => mountedRef.current && requestIdRef.current === requestId;
     setStatus('checking');
     setError(null);
 
     try {
       const servicesEnabled = await Location.hasServicesEnabledAsync();
-      if (!mountedRef.current) return null;
+      if (!isActive()) return null;
       if (!servicesEnabled) {
         setStatus('services_disabled');
         setError('Dịch vụ vị trí đang tắt. Hãy bật vị trí trong Cài đặt.');
@@ -79,7 +85,7 @@ export function useCurrentLocation() {
       }
 
       let permission = await Location.getForegroundPermissionsAsync();
-      if (!mountedRef.current) return null;
+      if (!isActive()) return null;
       if (!permission.granted) {
         if (!permission.canAskAgain) {
           setStatus('blocked');
@@ -89,7 +95,7 @@ export function useCurrentLocation() {
 
         setStatus('requesting');
         permission = await Location.requestForegroundPermissionsAsync();
-        if (!mountedRef.current) return null;
+        if (!isActive()) return null;
       }
 
       if (!permission.granted) {
@@ -109,7 +115,7 @@ export function useCurrentLocation() {
         maxAge: 5 * 60 * 1_000,
         requiredAccuracy: 1_000,
       });
-      if (!mountedRef.current) return null;
+      if (!isActive()) return null;
       if (lastKnown) updateLocation(lastKnown, 'last-known');
 
       const subscription = await Location.watchPositionAsync(
@@ -120,20 +126,20 @@ export function useCurrentLocation() {
           mayShowUserSettingsDialog: true,
         },
         (next) => {
-          if (!mountedRef.current) return;
+          if (!isActive()) return;
           updateLocation(next, 'live');
           setStatus('tracking');
           setError(null);
         },
         (message) => {
-          if (!mountedRef.current) return;
+          if (!isActive()) return;
           subscriptionRef.current?.remove();
           subscriptionRef.current = null;
           setStatus('error');
           setError(message || 'Không thể cập nhật vị trí hiện tại.');
         },
       );
-      if (!mountedRef.current) {
+      if (!isActive()) {
         subscription.remove();
         return null;
       }
@@ -142,7 +148,7 @@ export function useCurrentLocation() {
       setStatus('tracking');
       return lastKnown;
     } catch (caught) {
-      if (!mountedRef.current) return null;
+      if (!isActive()) return null;
       setStatus('error');
       setError(caught instanceof Error ? caught.message : 'Không thể lấy vị trí hiện tại.');
       return null;

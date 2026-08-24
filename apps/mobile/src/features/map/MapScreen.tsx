@@ -1,4 +1,4 @@
-import type { ReportDetail } from '@trending-map/contracts';
+import type { MapBounds, ReportDetail } from '@trending-map/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   Bell,
@@ -11,18 +11,22 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Camera, GeoJSONSource, Layer, Map, UserLocation } from '@maplibre/maplibre-react-native';
-import type { CameraRef, TrackUserLocationChangeEvent } from '@maplibre/maplibre-react-native';
+import type {
+  CameraRef,
+  TrackUserLocationChangeEvent,
+  ViewStateChangeEvent,
+} from '@maplibre/maplibre-react-native';
 import type { NativeSyntheticEvent } from 'react-native';
 import type { FeatureCollection, Point } from 'geojson';
 import type { PressEventWithFeatures } from '@maplibre/maplibre-react-native';
 
 import { useAuthGate } from '@/features/auth/useAuthGate';
 import { useMapReports } from '@/hooks/domain';
+import { useCurrentLocation } from '@/hooks/useCurrentLocation';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors, mapLayout, radius, spacing } from '@/theme';
 
 import { ReportPreviewCard } from './ReportPreviewCard';
-import { useCurrentLocation } from './useCurrentLocation';
 
 const mapStyleUrl =
   process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://demotiles.maplibre.org/style.json';
@@ -34,16 +38,12 @@ export function MapScreen() {
   const { user } = useAuth();
   const cameraRef = useRef<CameraRef>(null);
   const hasCenteredOnLocation = useRef(false);
+  const viewportTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [followingUser, setFollowingUser] = useState(false);
+  const [viewportBounds, setViewportBounds] = useState<MapBounds | null>(null);
   const currentLocation = useCurrentLocation();
-  const currentCoordinate = currentLocation.location
-    ? {
-        latitude: currentLocation.location.coords.latitude,
-        longitude: currentLocation.location.coords.longitude,
-      }
-    : null;
-  const { data = [], isLoading, isError } = useMapReports(currentCoordinate);
+  const { data = [], isLoading, isError, refetch } = useMapReports(viewportBounds);
 
   const geoJson = useMemo<FeatureCollection<Point>>(
     () => ({
@@ -78,6 +78,13 @@ export function MapScreen() {
     });
   }, [currentLocation.location]);
 
+  useEffect(
+    () => () => {
+      if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
+    },
+    [],
+  );
+
   const handleShapePress = (event: NativeSyntheticEvent<PressEventWithFeatures>) => {
     const id = event.nativeEvent.features[0]?.properties?.id;
     if (typeof id === 'string') setSelectedId(id);
@@ -102,6 +109,16 @@ export function MapScreen() {
     setFollowingUser(event.nativeEvent.trackUserLocation !== null);
   };
 
+  const handleRegionDidChange = (event: NativeSyntheticEvent<ViewStateChangeEvent>) => {
+    const [west, south, east, north] = event.nativeEvent.bounds;
+    if (west >= east || south >= north) return;
+
+    if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
+    viewportTimerRef.current = setTimeout(() => {
+      setViewportBounds({ west, south, east, north });
+    }, 350);
+  };
+
   const handleConfirm = (report: ReportDetail) => {
     requireAuth(
       `/?reportId=${report.id}`,
@@ -120,7 +137,12 @@ export function MapScreen() {
 
   return (
     <View style={styles.container}>
-      <Map style={styles.map} mapStyle={mapStyleUrl} compass={false}>
+      <Map
+        style={styles.map}
+        mapStyle={mapStyleUrl}
+        compass={false}
+        onRegionDidChange={handleRegionDidChange}
+      >
         <Camera
           ref={cameraRef}
           initialViewState={{ center: mapLayout.defaultCenter, zoom: mapLayout.defaultZoom }}
@@ -223,7 +245,15 @@ export function MapScreen() {
           <Text style={styles.loadingText}>Đang tải dữ liệu quanh bạn…</Text>
         </View>
       ) : null}
-      {isError ? <Text style={styles.error}>Không thể tải bản đồ. Hãy thử lại.</Text> : null}
+      {isError ? (
+        <Pressable style={styles.error} onPress={() => void refetch()}>
+          <Text style={styles.errorText}>Không thể tải dữ liệu bản đồ.</Text>
+          <Text style={styles.errorAction}>Thử lại</Text>
+        </Pressable>
+      ) : null}
+      {!params.submitted && !isLoading && !isError && data.length === 0 ? (
+        <Text style={styles.empty}>Chưa có báo cáo trong khu vực này.</Text>
+      ) : null}
       {currentLocation.error ? (
         <Pressable
           style={styles.locationError}
@@ -365,9 +395,26 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 236,
     alignSelf: 'center',
-    color: colors.danger,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     backgroundColor: colors.surface,
-    padding: spacing.sm,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  errorText: { color: colors.danger, fontSize: 12 },
+  errorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
+  empty: {
+    position: 'absolute',
+    top: 236,
+    alignSelf: 'center',
+    color: colors.inkMuted,
+    backgroundColor: colors.surface,
+    borderRadius: radius.pill,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: 12,
   },
   locationError: {
     position: 'absolute',
