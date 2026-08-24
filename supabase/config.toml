@@ -1,0 +1,28 @@
+project_id = "trending-map"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+major_version = 17
+
+[studio]
+enabled = true
+port = 54323
+
+[auth]
+enabled = true
+site_url = "trendingmap://auth"
+additional_redirect_urls = ["trendingmap://**", "http://localhost:3000/**"]
+enable_signup = true
+
+[functions.submit-report]
+verify_jwt = true
+
+[functions.confirm-report]
+verify_jwt = true

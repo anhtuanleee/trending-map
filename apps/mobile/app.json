@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "Mạch Phố",
+    "slug": "trending-map",
+    "scheme": "trendingmap",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Cho phép Trending Map dùng vị trí để hiển thị và gửi báo cáo gần bạn."
+        }
+      ],
+      "@maplibre/maplibre-react-native"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.trendingmap.mobile"
+    },
+    "android": {
+      "package": "com.trendingmap.mobile",
+      "adaptiveIcon": {
+        "backgroundColor": "#176B51"
+      }
+    },
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
