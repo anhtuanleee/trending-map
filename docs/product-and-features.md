@@ -1,0 +1,68 @@
+# Sản phẩm và feature hiện tại
+
+## Tầm nhìn
+
+Mạch Phố là bản đồ cộng đồng theo thời gian gần thực, giúp người dùng thấy sự kiện và tình trạng đang xảy ra quanh mình: ngập nước, ổ gà, cây đổ, cảnh báo thời tiết, ca nhạc và các sự kiện có lịch.
+
+Nguyên tắc sản phẩm cốt lõi:
+
+1. **Guest-first:** không cần đăng nhập để xem thông tin công khai.
+2. **Đăng nhập khi đóng góp:** tạo báo cáo và xác nhận yêu cầu tài khoản.
+3. **Không đồng nhất “anonymous” với “không có danh tính”:** người đăng có thể ẩn tên công khai, nhưng backend vẫn giữ `created_by` để chống spam và điều tra abuse.
+4. **Thông tin có vòng đời:** báo cáo có trạng thái vận hành, thời hạn hết hiệu lực và mức xác minh riêng.
+5. **Trust có thể giải thích:** số xác nhận và phản đối dẫn đến trạng thái rõ ràng; nguồn chính thức được bảo toàn.
+
+## Ma trận feature
+
+| Khu vực       | Capability                      | Trạng thái     | Ghi chú hiện tại                                                                 |
+| ------------- | ------------------------------- | -------------- | -------------------------------------------------------------------------------- |
+| Mobile map    | Xem map khi chưa đăng nhập      | **Hoạt động**  | Dùng demo data khi thiếu Supabase env.                                           |
+| Mobile map    | Hiển thị marker và cluster      | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                          |
+| Mobile map    | Xem vị trí thiết bị             | **Hoạt động**  | Xin foreground permission khi người dùng bấm locate.                             |
+| Mobile map    | Preview và mở chi tiết report   | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                               |
+| Mobile map    | Search, category filter         | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                        |
+| Mobile map    | Query theo viewport thật        | **Foundation** | Backend hỗ trợ bounds; mobile service hiện hard-code bounding box TP.HCM.        |
+| Auth          | Đăng nhập OTP qua số điện thoại | **Hoạt động**  | Supabase Phone OTP; demo mode chấp nhận mã sáu chữ số.                           |
+| Auth          | Auth gate có return URL         | **Hoạt động**  | Guest chỉ bị chuyển tới auth khi thực hiện contribution.                         |
+| Reporting     | Tạo report                      | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                      |
+| Reporting     | Chọn vị trí report              | **Foundation** | Form đang dùng vị trí mẫu Nguyễn Huệ; chưa kéo pin/chọn GPS.                     |
+| Reporting     | Ẩn tên công khai                | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.            |
+| Reporting     | Upload ảnh/video                | **Foundation** | Có bảng `report_media`; chưa có upload UI, storage workflow hay moderation.      |
+| Trust         | “Tôi cũng thấy” / “Không còn”   | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.             |
+| Trust         | Community verification          | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`. |
+| Trust         | Official verification           | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.         |
+| Comments      | Bình luận report                | **Foundation** | Có schema; chưa có policy command và UI.                                         |
+| Follow        | Theo dõi khu vực                | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                     |
+| Notifications | Push notification               | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                  |
+| Admin         | Danh sách moderation            | **Hoạt động**  | Next dashboard đọc Supabase bằng service role hoặc demo rows.                    |
+| Admin         | Filter/approve/reject/merge     | **Foundation** | UI shell đã có; button/filter chưa thực thi command.                             |
+| Admin         | Duplicate risk                  | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                   |
+| Operations    | Auto-expire report              | **Foundation** | Có RPC `expire_stale_reports`; chưa có scheduled job trong repo.                 |
+
+## Luồng người dùng chính
+
+### Guest khám phá
+
+1. Mở app và thấy bản đồ ngay.
+2. App tải report từ demo data hoặc `get_map_items`.
+3. Người dùng chọn marker, xem preview và mở chi tiết.
+4. Khi bấm báo cáo/xác nhận, auth gate mới yêu cầu đăng nhập.
+
+### Thành viên gửi report
+
+1. Auth gate lưu đường dẫn cần quay lại.
+2. Người dùng đăng nhập bằng OTP.
+3. Form kiểm tra payload bằng shared Zod schema.
+4. Edge Function giữ JWT của người dùng và gọi RPC `submit_report`.
+5. RPC kiểm tra suspension, category, coordinate, idempotency; sau đó tạo report ở trạng thái `unverified`.
+
+### Cộng đồng xác nhận
+
+1. Thành viên chọn `seen` hoặc `not_there` từ trang chi tiết.
+2. Edge Function gọi `confirm_report` bằng JWT người dùng.
+3. Confirmation được upsert theo `(report_id, user_id)`.
+4. Backend tính lại count và verification status.
+
+## Ngoài phạm vi bản hiện tại
+
+Chưa nên mô tả là đã hoàn thiện: tìm kiếm địa điểm, filter thật, realtime subscription, media upload, comment, notification, duplicate detection, moderation actions, official-source ingestion, offline mode, analytics và E2E tests. Các phần này nằm trong [roadmap](./roadmap.md).

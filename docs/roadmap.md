@@ -1,0 +1,52 @@
+# Roadmap
+
+Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộng feature. Thứ tự có thể đổi theo kết quả pilot và dữ liệu vận hành.
+
+## P0 — hoàn thiện map/report core
+
+- Truyền camera bounds/zoom thật vào `get_map_items`; debounce và giữ previous data khi pan.
+- Nối category filter, search state và URL/deep-link params.
+- Chọn report coordinate bằng pin hoặc GPS; reverse geocoding address.
+- Fetch categories từ backend, bỏ seed UUID hard-code khỏi form.
+- Chuẩn hóa Edge Function validation/error codes bằng shared contract.
+- Thêm loading retry, empty state và network/offline feedback.
+- Test anonymous read, authenticated write, suspended user và privacy boundary.
+
+## P1 — trust và moderation
+
+- Admin auth + moderator role gate.
+- Moderation case detail; approve, reject, resolve, merge duplicate và audit action.
+- Duplicate candidate query dựa trên category radius/window, sau đó thêm scoring.
+- Ghi `report_status_history` tự động khi verification/operational status đổi.
+- Media upload pipeline: signed upload, metadata, thumbnail, moderation và public URL.
+- Scheduled invocation cho `expire_stale_reports`.
+- Rate limiting và abuse controls cho submit/confirmation/OTP.
+
+## P2 — engagement
+
+- Comment command/UI cùng hide/moderation policy.
+- Vẽ và lưu followed areas.
+- Đăng ký Expo push token; notification fan-out theo polygon/category/severity.
+- Official source ingestion và verified operator workflow.
+- Realtime refresh có giới hạn để tránh subscription fan-out quá lớn.
+
+## P3 — reliability và scale
+
+- E2E tests cho guest browse, OTP return intent, submit và confirm.
+- Observability: structured logs, error tracking, RPC latency và map query metrics.
+- Offline read cache và queued contribution với conflict/idempotency handling.
+- Server-side clustering hoặc tile strategy khi density vượt giới hạn 1.000 rows/viewport.
+- Data retention, deletion/export workflow và privacy review cho location data.
+
+## Success metrics đề xuất
+
+| Mục tiêu          | Metric                                                      |
+| ----------------- | ----------------------------------------------------------- |
+| Discovery hữu ích | Tỷ lệ session mở ít nhất một report detail                  |
+| Freshness         | P50/P95 từ `starts_at` tới lần xác nhận đầu tiên            |
+| Trust             | Tỷ lệ report đạt community/official verification            |
+| Safety            | Tỷ lệ report disputed/rejected và thời gian moderator xử lý |
+| Performance       | P95 map query latency và time-to-first-map-item             |
+| Contribution      | Submit completion rate sau auth gate                        |
+
+Không thu thập analytics chứa raw phone, access token hoặc exact historical location ngoài mục đích sản phẩm đã công bố.
