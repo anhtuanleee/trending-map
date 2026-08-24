@@ -22,8 +22,9 @@ Nguyên tắc sản phẩm cốt lõi:
 | Mobile map    | Preview và mở chi tiết report   | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                               |
 | Mobile map    | Search, category filter         | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                        |
 | Mobile map    | Query theo viewport thật        | **Foundation** | Backend hỗ trợ bounds; mobile service hiện hard-code bounding box TP.HCM.        |
-| Auth          | Đăng nhập OTP qua số điện thoại | **Hoạt động**  | Supabase Phone OTP; demo mode chấp nhận mã sáu chữ số.                           |
-| Auth          | Auth gate có return URL         | **Hoạt động**  | Guest chỉ bị chuyển tới auth khi thực hiện contribution.                         |
+| Auth          | Đăng nhập OTP qua số điện thoại | **Hoạt động**  | Supabase Phone OTP, resend countdown và demo mode chấp nhận mã sáu chữ số.       |
+| Auth          | Auth gate có return URL         | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.       |
+| Auth          | Tài khoản và đăng xuất          | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.   |
 | Reporting     | Tạo report                      | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                      |
 | Reporting     | Chọn vị trí report              | **Foundation** | Form đang dùng vị trí mẫu Nguyễn Huệ; chưa kéo pin/chọn GPS.                     |
 | Reporting     | Ẩn tên công khai                | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.            |

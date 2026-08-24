@@ -1,21 +1,22 @@
-import { useRouter } from 'expo-router';
 import { useCallback } from 'react';
 
 import { useAuth } from '@/providers/AuthProvider';
 
+import { useAuthGatePrompt } from './AuthGateProvider';
+
 export function useAuthGate() {
   const { user } = useAuth();
-  const router = useRouter();
+  const { openAuthGate } = useAuthGatePrompt();
 
   return useCallback(
-    (returnTo: string, action: () => void) => {
+    (returnTo: string, action: () => void, title?: string) => {
       if (user) {
         action();
         return;
       }
 
-      router.push({ pathname: '/auth', params: { returnTo } });
+      openAuthGate(returnTo, title);
     },
-    [router, user],
+    [openAuthGate, user],
   );
 }

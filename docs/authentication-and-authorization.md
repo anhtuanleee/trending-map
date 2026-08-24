@@ -41,6 +41,11 @@ Trong demo mode, không có SMS: chuỗi đúng sáu chữ số tạo `demo-user
 3. Expose `requestOtp`, `verifyOtp`, `signOut` và `demoMode`.
 4. Chỉ đưa `id` và `phone` cần thiết vào app-level user model.
 
+Auth gate hiển thị bottom sheet giải thích quyền guest trước khi chuyển sang OTP. Route `/account`
+hiển thị trạng thái guest hoặc member. Logout yêu cầu xác nhận, gọi Supabase
+`signOut`, xóa TanStack Query cache và chuyển sang `/signed-out`; người dùng vẫn có thể quay lại map
+ở chế độ guest.
+
 Supabase React Native client dùng SecureStore adapter cho session persistence. Không tự lưu access token trong Zustand/AsyncStorage hoặc log token.
 
 ## Public anonymity
