@@ -2,6 +2,7 @@ import type { MapBounds, ReportDetail } from '@trending-map/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
   Bell,
+  History,
   ListFilter,
   LocateFixed,
   MapPinPlus,
@@ -27,8 +28,11 @@ import { useCurrentLocation } from '@/hooks/useCurrentLocation';
 import { useAuth } from '@/providers/AuthProvider';
 import { colors, mapLayout, radius, spacing } from '@/theme';
 
-import { ReportPreviewCard } from './ReportPreviewCard';
 import { NearbyReportsSheet } from './NearbyReportsSheet';
+import { RecentAreasSheet } from './RecentAreasSheet';
+import { ReportPreviewCard } from './ReportPreviewCard';
+import type { RecentArea } from './recent-areas.service';
+import { useRecentAreas } from './useRecentAreas';
 
 const mapStyleUrl =
   process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://demotiles.maplibre.org/style.json';
@@ -59,7 +63,9 @@ export function MapScreen() {
   const [activeFilterIndex, setActiveFilterIndex] = useState(0);
   const [nearbyRadiusKm, setNearbyRadiusKm] = useState(5);
   const [nearbyVisible, setNearbyVisible] = useState(false);
+  const [recentAreasVisible, setRecentAreasVisible] = useState(false);
   const currentLocation = useCurrentLocation();
+  const recentAreas = useRecentAreas();
   const activeCategorySlugs = [...categoryFilters[activeFilterIndex].slugs];
   const referenceCenter =
     followingUser && currentLocation.location
@@ -150,14 +156,16 @@ export function MapScreen() {
     const [west, south, east, north] = event.nativeEvent.bounds;
     const [longitude, latitude] = event.nativeEvent.center;
     const zoom = event.nativeEvent.zoom;
+    const userInteraction = event.nativeEvent.userInteraction;
     if (west >= east || south >= north) return;
-    if (event.nativeEvent.userInteraction) setFollowingUser(false);
+    if (userInteraction) setFollowingUser(false);
 
     if (viewportTimerRef.current) clearTimeout(viewportTimerRef.current);
     viewportTimerRef.current = setTimeout(() => {
       setViewportBounds({ west, south, east, north });
       setViewportZoom(zoom);
       setViewportCenter({ longitude, latitude });
+      if (userInteraction) void recentAreas.record({ longitude, latitude }, zoom);
     }, 350);
   };
 
@@ -168,6 +176,16 @@ export function MapScreen() {
     cameraRef.current?.easeTo({
       center: [report.coordinate.longitude, report.coordinate.latitude],
       zoom: Math.max(15, viewportZoom),
+      duration: 500,
+    });
+  };
+
+  const handleRecentAreaSelect = (area: RecentArea) => {
+    setRecentAreasVisible(false);
+    setFollowingUser(false);
+    cameraRef.current?.easeTo({
+      center: [area.center.longitude, area.center.latitude],
+      zoom: area.zoom,
       duration: 500,
     });
   };
@@ -268,6 +286,13 @@ export function MapScreen() {
         <View style={styles.headerActions}>
           <Pressable accessibilityLabel="Thông báo" style={styles.iconButton}>
             <Bell color={colors.ink} size={20} />
+          </Pressable>
+          <Pressable
+            accessibilityLabel="Khu vực gần đây"
+            style={styles.iconButton}
+            onPress={() => setRecentAreasVisible(true)}
+          >
+            <History color={recentAreas.areas.length > 0 ? colors.primary : colors.ink} size={20} />
           </Pressable>
           <Pressable
             accessibilityLabel="Tài khoản"
@@ -392,6 +417,15 @@ export function MapScreen() {
         onRetry={() => void nearbyQuery.refetch()}
         onSelect={handleNearbySelect}
         onClose={() => setNearbyVisible(false)}
+      />
+      <RecentAreasSheet
+        visible={recentAreasVisible}
+        areas={recentAreas.areas}
+        isLoading={recentAreas.isLoading}
+        error={recentAreas.error}
+        onSelect={handleRecentAreaSelect}
+        onTogglePin={(id) => void recentAreas.togglePin(id)}
+        onClose={() => setRecentAreasVisible(false)}
       />
     </View>
   );

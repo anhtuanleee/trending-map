@@ -21,6 +21,7 @@ Nguyên tắc sản phẩm cốt lõi:
 | Mobile map    | Tracking vị trí hiện tại      | **Hoạt động**  | Foreground-only, last-known → current high accuracy → live tracking và camera follow. |
 | Mobile map    | Báo cáo trong viewport        | **Hoạt động**  | Camera bounds được debounce rồi truyền vào RPC; demo data cũng lọc theo cùng vùng.    |
 | Mobile map    | Nearby reports                | **Hoạt động**  | List 1/5/15 km, distance backend và chuyển mode GPS/camera khi pan.                   |
+| Mobile map    | Khu vực gần đây               | **Hoạt động**  | Tối đa 8 center/zoom coarse local, hỗ trợ pin và không ghi GPS history.               |
 | Mobile map    | Preview và mở chi tiết report | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                                    |
 | Mobile map    | Search, category filter       | **Foundation** | Category filter đã hoạt động; search/deep-link params chưa nối.                       |
 | Mobile map    | Query theo viewport thật      | **Hoạt động**  | Query key gồm bounds, zoom, filter, center và giữ dữ liệu cũ khi pan/refetch.         |

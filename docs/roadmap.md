@@ -11,6 +11,7 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 - Chuẩn hóa Edge Function validation/error codes bằng shared contract.
 - Thêm loading retry, empty state và network/offline feedback.
 - Test anonymous read, authenticated write, suspended user và privacy boundary.
+- [x] Recent areas local tối đa tám record coarse; member sync để dành cho followed areas.
 
 ## P1 — trust và moderation
 

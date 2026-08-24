@@ -77,6 +77,11 @@ Map luôn fetch theo viewport. Nearby sheet dùng query riêng theo tâm GPS ho�
 Category chips truyền filter xuống cả hai query. Khi user pan khỏi GPS, camera mode chuyển từ “Quanh
 tôi” sang “Khu vực trên bản đồ”.
 
+Recent areas chỉ được ghi sau thao tác pan/zoom của người dùng, không ghi từ camera follow GPS. Mỗi
+record chỉ chứa tên coarse, center làm tròn 0,01°, zoom làm tròn 0,5 và trạng thái pin; tối đa tám
+record trong SecureStore của thiết bị. Không có timestamp, polyline, raw GPS hay lịch sử di chuyển.
+Guest/member hiện cùng dùng local store; member sync sẽ đi cùng followed-areas workflow sau này.
+
 Giới hạn hiện tại:
 
 - Camera mặc định ở khu vực thí điểm TP.HCM.
