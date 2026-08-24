@@ -27,16 +27,27 @@ const resendDelaySeconds = 60;
 export function AuthScreen({ returnTo }: Props) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { requestOtp, verifyOtp, demoMode, loading: sessionLoading, user } = useAuth();
+  const {
+    requestOtp,
+    verifyOtp,
+    signInWithGoogle,
+    demoMode,
+    loading: sessionLoading,
+    user,
+  } = useAuth();
   const [email, setEmail] = useState('');
   const [otp, setOtp] = useState('');
   const [step, setStep] = useState<AuthStep>('email');
   const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resendIn, setResendIn] = useState(0);
 
   const normalizedEmail = useMemo(() => email.trim().toLowerCase(), [email]);
-  const safeReturnTo = useMemo(() => (returnTo.startsWith('/') ? returnTo : '/'), [returnTo]);
+  const safeReturnTo = useMemo(
+    () => (returnTo.startsWith('/') && !returnTo.startsWith('//') ? returnTo : '/'),
+    [returnTo],
+  );
 
   useEffect(() => {
     if (!resendIn) return;
@@ -85,6 +96,18 @@ export function AuthScreen({ returnTo }: Props) {
     }
   };
 
+  const continueWithGoogle = async () => {
+    setGoogleLoading(true);
+    setError(null);
+    try {
+      await signInWithGoogle(safeReturnTo);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Không thể đăng nhập bằng Google.');
+    } finally {
+      setGoogleLoading(false);
+    }
+  };
+
   const goBack = () => {
     setError(null);
     if (step === 'otp') {
@@ -127,6 +150,22 @@ export function AuthScreen({ returnTo }: Props) {
 
           {step === 'email' ? (
             <>
+              <Pressable
+                accessibilityLabel="Tiếp tục với Google"
+                accessibilityRole="button"
+                style={[styles.googleButton, googleLoading && styles.disabled]}
+                disabled={loading || googleLoading}
+                onPress={() => void continueWithGoogle()}
+              >
+                <Text style={styles.googleButtonText}>
+                  {googleLoading ? 'Đang mở Google…' : 'Tiếp tục với Google'}
+                </Text>
+              </Pressable>
+              <View style={styles.divider}>
+                <View style={styles.dividerLine} />
+                <Text style={styles.dividerText}>HOẶC DÙNG EMAIL</Text>
+                <View style={styles.dividerLine} />
+              </View>
               <Text style={styles.label}>Email</Text>
               <TextInput
                 accessibilityLabel="Email"
@@ -143,8 +182,8 @@ export function AuthScreen({ returnTo }: Props) {
               />
               <Pressable
                 accessibilityRole="button"
-                style={[styles.primaryButton, loading && styles.disabled]}
-                disabled={loading}
+                style={[styles.primaryButton, (loading || googleLoading) && styles.disabled]}
+                disabled={loading || googleLoading}
                 onPress={() => void sendOtp()}
               >
                 <Text style={styles.primaryButtonText}>
@@ -196,7 +235,9 @@ export function AuthScreen({ returnTo }: Props) {
           )}
 
           {demoMode ? (
-            <Text style={styles.demo}>Demo mode: nhập một mã OTP bất kỳ gồm 6 số.</Text>
+            <Text style={styles.demo}>
+              Demo mode: Google đăng nhập ngay; Email OTP chấp nhận mã bất kỳ gồm 6 số.
+            </Text>
           ) : null}
           {error ? (
             <Text accessibilityRole="alert" style={styles.error}>
@@ -232,6 +273,20 @@ const styles = StyleSheet.create({
   eyebrow: { marginTop: spacing.xl, color: colors.primary, fontSize: 12, fontWeight: '900' },
   title: { marginTop: spacing.sm, color: colors.ink, fontSize: 30, fontWeight: '900' },
   description: { marginTop: spacing.md, color: colors.inkMuted, fontSize: 15, lineHeight: 22 },
+  googleButton: {
+    marginTop: spacing.xl,
+    minHeight: 54,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
+  },
+  googleButtonText: { color: colors.ink, fontSize: 16, fontWeight: '800' },
+  divider: { marginTop: spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dividerText: { color: colors.inkMuted, fontSize: 11, fontWeight: '800' },
   label: { marginTop: spacing.xl, color: colors.ink, fontSize: 13, fontWeight: '800' },
   input: {
     marginTop: spacing.sm,

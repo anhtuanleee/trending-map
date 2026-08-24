@@ -21,7 +21,6 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 - Media upload pipeline: signed upload, metadata, thumbnail, moderation và public URL.
 - Scheduled invocation cho `expire_stale_reports`.
 - Rate limiting và abuse controls cho submit/confirmation/OTP.
-- Đánh giá Google OAuth sau pilot; Email OTP là phương thức đăng nhập MVP để giảm chi phí và scope.
 
 ## P2 — engagement
 
@@ -33,7 +32,7 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 
 ## P3 — reliability và scale
 
-- E2E tests cho guest browse, OTP return intent, submit và confirm.
+- E2E tests cho guest browse, OTP/Google OAuth return intent, submit và confirm.
 - Observability: structured logs, error tracking, RPC latency và map query metrics.
 - Offline read cache và queued contribution với conflict/idempotency handling.
 - Server-side clustering hoặc tile strategy khi density vượt giới hạn 1.000 rows/viewport.

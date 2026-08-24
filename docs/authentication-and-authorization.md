@@ -32,13 +32,35 @@ sequenceDiagram
 
 Trong demo mode, không gửi email: chuỗi đúng sáu chữ số tạo `demo-user` trong memory. Đây chỉ là developer convenience, không phải security implementation.
 
+## Google OAuth flow
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant M as Mobile
+  participant S as Supabase Auth
+  participant G as Google
+  U->>M: Tiếp tục với Google
+  M->>S: signInWithOAuth(google)
+  S->>G: OAuth consent
+  G-->>S: Authorization result
+  S-->>M: trendingmap://auth/callback
+  M->>S: setSession / exchange code
+  S-->>M: Session
+```
+
+Mobile dùng browser ngoài và custom scheme đã khai báo trong `app.json`. Callback route
+`/auth/callback` giữ return URL, hoàn tất session rồi đưa người dùng về contribution intent. Callback
+parser hỗ trợ cả implicit token và PKCE code. Client chủ động dùng PKCE để callback chỉ mang auth
+code dùng một lần; session vẫn do Supabase lưu bằng SecureStore.
+
 ## Session lifecycle
 
 `AuthProvider`:
 
 1. Lấy session hiện tại khi Supabase client tồn tại.
 2. Subscribe `onAuthStateChange` để đồng bộ user.
-3. Expose `requestOtp`, `verifyOtp`, `signOut` và `demoMode`.
+3. Expose Email OTP, Google OAuth, callback state, `signOut` và `demoMode`.
 4. Chỉ đưa `id` và `email` cần thiết vào app-level user model.
 
 Auth gate hiển thị bottom sheet giải thích quyền guest trước khi chuyển sang OTP. Route `/account`
@@ -64,6 +86,32 @@ Client không cần API key của dịch vụ gửi email. `EXPO_PUBLIC_SUPABASE
 
 `supabase/config.toml` đã trỏ local Supabase vào email template trong repo. Hosted Supabase không
 tự đọc file này sau khi deploy; cần đồng bộ template qua Dashboard hoặc Management API.
+
+## Cấu hình Google OAuth
+
+Không có Google secret hoặc client ID trong mobile `.env`. Supabase đứng giữa app và Google:
+
+1. Tạo OAuth 2.0 Client ID loại **Web application** trong Google Cloud Console.
+2. Authorized redirect URI của Google phải là callback lấy từ Supabase Dashboard, dạng
+   `https://<project-ref>.supabase.co/auth/v1/callback`; không nhập custom scheme mobile vào Google.
+3. Bật Google ở **Supabase → Authentication → Providers**, nhập Web Client ID và Client Secret.
+4. Ở **Supabase → Authentication → URL Configuration**, thêm chính xác
+   `trendingmap://auth/callback` vào Redirect URLs.
+5. Tạo development build mới và test trên iOS/Android; Expo Go không bảo đảm custom OAuth scheme.
+
+Local Supabase có thể bật provider bằng cấu hình sau; secret phải đến từ shell env và không commit:
+
+```toml
+[auth.external.google]
+enabled = true
+client_id = "<google-web-client-id>"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
+```
+
+Tham khảo [Supabase Google login](https://supabase.com/docs/guides/auth/social-login/auth-google),
+[Supabase mobile deep linking](https://supabase.com/docs/guides/auth/native-mobile-deep-linking) và
+[Expo authentication](https://docs.expo.dev/guides/authentication/).
 
 ## Public anonymity
 
@@ -91,8 +139,9 @@ Client-side auth gate chỉ phục vụ UX. Nó không phải security boundary;
 
 - Cấu hình custom SMTP, rate limit và Email OTP abuse protection.
 - Xác minh sender domain; không đưa Resend API key vào mobile `.env.local`.
+- Hoàn thiện Google consent screen, app branding và production publishing status.
 - Thêm admin authentication/role gate cho Next dashboard.
 - Chuẩn hóa error codes thay vì trả raw database error message.
 - Thêm CAPTCHA/device risk cho hành vi spam cao.
-- Test refresh/logout/session expiry trên iOS và Android.
+- Test Google callback, refresh/logout/session expiry trên iOS và Android device thật.
 - Quy định retention và access audit cho reporter identity/location.

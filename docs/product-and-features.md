@@ -23,6 +23,7 @@ Nguyên tắc sản phẩm cốt lõi:
 | Mobile map    | Search, category filter       | **Foundation** | Đã có thanh search và chip UI nhưng chưa nối query/state.                        |
 | Mobile map    | Query theo viewport thật      | **Foundation** | Backend hỗ trợ bounds; mobile service hiện hard-code bounding box TP.HCM.        |
 | Auth          | Đăng nhập OTP qua email       | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.         |
+| Auth          | Đăng nhập Google OAuth        | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.  |
 | Auth          | Auth gate có return URL       | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.       |
 | Auth          | Tài khoản và đăng xuất        | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.   |
 | Reporting     | Tạo report                    | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                      |
@@ -52,7 +53,7 @@ Nguyên tắc sản phẩm cốt lõi:
 ### Thành viên gửi report
 
 1. Auth gate lưu đường dẫn cần quay lại.
-2. Người dùng nhận OTP qua email và đăng nhập không cần mật khẩu.
+2. Người dùng chọn Google OAuth hoặc nhận OTP qua email để đăng nhập không cần mật khẩu.
 3. Form kiểm tra payload bằng shared Zod schema.
 4. Edge Function giữ JWT của người dùng và gọi RPC `submit_report`.
 5. RPC kiểm tra suspension, category, coordinate, idempotency; sau đó tạo report ở trạng thái `unverified`.
