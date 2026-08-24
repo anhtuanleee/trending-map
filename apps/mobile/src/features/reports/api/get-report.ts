@@ -1,12 +1,7 @@
-import {
-  reportDetailSchema,
-  type ConfirmationInput,
-  type ReportDetail,
-  type SubmitReportInput,
-} from '@trending-map/contracts';
+import { reportDetailSchema, type ReportDetail } from '@trending-map/contracts';
 
+import { supabase } from '@/lib/supabase/client';
 import { demoReports } from '@/mocks/reports';
-import { supabase } from '@/services/supabase';
 
 export async function getReportById(id: string): Promise<ReportDetail | null> {
   if (!supabase) {
@@ -41,26 +36,4 @@ export async function getReportById(id: string): Promise<ReportDetail | null> {
     mediaUrls: data.media_urls ?? [],
     createdAt: data.created_at,
   });
-}
-
-export async function submitReport(input: SubmitReportInput) {
-  if (!supabase) {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    return { id: input.idempotencyKey, status: 'unverified' as const };
-  }
-
-  const { data, error } = await supabase.functions.invoke('submit-report', { body: input });
-  if (error) throw error;
-  return data as { id: string; status: 'unverified' };
-}
-
-export async function confirmReport(input: ConfirmationInput) {
-  if (!supabase) {
-    await new Promise((resolve) => setTimeout(resolve, 350));
-    return { reportId: input.reportId, accepted: true };
-  }
-
-  const { data, error } = await supabase.functions.invoke('confirm-report', { body: input });
-  if (error) throw error;
-  return data as { reportId: string; accepted: boolean };
 }

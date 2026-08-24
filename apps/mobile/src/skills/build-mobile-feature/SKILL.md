@@ -18,7 +18,8 @@ description: Build or refactor a Trending Map mobile feature, screen, route, com
 9. Run the verify-mobile-change skill before handoff.
 
 Do not create generic root `utils`, `helpers`, or `constants` files. Feature-specific pure logic stays
-in the feature `lib` or `model`; shared pure capabilities live under a named `src/lib` folder.
+in the feature `domain`, `lib`, or `model`; shared capabilities and configured clients live under a
+named `src/lib` folder.
 
 ## Dependency rule
 

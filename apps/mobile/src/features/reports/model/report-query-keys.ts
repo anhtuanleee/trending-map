@@ -1,6 +1,7 @@
+import { publicReportCacheKey } from '@/lib/query/public-report-cache';
+
 export const reportQueryKeys = {
-  all: ['reports'] as const,
-  detail: (id: string) => [...reportQueryKeys.all, 'detail', id] as const,
-  map: (scope: string) => [...reportQueryKeys.all, 'map', scope] as const,
-  nearby: (scope: string) => [...reportQueryKeys.all, 'nearby', scope] as const,
+  all: publicReportCacheKey,
+  details: [...publicReportCacheKey, 'detail'] as const,
+  detail: (id: string) => [...reportQueryKeys.details, id] as const,
 };

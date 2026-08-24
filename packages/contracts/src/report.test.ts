@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { mapItemSchema, submitReportInputSchema } from './report';
+import {
+  confirmationResultSchema,
+  mapItemSchema,
+  submitReportInputSchema,
+  submitReportResultSchema,
+} from './report';
 
 const baseInput = {
   type: 'incident',
@@ -47,5 +52,26 @@ describe('submitReportInputSchema', () => {
 
     expect(result.distanceMeters).toBe(248.5);
     expect('createdBy' in result).toBe(false);
+  });
+
+  it('validates report command results', () => {
+    expect(
+      submitReportResultSchema.parse({
+        id: '2e130699-a737-4942-bf43-f9f217bdf84b',
+        status: 'unverified',
+      }),
+    ).toEqual({
+      id: '2e130699-a737-4942-bf43-f9f217bdf84b',
+      status: 'unverified',
+    });
+    expect(
+      confirmationResultSchema.parse({
+        reportId: '2e130699-a737-4942-bf43-f9f217bdf84b',
+        accepted: true,
+      }),
+    ).toEqual({
+      reportId: '2e130699-a737-4942-bf43-f9f217bdf84b',
+      accepted: true,
+    });
   });
 });

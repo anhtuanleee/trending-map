@@ -4,15 +4,15 @@ Use this file as the routing layer for AI-assisted work in `apps/mobile/src`.
 
 ## Architecture
 
-The app combines TheCodingMachine's separation-of-concerns model, Ignite's service/theme conventions, and Expo Router's file-based routing:
+The app combines Obytes/Bulletproof feature boundaries, TheCodingMachine's separation of concerns,
+Ignite's theme conventions, and Expo Router's file-based routing:
 
 - `app/`: route adapters only. Read params and render a screen or feature entry point.
 - `src/components/ui/`: reusable presentation with no domain I/O.
 - `src/config/`: validated build configuration, branding, and app-wide static settings.
-- `src/features/`: vertical slices. Use `api`, `components`, `hooks`, `model`, `screens`, and `lib` only when needed.
-- `src/lib/`: framework-light shared capabilities grouped by purpose, never generic `utils` or `helpers` buckets.
+- `src/features/`: vertical slices. Use `api`, `components`, `domain`, `hooks`, `model`, `screens`, and `lib` only when needed.
+- `src/lib/`: shared infrastructure and framework-light capabilities grouped by purpose, including configured Supabase and Query clients; never generic `utils` or `helpers` buckets.
 - `src/mocks/`: demo data shared by more than one feature.
-- `src/services/`: configured external clients and app-wide infrastructure instances.
 - `src/providers/`: app-wide provider composition only; feature providers stay with their feature.
 - `src/theme/`: the mobile-facing adapter over shared design tokens.
 - `src/skills/`: repeatable implementation playbooks.
@@ -37,7 +37,7 @@ Do not replace Expo Router with a manual React Navigation tree. Expo Router alre
 1. Guests may browse public map and report details without authentication.
 2. Creating, confirming, commenting, following, or subscribing requires authentication at action time.
 3. Public payloads never expose reporter identity, internal trust scores, or moderation data.
-4. Validate network payloads at the shared contract or service boundary.
+4. Validate network payloads at the shared contract or feature API boundary.
 5. Keep server state in TanStack Query. Use Context only for small client/session state.
 6. Keep MapLibre rendering concerns inside the map feature and geospatial filtering in PostGIS.
 7. Preserve demo mode when Supabase environment variables are absent.
