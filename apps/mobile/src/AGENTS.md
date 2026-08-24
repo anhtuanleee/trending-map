@@ -43,6 +43,7 @@ Do not replace Expo Router with a manual React Navigation tree. Expo Router alre
 7. Preserve demo mode when Supabase environment variables are absent.
 8. Cross-feature imports must use the feature public `index.ts`; feature-internal imports stay relative.
 9. Do not add root `utils.ts`, `helpers.ts`, or `constants.ts`. Colocate feature logic and promote only proven reuse.
+10. Subscription must not gate public map/report reads or official critical alerts; mobile clients may read but never write entitlement state.
 
 ## Required checks
 

@@ -38,15 +38,16 @@ network schema nằm trong `packages/contracts`, còn design values nằm trong 
 
 ## Routing hiện tại
 
-| Route            | Vai trò                            | Auth                              |
-| ---------------- | ---------------------------------- | --------------------------------- |
-| `/`              | Live map và report preview         | Public                            |
-| `/auth`          | Request/verify email OTP           | Public                            |
-| `/auth/callback` | Hoàn tất Google OAuth callback     | Public callback                   |
-| `/account`       | Trạng thái guest/member và logout  | Public shell; data theo session   |
-| `/signed-out`    | Logout success và lối về guest map | Public                            |
-| `/report/new`    | Composer tạo report                | Auth gate từ entry point          |
-| `/report/[id]`   | Chi tiết và confirmation actions   | Read public; action authenticated |
+| Route            | Vai trò                                    | Auth                              |
+| ---------------- | ------------------------------------------ | --------------------------------- |
+| `/`              | Live map và report preview                 | Public                            |
+| `/auth`          | Request/verify email OTP                   | Public                            |
+| `/auth/callback` | Hoàn tất Google OAuth callback             | Public callback                   |
+| `/account`       | Trạng thái guest/member và logout          | Public shell; data theo session   |
+| `/signed-out`    | Logout success và lối về guest map         | Public                            |
+| `/subscription`  | Preview plan, entitlement và billing state | Public shell; purchase cần auth   |
+| `/report/new`    | Composer tạo report                        | Auth gate từ entry point          |
+| `/report/[id]`   | Chi tiết và confirmation actions           | Read public; action authenticated |
 
 `useAuthGate` giữ return URL để người dùng quay lại intent ban đầu sau Email OTP hoặc Google OAuth.
 `AuthProvider` lắng nghe custom-scheme callback và route `/auth/callback` xử lý trạng thái
@@ -58,15 +59,16 @@ middleware/router guard tổng quát.
 Luồng chuẩn là `route → screen → feature hook → feature api → Supabase`. Route và screen không gọi
 Supabase trực tiếp.
 
-| Trách nhiệm                                     | Vị trí                                       |
-| ----------------------------------------------- | -------------------------------------------- |
-| Tạo Supabase client và SecureStore auth storage | `src/lib/supabase/client.ts`                 |
-| Tạo TanStack Query client                       | `src/lib/query/client.ts`                    |
-| Auth OTP, Google OAuth, session và logout       | `src/features/auth/api/auth.service.ts`      |
-| Viewport/nearby RPC `get_map_items`             | `src/features/map/api/get-map-reports.ts`    |
-| Public report detail view                       | `src/features/reports/api/get-report.ts`     |
-| Edge Function `submit-report`                   | `src/features/reports/api/submit-report.ts`  |
-| Edge Function `confirm-report`                  | `src/features/reports/api/confirm-report.ts` |
+| Trách nhiệm                                     | Vị trí                                                           |
+| ----------------------------------------------- | ---------------------------------------------------------------- |
+| Tạo Supabase client và SecureStore auth storage | `src/lib/supabase/client.ts`                                     |
+| Tạo TanStack Query client                       | `src/lib/query/client.ts`                                        |
+| Auth OTP, Google OAuth, session và logout       | `src/features/auth/api/auth.service.ts`                          |
+| Viewport/nearby RPC `get_map_items`             | `src/features/map/api/get-map-reports.ts`                        |
+| Public report detail view                       | `src/features/reports/api/get-report.ts`                         |
+| Edge Function `submit-report`                   | `src/features/reports/api/submit-report.ts`                      |
+| Edge Function `confirm-report`                  | `src/features/reports/api/confirm-report.ts`                     |
+| Read current subscription entitlement           | `src/features/subscriptions/api/get-subscription-entitlement.ts` |
 
 Map và detail có query key riêng trong feature. Cả hai cùng bắt đầu bằng cache root
 `public-reports` từ `src/lib/query/public-report-cache.ts`, vì vậy contribution mutation invalidate

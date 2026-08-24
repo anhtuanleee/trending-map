@@ -25,5 +25,6 @@ Then inspect the diff:
 - Ensure route changes retain `/`, dynamic report detail, and auth return paths.
 - Ensure contribution mutations remain authenticated and idempotent.
 - Ensure map queries stay bounded and cache invalidation covers map and detail data.
+- Ensure subscription flags default off, public safety data stays free, and mobile code cannot write entitlement state.
 
 Summarize commands run, outcomes, and any unverified device-only behavior.

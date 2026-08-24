@@ -20,21 +20,22 @@ erDiagram
   REPORTS ||--o{ MEDIA : contains
 ```
 
-| Bảng                    | Mục đích                                              | Trạng thái sử dụng                                |
-| ----------------------- | ----------------------------------------------------- | ------------------------------------------------- |
-| `profiles`              | Hồ sơ, trust level, contribution suspension           | Dùng bởi auth trigger và submit guard             |
-| `user_roles`            | Member/trusted/official/moderator                     | Moderator helper đã có; workflow quản trị chưa có |
-| `categories`            | Type, expiry và duplicate parameters                  | Dùng khi submit và map read                       |
-| `official_sources`      | Nguồn chính thức                                      | Data foundation                                   |
-| `reports`               | Entity trung tâm, geometry, lifecycle và trust counts | Hoạt động                                         |
-| `report_confirmations`  | Một vote hiện tại cho mỗi user/report                 | Hoạt động                                         |
-| `report_media`          | Metadata media và moderation status                   | Foundation                                        |
-| `report_comments`       | Bình luận có soft-hide                                | Foundation                                        |
-| `report_status_history` | Lịch sử đổi trạng thái                                | Foundation; chưa có trigger ghi tự động           |
-| `followed_areas`        | Polygon và filter cảnh báo theo user                  | Foundation                                        |
-| `push_devices`          | Expo push token theo user                             | Foundation                                        |
-| `moderation_cases`      | Hàng đợi/case kiểm duyệt                              | Foundation                                        |
-| `audit_logs`            | Actor/action/entity metadata                          | Submit đang ghi audit log                         |
+| Bảng                        | Mục đích                                              | Trạng thái sử dụng                                |
+| --------------------------- | ----------------------------------------------------- | ------------------------------------------------- |
+| `profiles`                  | Hồ sơ, trust level, contribution suspension           | Dùng bởi auth trigger và submit guard             |
+| `user_roles`                | Member/trusted/official/moderator                     | Moderator helper đã có; workflow quản trị chưa có |
+| `categories`                | Type, expiry và duplicate parameters                  | Dùng khi submit và map read                       |
+| `official_sources`          | Nguồn chính thức                                      | Data foundation                                   |
+| `reports`                   | Entity trung tâm, geometry, lifecycle và trust counts | Hoạt động                                         |
+| `report_confirmations`      | Một vote hiện tại cho mỗi user/report                 | Hoạt động                                         |
+| `report_media`              | Metadata media và moderation status                   | Foundation                                        |
+| `report_comments`           | Bình luận có soft-hide                                | Foundation                                        |
+| `report_status_history`     | Lịch sử đổi trạng thái                                | Foundation; chưa có trigger ghi tự động           |
+| `followed_areas`            | Polygon và filter cảnh báo theo user                  | Foundation                                        |
+| `push_devices`              | Expo push token theo user                             | Foundation                                        |
+| `subscription_entitlements` | Server-owned mirror của Free/Plus entitlement         | Foundation; mobile read-own, billing chưa nối     |
+| `moderation_cases`          | Hàng đợi/case kiểm duyệt                              | Foundation                                        |
+| `audit_logs`                | Actor/action/entity metadata                          | Submit đang ghi audit log                         |
 
 ## Report lifecycle
 
@@ -74,6 +75,7 @@ Public clients chỉ đọc:
 - `anon` và `authenticated` đọc enabled categories, public view và map RPC.
 - Authenticated user đọc/sửa một phần profile của chính mình.
 - User quản lý followed areas và push devices của chính mình.
+- User chỉ đọc subscription entitlement của mình; mobile không được tự ghi tier/status.
 - User chỉ đọc confirmations của chính mình.
 - Moderator đọc moderation cases và audit logs.
 - Direct writes vào report/confirmation bị thu hồi; write path đi qua RPC được grant cụ thể.

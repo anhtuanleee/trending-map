@@ -17,6 +17,7 @@ Tài liệu này mô tả đúng trạng thái code tại ngày 24/08/2026. Mỗ
 - [Kiến trúc mobile](./architecture/mobile.md)
 - [Backend, dữ liệu và trust model](./architecture/backend-and-data.md)
 - [Authentication và authorization](./authentication-and-authorization.md)
+- [Subscription foundation](./subscriptions.md)
 - [API và shared contracts](./api-and-contracts.md)
 - [Hướng dẫn phát triển](./development.md)
 - [Roadmap](./roadmap.md)

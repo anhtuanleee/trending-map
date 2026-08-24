@@ -29,6 +29,19 @@ không đặt trong `.env` hoặc `EXPO_PUBLIC_*`. Xem hướng dẫn chi tiết
 Google OAuth cũng không thêm mobile env: Google Web Client ID/secret được cấu hình trong Supabase.
 App dùng scheme `trendingmap` từ `app.json` và callback `trendingmap://auth/callback`.
 
+Subscription foundation mặc định tắt. Có thể tạo `apps/mobile/.env.local` và bật preview mà chưa
+bật paywall/billing:
+
+```dotenv
+EXPO_PUBLIC_SUBSCRIPTIONS_ENABLED=true
+EXPO_PUBLIC_SUBSCRIPTION_PAYWALL_ENABLED=false
+EXPO_PUBLIC_SUBSCRIPTION_BILLING_ENABLED=false
+EXPO_PUBLIC_SUBSCRIPTION_ENABLED_FEATURES=followed_areas,custom_alerts
+```
+
+Các biến `EXPO_PUBLIC_*` nằm trong mobile bundle, vì vậy không đặt RevenueCat secret, webhook secret,
+App Store key hoặc service-role key ở đây. Xem [`subscriptions.md`](./subscriptions.md).
+
 ### Admin
 
 Xem `apps/admin/.env.example`:

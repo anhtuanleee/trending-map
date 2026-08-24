@@ -6,14 +6,16 @@
 
 ## Domain enums
 
-| Domain       | Values                                                              |
-| ------------ | ------------------------------------------------------------------- |
-| Report type  | `incident`, `scheduled_event`, `area_alert`                         |
-| Severity     | `info`, `low`, `medium`, `high`, `critical`                         |
-| Verification | `unverified`, `community_verified`, `official_verified`, `disputed` |
-| Operational  | `active`, `monitoring`, `resolved`, `expired`, `rejected`           |
-| Confirmation | `seen`, `not_there`, `incorrect`                                    |
-| App role     | `member`, `trusted`, `official`, `moderator`                        |
+| Domain              | Values                                                                             |
+| ------------------- | ---------------------------------------------------------------------------------- |
+| Report type         | `incident`, `scheduled_event`, `area_alert`                                        |
+| Severity            | `info`, `low`, `medium`, `high`, `critical`                                        |
+| Verification        | `unverified`, `community_verified`, `official_verified`, `disputed`                |
+| Operational         | `active`, `monitoring`, `resolved`, `expired`, `rejected`                          |
+| Confirmation        | `seen`, `not_there`, `incorrect`                                                   |
+| App role            | `member`, `trusted`, `official`, `moderator`                                       |
+| Subscription tier   | `free`, `plus`                                                                     |
+| Subscription status | `inactive`, `trialing`, `active`, `grace_period`, `past_due`, `expired`, `revoked` |
 
 ## Public reads
 
@@ -40,6 +42,15 @@ Thứ tự ưu tiên là severity, khoảng cách, độ mới rồi verificatio
 ### `public_report_details` view
 
 Trả description, address, source label và approved media thumbnails bên cạnh map fields. Không trả `created_by`, `anonymous_publicly`, `trust_score_internal` hoặc user profile.
+
+### `subscription_entitlements`
+
+Authenticated user đọc tối đa một row của chính mình qua RLS. Mobile contract chỉ trả `tier`,
+`status`, `source`, `productId`, `expiresAt` và `willRenew`. Store transaction identifier và provider
+payload không được trả vào public client model. Không có row hoặc demo mode được hiểu là Free.
+
+Mobile không có quyền ghi bảng này. Verified billing webhook/service role sẽ là write path trong
+milestone billing sau.
 
 ## Authenticated commands
 
