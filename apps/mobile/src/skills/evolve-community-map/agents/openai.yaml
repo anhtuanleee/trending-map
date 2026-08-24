@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Evolve Community Map'
+  short_description: 'Build secure map and report workflows'
+  default_prompt: 'Use $evolve-community-map to implement this map-domain change safely.'

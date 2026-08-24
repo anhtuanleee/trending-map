@@ -1,0 +1,16 @@
+agents:
+  - id: 'mobile-architect'
+    prompt: './mobile-architect.agent.md'
+    skills:
+      - '../skills/build-mobile-feature/SKILL.md'
+      - '../skills/verify-mobile-change/SKILL.md'
+  - id: 'community-map'
+    prompt: './community-map.agent.md'
+    skills:
+      - '../skills/build-mobile-feature/SKILL.md'
+      - '../skills/evolve-community-map/SKILL.md'
+      - '../skills/verify-mobile-change/SKILL.md'
+  - id: 'release-guardian'
+    prompt: './release-guardian.agent.md'
+    skills:
+      - '../skills/verify-mobile-change/SKILL.md'

@@ -1,7 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { submitReportInputSchema, type SubmitReportInput } from '@trending-map/contracts';
-import { colors, radius, spacing } from '@trending-map/ui-tokens';
-import { useMutation } from '@tanstack/react-query';
 import * as Crypto from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import { ArrowLeft, MapPin } from 'lucide-react-native';
@@ -9,7 +7,8 @@ import { Controller, useForm } from 'react-hook-form';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { submitReport } from '@/features/reports/report.service';
+import { useSubmitReport } from '@/hooks/domain';
+import { colors, radius, spacing } from '@/theme';
 
 const categories = [
   { id: '24beceab-c7c1-407d-a0ab-b32ac358e4ec', label: 'Ngập nước' },
@@ -35,10 +34,7 @@ export default function NewReportRoute() {
       idempotencyKey: Crypto.randomUUID(),
     },
   });
-  const mutation = useMutation({
-    mutationFn: submitReport,
-    onSuccess: () => router.replace('/?submitted=1'),
-  });
+  const mutation = useSubmitReport();
   const selectedCategory = watch('categoryId');
 
   return (
@@ -143,7 +139,9 @@ export default function NewReportRoute() {
         <Pressable
           style={[styles.submit, mutation.isPending && styles.submitDisabled]}
           disabled={mutation.isPending}
-          onPress={handleSubmit((value) => mutation.mutate(value))}
+          onPress={handleSubmit((value) =>
+            mutation.mutate(value, { onSuccess: () => router.replace('/?submitted=1') }),
+          )}
         >
           <Text style={styles.submitText}>{mutation.isPending ? 'Đang gửi…' : 'Đăng báo cáo'}</Text>
         </Pressable>

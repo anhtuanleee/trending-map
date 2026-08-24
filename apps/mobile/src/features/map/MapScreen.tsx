@@ -1,6 +1,4 @@
 import type { ReportDetail } from '@trending-map/contracts';
-import { colors, radius, spacing } from '@trending-map/ui-tokens';
-import { useQuery } from '@tanstack/react-query';
 import * as Location from 'expo-location';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Bell, LocateFixed, MapPinPlus, Search, SlidersHorizontal } from 'lucide-react-native';
@@ -12,8 +10,9 @@ import type { FeatureCollection, Point } from 'geojson';
 import type { PressEventWithFeatures } from '@maplibre/maplibre-react-native';
 
 import { useAuthGate } from '@/features/auth/useAuthGate';
+import { useMapReports } from '@/hooks/domain';
+import { colors, mapLayout, radius, spacing } from '@/theme';
 
-import { getMapReports } from './map.service';
 import { ReportPreviewCard } from './ReportPreviewCard';
 
 const mapStyleUrl =
@@ -25,14 +24,7 @@ export function MapScreen() {
   const requireAuth = useAuthGate();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [showUserLocation, setShowUserLocation] = useState(false);
-  const {
-    data = [],
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ['map-reports', 'hcm-center'],
-    queryFn: getMapReports,
-  });
+  const { data = [], isLoading, isError } = useMapReports();
 
   const geoJson = useMemo<FeatureCollection<Point>>(
     () => ({
@@ -75,7 +67,10 @@ export function MapScreen() {
   return (
     <View style={styles.container}>
       <Map style={styles.map} mapStyle={mapStyleUrl} compass={false}>
-        <Camera initialViewState={{ center: [106.701, 10.776], zoom: 13.2 }} minZoom={9} />
+        <Camera
+          initialViewState={{ center: mapLayout.defaultCenter, zoom: mapLayout.defaultZoom }}
+          minZoom={mapLayout.minimumZoom}
+        />
         {showUserLocation ? <UserLocation animated accuracy /> : null}
         <GeoJSONSource
           id="community-reports"

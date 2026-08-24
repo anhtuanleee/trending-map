@@ -1,0 +1,4 @@
+interface:
+  display_name: 'Verify Mobile Change'
+  short_description: 'Run mobile release and privacy gates'
+  default_prompt: 'Use $verify-mobile-change to validate this change before it is committed.'

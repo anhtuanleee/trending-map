@@ -1,9 +1,9 @@
 import type { ReportDetail } from '@trending-map/contracts';
-import { colors, radius, spacing } from '@trending-map/ui-tokens';
 import { Check, Clock3, MapPin, X } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { StatusBadge } from '@/components/StatusBadge';
+import { StatusBadge } from '@/components/atoms';
+import { colors, radius, spacing } from '@/theme';
 
 type Props = {
   report: ReportDetail;
