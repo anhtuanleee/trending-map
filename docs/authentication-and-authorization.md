@@ -2,16 +2,18 @@
 
 ## Mô hình truy cập
 
-| Hành vi                                      | Guest | Member                  | Moderator            |
-| -------------------------------------------- | ----- | ----------------------- | -------------------- |
-| Xem map/cluster                              | Có    | Có                      | Có                   |
-| Xem public report detail                     | Có    | Có                      | Có                   |
-| Xem enabled categories                       | Có    | Có                      | Có                   |
-| Tạo report                                   | Không | Có, nếu không suspended | Có                   |
-| Xác nhận report                              | Không | Có                      | Có                   |
-| Quản lý followed areas/push devices của mình | Không | Có                      | Có                   |
-| Đọc moderation cases/audit logs              | Không | Không                   | Có                   |
-| Admin dashboard bằng service role            | Không | Không                   | Server-only operator |
+| Hành vi                                      | Guest | Member                  | Moderator                    |
+| -------------------------------------------- | ----- | ----------------------- | ---------------------------- |
+| Xem map/cluster                              | Có    | Có                      | Có                           |
+| Xem public report detail                     | Có    | Có                      | Có                           |
+| Xem enabled categories                       | Có    | Có                      | Có                           |
+| Tạo report                                   | Không | Có, nếu không suspended | Có                           |
+| Xác nhận report                              | Không | Có                      | Có                           |
+| Quản lý followed areas/push devices của mình | Không | Có                      | Có                           |
+| Đọc subscription entitlement của mình        | Không | Có                      | Có                           |
+| Ghi subscription entitlement                 | Không | Không                   | Trusted billing backend only |
+| Đọc moderation cases/audit logs              | Không | Không                   | Có                           |
+| Admin dashboard bằng service role            | Không | Không                   | Server-only operator         |
 
 ## OTP flow
 

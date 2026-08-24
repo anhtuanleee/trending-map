@@ -31,6 +31,16 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 - Official source ingestion và verified operator workflow.
 - Realtime refresh có giới hạn để tránh subscription fan-out quá lớn.
 
+## P2.5 — subscription rollout
+
+- [x] Free/Plus contract, plan limits và feature catalog.
+- [x] Env flags cho foundation, paywall, billing, founder offer và per-feature rollout.
+- [x] Read-own entitlement table/RLS, account entry và paywall preview shell.
+- Hoàn thiện followed areas, custom alert và push fan-out trước khi mở bán.
+- Tạo products trên App Store/Google Play và nối RevenueCat billing gateway.
+- Tạo verified webhook upsert entitlement; test refund/cancel/restore/grace period.
+- Thêm localized price, terms/privacy, manage subscription và conversion analytics.
+
 ## P3 — reliability và scale
 
 - E2E tests cho guest browse, OTP/Google OAuth return intent, submit và confirm.

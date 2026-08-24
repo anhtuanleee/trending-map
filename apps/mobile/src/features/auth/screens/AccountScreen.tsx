@@ -32,7 +32,7 @@ const upcomingItems = [
   { label: 'Thông báo', icon: Bell },
 ] as const;
 
-export function AccountScreen() {
+export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React.ReactNode }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
@@ -145,6 +145,8 @@ export function AccountScreen() {
           </View>
         </View>
       </View>
+
+      {subscriptionEntry}
 
       <Text style={styles.sectionLabel}>CÁ NHÂN HÓA</Text>
       <View style={styles.card}>
