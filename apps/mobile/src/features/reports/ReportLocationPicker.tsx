@@ -20,6 +20,10 @@ type SelectedReportLocation = {
   addressLabel: string;
 };
 
+type CoordinateSource = 'unset' | 'existing' | 'gps' | 'manual';
+
+const minimumAcceptedGpsAccuracyMeters = 100;
+
 type ReportLocationPickerProps = {
   visible: boolean;
   initialCoordinate?: Coordinate;
@@ -37,6 +41,7 @@ export function ReportLocationPicker({
   const cameraRef = useRef<CameraRef>(null);
   const locateRequestedRef = useRef(false);
   const resolveRequestRef = useRef(0);
+  const autoLocateRequestedRef = useRef(false);
   const [coordinate, setCoordinate] = useState<Coordinate>(
     initialCoordinate ?? {
       longitude: mapLayout.defaultCenter[0],
@@ -44,6 +49,11 @@ export function ReportLocationPicker({
     },
   );
   const [isResolving, setIsResolving] = useState(false);
+  const [coordinateSource, setCoordinateSource] = useState<CoordinateSource>(
+    initialCoordinate ? 'existing' : 'unset',
+  );
+  const [gpsAccuracy, setGpsAccuracy] = useState<number | null>(null);
+  const [placementError, setPlacementError] = useState<string | null>(null);
   const currentLocation = useCurrentLocation();
 
   useEffect(() => {
@@ -55,12 +65,27 @@ export function ReportLocationPicker({
         latitude: mapLayout.defaultCenter[1],
       } satisfies Coordinate);
     setCoordinate(next);
+    setCoordinateSource(initialCoordinate ? 'existing' : 'unset');
+    setGpsAccuracy(null);
+    setPlacementError(null);
     cameraRef.current?.easeTo({
       center: [next.longitude, next.latitude],
       zoom: 16,
       duration: 350,
     });
   }, [initialCoordinate, visible]);
+
+  useEffect(() => {
+    if (!visible) {
+      autoLocateRequestedRef.current = false;
+      return;
+    }
+    if (initialCoordinate || autoLocateRequestedRef.current) return;
+
+    autoLocateRequestedRef.current = true;
+    locateRequestedRef.current = true;
+    void currentLocation.startTracking();
+  }, [currentLocation.startTracking, initialCoordinate, visible]);
 
   useEffect(() => {
     if (!visible || !locateRequestedRef.current || !currentLocation.location) return;
@@ -70,6 +95,9 @@ export function ReportLocationPicker({
     };
     locateRequestedRef.current = false;
     setCoordinate(next);
+    setCoordinateSource('gps');
+    setGpsAccuracy(currentLocation.location.coords.accuracy);
+    setPlacementError(null);
     cameraRef.current?.easeTo({
       center: [next.longitude, next.latitude],
       zoom: 17,
@@ -87,6 +115,7 @@ export function ReportLocationPicker({
 
   const handleLocate = async () => {
     if (currentLocation.isBusy) return;
+    setPlacementError(null);
     locateRequestedRef.current = true;
     const resolved = await currentLocation.startTracking();
     if (!resolved) return;
@@ -97,6 +126,8 @@ export function ReportLocationPicker({
       longitude: resolved.coords.longitude,
     };
     setCoordinate(next);
+    setCoordinateSource('gps');
+    setGpsAccuracy(resolved.coords.accuracy);
     cameraRef.current?.easeTo({
       center: [next.longitude, next.latitude],
       zoom: 17,
@@ -107,10 +138,28 @@ export function ReportLocationPicker({
   const handleRegionDidChange = (event: NativeSyntheticEvent<ViewStateChangeEvent>) => {
     const [longitude, latitude] = event.nativeEvent.center;
     setCoordinate({ latitude, longitude });
+    if (event.nativeEvent.userInteraction) {
+      setCoordinateSource('manual');
+      setPlacementError(null);
+    }
   };
 
   const handleConfirm = async () => {
     if (isResolving) return;
+    if (coordinateSource === 'unset') {
+      setPlacementError('Kéo bản đồ để chỉnh pin hoặc dùng GPS trước khi xác nhận.');
+      return;
+    }
+    if (
+      coordinateSource === 'gps' &&
+      gpsAccuracy != null &&
+      gpsAccuracy > minimumAcceptedGpsAccuracyMeters
+    ) {
+      setPlacementError(
+        `GPS chỉ chính xác khoảng ±${Math.round(gpsAccuracy)} m. Hãy kéo pin tới đúng hiện trường.`,
+      );
+      return;
+    }
     const requestId = resolveRequestRef.current + 1;
     resolveRequestRef.current = requestId;
     setIsResolving(true);
@@ -191,7 +240,13 @@ export function ReportLocationPicker({
               </Text>
             </Pressable>
           ) : null}
+          {placementError ? <Text style={styles.placementError}>{placementError}</Text> : null}
           <Text style={styles.coordinateLabel}>{formatCoordinateLabel(coordinate)}</Text>
+          {coordinateSource === 'gps' && gpsAccuracy != null ? (
+            <Text style={styles.accuracyLabel}>
+              Độ chính xác GPS ±{Math.max(1, Math.round(gpsAccuracy))} m
+            </Text>
+          ) : null}
           <Text style={styles.privacyCopy}>
             Tọa độ được dùng để tìm nhãn địa chỉ khi xác nhận pin và chỉ lưu khi mày đăng báo cáo.
           </Text>
@@ -277,6 +332,13 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
   },
   coordinateLabel: { color: colors.ink, fontSize: 15, fontWeight: '900' },
+  accuracyLabel: { marginTop: spacing.xs, color: colors.primary, fontSize: 12, fontWeight: '800' },
+  placementError: {
+    marginBottom: spacing.md,
+    color: colors.danger,
+    fontSize: 12,
+    lineHeight: 17,
+  },
   privacyCopy: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 12, lineHeight: 17 },
   locationError: {
     flexDirection: 'row',

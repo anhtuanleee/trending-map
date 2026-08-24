@@ -88,10 +88,12 @@ Giới hạn hiện tại:
 
 `SubmitReportInput` được kiểm tra bằng `submitReportInputSchema`. Title dài 6–120 ký tự, description 12–1200, coordinate phải hợp lệ và scheduled event bắt buộc `endsAt`. Mỗi submission tạo UUID làm idempotency key.
 
-Composer bắt buộc người dùng xác nhận location picker trước khi submit. Picker hỗ trợ kéo bản đồ,
-dùng foreground GPS và reverse geocode best-effort; chỉ coordinate/address đã xác nhận đi vào
-`SubmitReportInput`. Route adapter chỉ render `NewReportScreen`, còn auth gate được kiểm tra lại tại
-thời điểm submit để bảo vệ cả deep link trực tiếp.
+Composer bắt buộc người dùng xác nhận location picker trước khi submit. Nếu chưa có lựa chọn cũ,
+picker thử dùng foreground GPS làm điểm khởi tạo; denied/blocked vẫn cho kéo pin thủ công. GPS có
+accuracy lớn hơn 100 m không được xác nhận cho tới khi người dùng chỉnh pin. Reverse geocode chạy
+best-effort; chỉ coordinate/address đã xác nhận đi vào `SubmitReportInput`, không fallback âm thầm về
+center TP.HCM. Route adapter chỉ render `NewReportScreen`, còn auth gate được kiểm tra lại tại thời
+điểm submit để bảo vệ cả deep link trực tiếp.
 
 Composer vẫn hard-code ba category seed IDs. Khi category trở thành dữ liệu động, UI phải fetch
 categories thay vì giữ UUID trong source.

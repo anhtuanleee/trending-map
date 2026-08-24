@@ -63,9 +63,9 @@ blocked, Location Services tắt, không có last-known location và app quay l�
 Tracking hiện chỉ chạy khi map screen còn mounted; không yêu cầu background permission.
 
 Location picker của report cần test thêm: kéo pin, chọn GPS precise/approximate, từ chối quyền rồi
-vẫn chọn pin thủ công, reverse geocode thất bại và submit khi chưa chọn vị trí. Pan/zoom map phải
-phát query mới sau debounce, giữ marker cũ trong lúc refetch và trả empty state khi vùng không có dữ
-liệu.
+vẫn chọn pin thủ công, GPS accuracy trên 100 m bắt buộc chỉnh pin, reverse geocode thất bại và submit
+khi chưa chọn vị trí. Pan/zoom map phải phát query mới sau debounce, giữ marker cũ trong lúc refetch
+và trả empty state khi vùng không có dữ liệu.
 
 ## Supabase local
 

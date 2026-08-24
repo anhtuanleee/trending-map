@@ -29,7 +29,7 @@ Nguyên tắc sản phẩm cốt lõi:
 | Auth          | Auth gate có return URL       | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.            |
 | Auth          | Tài khoản và đăng xuất        | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.        |
 | Reporting     | Tạo report                    | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                           |
-| Reporting     | Chọn vị trí report            | **Hoạt động**  | Bắt buộc xác nhận pin; hỗ trợ kéo map, GPS và reverse geocode best-effort.            |
+| Reporting     | Chọn vị trí report            | **Hoạt động**  | GPS-first, manual khi denied, accuracy guard 100 m và reverse geocode best-effort.    |
 | Reporting     | Ẩn tên công khai              | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                 |
 | Reporting     | Upload ảnh/video              | **Foundation** | Có bảng `report_media`; chưa có upload UI, storage workflow hay moderation.           |
 | Trust         | “Tôi cũng thấy” / “Không còn” | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                  |
