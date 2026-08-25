@@ -55,6 +55,7 @@ export function NearbyReportsSheet({
           style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}
           onPress={(event) => event.stopPropagation()}
         >
+          <View style={styles.handle} />
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>{modeLabel}</Text>
@@ -137,10 +138,18 @@ const styles = StyleSheet.create({
   sheet: {
     maxHeight: '78%',
     minHeight: 420,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    marginBottom: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
   },
   header: {
     flexDirection: 'row',
@@ -148,15 +157,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
   },
-  title: { color: colors.ink, fontSize: 20, fontWeight: '900' },
+  title: { color: colors.ink, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
   subtitle: { marginTop: 3, color: colors.inkMuted, fontSize: 12 },
   closeButton: {
     width: 42,
     height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 21,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceMuted,
   },
   radiusRow: {
     flexDirection: 'row',
@@ -171,12 +180,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     paddingHorizontal: spacing.xs,
   },
-  radiusChipActive: { borderColor: colors.primary, backgroundColor: colors.primary },
-  radiusText: { textAlign: 'center', color: colors.ink, fontSize: 11, fontWeight: '800' },
-  radiusTextActive: { color: colors.surface },
+  radiusChipActive: { borderColor: colors.ink, backgroundColor: colors.ink },
+  radiusText: { textAlign: 'center', color: colors.ink, fontSize: 11, fontWeight: '700' },
+  radiusTextActive: { color: colors.onPrimary },
   state: {
     minHeight: 150,
     flexDirection: 'row',
@@ -187,23 +196,24 @@ const styles = StyleSheet.create({
   },
   stateText: { textAlign: 'center', color: colors.inkMuted, fontSize: 13 },
   errorText: { color: colors.danger, fontSize: 13 },
-  retryText: { color: colors.primary, fontSize: 13, fontWeight: '900' },
+  retryText: { color: colors.primary, fontSize: 13, fontWeight: '800' },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
   emptyList: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   reportRow: {
     flexDirection: 'row',
     gap: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingVertical: spacing.lg,
+    marginBottom: spacing.sm,
+    borderRadius: radius.lg,
+    backgroundColor: colors.canvas,
+    padding: spacing.md,
   },
   reportIcon: {
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primarySoft,
   },
   reportCopy: { flex: 1, alignItems: 'flex-start' },
   reportTopRow: {
@@ -212,7 +222,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  category: { color: colors.primary, fontSize: 11, fontWeight: '900' },
+  category: { color: colors.primary, fontSize: 11, fontWeight: '800' },
   distance: { color: colors.inkMuted, fontSize: 11, fontWeight: '700' },
-  reportTitle: { marginVertical: spacing.xs, color: colors.ink, fontSize: 15, fontWeight: '800' },
+  reportTitle: {
+    marginVertical: spacing.xs,
+    color: colors.ink,
+    fontSize: 15,
+    lineHeight: 20,
+    fontWeight: '700',
+  },
 });

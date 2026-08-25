@@ -1,6 +1,6 @@
 import type { MapItem } from '@trending-map/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ListFilter, LocateFixed, MapPinPlus } from 'lucide-react-native';
+import { CircleCheck, ListFilter, LocateFixed, MapPinPlus } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Camera, Map, UserLocation } from '@maplibre/maplibre-react-native';
@@ -160,7 +160,11 @@ export function MapScreen() {
         {currentLocation.location ? (
           <UserLocation animated accuracy heading minDisplacement={10} />
         ) : null}
-        <CommunityReportsLayer reports={data} onSelect={setSelectedReport} />
+        <CommunityReportsLayer
+          reports={data}
+          selectedReportId={selectedReport?.id}
+          onSelect={setSelectedReport}
+        />
       </Map>
 
       <MapHeaderControls
@@ -206,45 +210,57 @@ export function MapScreen() {
         </Pressable>
       ) : null}
       {params.submitted ? (
-        <Text style={styles.success}>Báo cáo đã được gửi để xác minh.</Text>
+        <View style={styles.success}>
+          <CircleCheck color={colors.primary} size={17} />
+          <Text style={styles.successText}>Báo cáo đã được gửi để xác minh.</Text>
+        </View>
       ) : null}
 
-      <Pressable
-        style={styles.locate}
-        disabled={currentLocation.isBusy}
-        onPress={handleLocate}
-        accessibilityLabel="Về vị trí của tôi"
-      >
-        {currentLocation.isBusy ? (
-          <ActivityIndicator color={colors.primary} />
-        ) : (
-          <LocateFixed color={currentLocation.isTracking ? colors.primary : colors.ink} size={21} />
-        )}
-      </Pressable>
+      {!selectedReport ? (
+        <>
+          <Pressable
+            style={({ pressed }) => [styles.locate, pressed && styles.controlPressed]}
+            disabled={currentLocation.isBusy}
+            onPress={handleLocate}
+            accessibilityLabel="Về vị trí của tôi"
+          >
+            {currentLocation.isBusy ? (
+              <ActivityIndicator color={colors.primary} />
+            ) : (
+              <LocateFixed
+                color={currentLocation.isTracking ? colors.primary : colors.ink}
+                size={21}
+              />
+            )}
+          </Pressable>
 
-      <Pressable
-        accessibilityLabel="Mở danh sách báo cáo gần đây"
-        style={styles.nearbyButton}
-        onPress={() => setNearbyVisible(true)}
-      >
-        <ListFilter color={colors.ink} size={18} />
-        <View>
-          <Text style={styles.nearbyButtonTitle}>{modeLabel}</Text>
-          <Text style={styles.nearbyButtonMeta}>
-            {nearbyQuery.data?.length ?? 0} báo cáo · {nearbyRadiusKm} km
-          </Text>
-        </View>
-      </Pressable>
+          <Pressable
+            accessibilityLabel="Mở danh sách báo cáo gần đây"
+            style={({ pressed }) => [styles.nearbyButton, pressed && styles.controlPressed]}
+            onPress={() => setNearbyVisible(true)}
+          >
+            <View style={styles.nearbyIcon}>
+              <ListFilter color={colors.primary} size={18} />
+            </View>
+            <View>
+              <Text style={styles.nearbyButtonTitle}>{modeLabel}</Text>
+              <Text style={styles.nearbyButtonMeta}>
+                {nearbyQuery.data?.length ?? 0} báo cáo · {nearbyRadiusKm} km
+              </Text>
+            </View>
+          </Pressable>
 
-      <Pressable
-        style={styles.reportButton}
-        onPress={() =>
-          requireAuth('/report/new', () => router.push('/report/new'), 'Đăng nhập để báo cáo')
-        }
-      >
-        <MapPinPlus color={colors.onPrimary} size={20} />
-        <Text style={styles.reportButtonText}>Báo cáo tại đây</Text>
-      </Pressable>
+          <Pressable
+            style={({ pressed }) => [styles.reportButton, pressed && styles.controlPressed]}
+            onPress={() =>
+              requireAuth('/report/new', () => router.push('/report/new'), 'Đăng nhập để báo cáo')
+            }
+          >
+            <MapPinPlus color={colors.accentInk} size={20} />
+            <Text style={styles.reportButtonText}>Báo cáo</Text>
+          </Pressable>
+        </>
+      ) : null}
 
       {selectedReport ? (
         <ReportPreviewCard
@@ -292,6 +308,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.1,
+    shadowRadius: 16,
+    elevation: 5,
   },
   loadingText: { color: colors.inkMuted, fontSize: 12 },
   error: {
@@ -307,7 +328,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   errorText: { color: colors.danger, fontSize: 12 },
-  errorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
+  errorAction: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   empty: {
     position: 'absolute',
     top: 236,
@@ -328,32 +349,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     borderRadius: radius.md,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.dangerSoft,
     padding: spacing.md,
   },
   locationErrorText: { flex: 1, color: colors.danger, fontSize: 12, lineHeight: 17 },
-  locationErrorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
+  locationErrorAction: { color: colors.danger, fontSize: 12, fontWeight: '800' },
   success: {
     position: 'absolute',
     top: 236,
     alignSelf: 'center',
-    color: colors.primary,
-    backgroundColor: colors.surface,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.primarySoft,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontWeight: '700',
+    paddingVertical: 10,
   },
+  successText: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   locate: {
     position: 'absolute',
     right: spacing.lg,
     bottom: 156,
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    backgroundColor: colors.mapSurfaceStrong,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 7,
   },
   nearbyButton: {
     position: 'absolute',
@@ -363,23 +391,43 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.mapSurfaceStrong,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.12,
+    shadowRadius: 18,
+    elevation: 7,
   },
-  nearbyButtonTitle: { color: colors.ink, fontSize: 12, fontWeight: '900' },
+  nearbyIcon: {
+    width: 38,
+    height: 38,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.sm,
+    backgroundColor: colors.primarySoft,
+  },
+  nearbyButtonTitle: { color: colors.ink, fontSize: 12, fontWeight: '800' },
   nearbyButtonMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 10 },
   reportButton: {
     position: 'absolute',
     bottom: 78,
     alignSelf: 'center',
-    minHeight: 52,
+    minHeight: 56,
     borderRadius: radius.pill,
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
+    paddingHorizontal: spacing.lgPlus,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    elevation: 8,
   },
-  reportButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '800' },
+  reportButtonText: { color: colors.accentInk, fontSize: 15, fontWeight: '800' },
+  controlPressed: { opacity: 0.82, transform: [{ scale: 0.97 }] },
 });

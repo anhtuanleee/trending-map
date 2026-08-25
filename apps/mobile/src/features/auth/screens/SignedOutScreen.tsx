@@ -18,7 +18,7 @@ export function SignedOutScreen() {
     >
       <View style={styles.content}>
         <View style={styles.iconWrap}>
-          <Check color={colors.surface} size={32} />
+          <Check color={colors.accentInk} size={32} />
         </View>
         <Text accessibilityRole="header" style={styles.title}>
           Đã đăng xuất
@@ -27,7 +27,7 @@ export function SignedOutScreen() {
           Mày vẫn có thể xem sự kiện, cảnh báo và tình trạng xung quanh với tư cách khách.
         </Text>
         <Pressable style={styles.primaryButton} onPress={() => router.replace('/')}>
-          <Map color={colors.surface} size={19} />
+          <Map color={colors.accentInk} size={19} />
           <Text style={styles.primaryButtonText}>Quay lại bản đồ</Text>
         </Pressable>
         <Pressable
@@ -53,12 +53,18 @@ const styles = StyleSheet.create({
   iconWrap: {
     width: 68,
     height: 68,
-    borderRadius: 34,
+    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
   },
-  title: { marginTop: spacing.xl, color: colors.ink, fontSize: 30, fontWeight: '900' },
+  title: {
+    marginTop: spacing.xl,
+    color: colors.ink,
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: -0.8,
+  },
   description: {
     maxWidth: 320,
     marginTop: spacing.md,
@@ -75,10 +81,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    backgroundColor: colors.accent,
   },
-  primaryButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
+  primaryButtonText: { color: colors.accentInk, fontSize: 15, fontWeight: '800' },
   secondaryButton: {
     alignSelf: 'stretch',
     minHeight: 52,
@@ -89,7 +95,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
   },
   secondaryButtonText: { color: colors.ink, fontSize: 15, fontWeight: '800' },

@@ -6,12 +6,21 @@ import {
 } from '@trending-map/contracts';
 import * as Crypto from 'expo-crypto';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, ChevronRight, MapPin } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  ChevronRight,
+  Construction,
+  Droplets,
+  MapPin,
+  Music2,
+  Send,
+} from 'lucide-react-native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AppButton, SectionLabel } from '@/components/ui';
 import { useAuthGate } from '@/features/auth';
 import { formatCoordinate } from '@/lib/format';
 import { colors, radius, spacing } from '@/theme';
@@ -46,6 +55,11 @@ export function NewReportScreen() {
   });
   const mutation = useSubmitReport();
   const selectedCategory = watch('categoryId');
+  const categoryVisuals = [
+    { Icon: Droplets, color: colors.weather, background: colors.infoSoft },
+    { Icon: Construction, color: colors.traffic, background: colors.warningSoft },
+    { Icon: Music2, color: colors.event, background: colors.officialSoft },
+  ] as const;
 
   const handleLocationSelect = (location: SelectedLocation) => {
     setSelectedLocation(location);
@@ -69,33 +83,53 @@ export function NewReportScreen() {
         </Pressable>
         <View style={styles.headerCopy}>
           <Text style={styles.headerTitle}>Báo cáo mới</Text>
-          <Text style={styles.headerMeta}>Thông tin sẽ bắt đầu ở trạng thái chưa xác minh</Text>
+          <Text style={styles.headerMeta}>Chia sẻ tín hiệu hữu ích cho cộng đồng</Text>
         </View>
       </View>
 
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-        <Text style={styles.sectionLabel}>LOẠI BÁO CÁO</Text>
-        <View style={styles.categoryGrid}>
-          {reportCategories.map((category) => (
-            <Pressable
-              key={category.id}
-              style={[styles.category, selectedCategory === category.id && styles.categoryActive]}
-              onPress={() => setValue('categoryId', category.id, { shouldValidate: true })}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === category.id && styles.categoryTextActive,
-                ]}
-              >
-                {category.label}
-              </Text>
-            </Pressable>
-          ))}
+        <View style={styles.progressCard}>
+          <View style={styles.progressTop}>
+            <Text style={styles.progressEyebrow}>TÍN HIỆU MỚI</Text>
+            <Text style={styles.progressMeta}>Khoảng 1 phút</Text>
+          </View>
+          <Text style={styles.progressTitle}>Điều gì đang diễn ra?</Text>
+          <Text style={styles.progressDescription}>
+            Chọn đúng loại để người ở gần nhận biết tình hình nhanh hơn.
+          </Text>
         </View>
 
-        <Text style={styles.sectionLabel}>VỊ TRÍ</Text>
-        <Pressable style={styles.locationCard} onPress={() => setLocationPickerVisible(true)}>
+        <SectionLabel>Loại báo cáo</SectionLabel>
+        <View style={styles.categoryGrid}>
+          {reportCategories.map((category, index) => {
+            const visual = categoryVisuals[index];
+            const active = selectedCategory === category.id;
+            return (
+              <Pressable
+                key={category.id}
+                style={({ pressed }) => [
+                  styles.category,
+                  active && styles.categoryActive,
+                  pressed && styles.pressed,
+                ]}
+                onPress={() => setValue('categoryId', category.id, { shouldValidate: true })}
+              >
+                <View style={[styles.categoryIcon, { backgroundColor: visual.background }]}>
+                  <visual.Icon color={visual.color} size={21} />
+                </View>
+                <Text style={[styles.categoryText, active && styles.categoryTextActive]}>
+                  {category.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <SectionLabel>Vị trí</SectionLabel>
+        <Pressable
+          style={({ pressed }) => [styles.locationCard, pressed && styles.pressed]}
+          onPress={() => setLocationPickerVisible(true)}
+        >
           <View style={styles.locationIcon}>
             <MapPin color={colors.primary} size={21} />
           </View>
@@ -170,13 +204,13 @@ export function NewReportScreen() {
           )}
         />
 
-        <Pressable
-          style={[styles.submit, mutation.isPending && styles.submitDisabled]}
-          disabled={mutation.isPending}
+        <AppButton
+          label={mutation.isPending ? 'Đang gửi…' : 'Đăng báo cáo'}
+          icon={<Send color={colors.accentInk} size={18} />}
+          tone="accent"
+          loading={mutation.isPending}
           onPress={() => void submit()}
-        >
-          <Text style={styles.submitText}>{mutation.isPending ? 'Đang gửi…' : 'Đăng báo cáo'}</Text>
-        </Pressable>
+        />
         {mutation.isError ? (
           <Text style={styles.error}>Không thể gửi báo cáo. Hãy thử lại.</Text>
         ) : null}
@@ -195,40 +229,77 @@ export function NewReportScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.canvas },
   header: {
-    minHeight: 78,
+    minHeight: 76,
     paddingHorizontal: spacing.lg,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
   headerCopy: { flex: 1 },
-  back: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { color: colors.ink, fontSize: 18, fontWeight: '900' },
-  headerMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 11 },
-  content: { padding: spacing.xl, gap: spacing.lg },
-  sectionLabel: { color: colors.primary, fontSize: 11, fontWeight: '900' },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  category: {
-    minHeight: 44,
+  back: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+  },
+  headerTitle: { color: colors.ink, fontSize: 19, fontWeight: '800' },
+  headerMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 11, fontWeight: '500' },
+  content: { padding: spacing.xl },
+  progressCard: {
+    overflow: 'hidden',
+    borderRadius: radius.xl,
+    backgroundColor: colors.ink,
+    padding: spacing.xl,
+  },
+  progressTop: { flexDirection: 'row', justifyContent: 'space-between' },
+  progressEyebrow: { color: colors.accent, fontSize: 10, fontWeight: '800', letterSpacing: 1 },
+  progressMeta: { color: colors.onPrimary, fontSize: 11, opacity: 0.7 },
+  progressTitle: {
+    marginTop: spacing.xl,
+    color: colors.onPrimary,
+    fontSize: 25,
+    fontWeight: '800',
+    letterSpacing: -0.5,
+  },
+  progressDescription: {
+    marginTop: spacing.sm,
+    color: colors.onPrimary,
+    fontSize: 13,
+    lineHeight: 20,
+    opacity: 0.72,
+  },
+  categoryGrid: { flexDirection: 'row', gap: spacing.sm },
+  category: {
+    flex: 1,
+    minHeight: 108,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.pill,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
-    paddingHorizontal: spacing.lg,
+    padding: spacing.sm,
   },
-  categoryActive: { borderColor: colors.ink, backgroundColor: colors.ink },
-  categoryText: { color: colors.ink, fontSize: 13, fontWeight: '700' },
-  categoryTextActive: { color: colors.surface },
+  categoryActive: { borderColor: colors.primary, backgroundColor: colors.primarySoft },
+  categoryIcon: {
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.md,
+  },
+  categoryText: { color: colors.ink, fontSize: 11, textAlign: 'center', fontWeight: '700' },
+  categoryTextActive: { color: colors.primary },
   locationCard: {
     minHeight: 80,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
     padding: spacing.lg,
   },
@@ -237,18 +308,24 @@ const styles = StyleSheet.create({
     height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 21,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
   },
   locationCopy: { flex: 1 },
-  locationTitle: { color: colors.ink, fontSize: 14, fontWeight: '800' },
+  locationTitle: { color: colors.ink, fontSize: 14, fontWeight: '700' },
   locationMeta: { marginTop: 3, color: colors.inkMuted, fontSize: 12, lineHeight: 17 },
-  label: { marginBottom: spacing.sm, color: colors.ink, fontSize: 13, fontWeight: '800' },
+  label: {
+    marginTop: spacing.lgPlus,
+    marginBottom: spacing.sm,
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '700',
+  },
   input: {
     minHeight: 52,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
     color: colors.ink,
     paddingHorizontal: spacing.lg,
@@ -260,18 +337,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.lg,
-    borderRadius: radius.md,
+    marginTop: spacing.lgPlus,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
     padding: spacing.lg,
   },
-  submit: {
-    minHeight: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-  },
-  submitDisabled: { opacity: 0.6 },
-  submitText: { color: colors.surface, fontSize: 16, fontWeight: '900' },
   error: { marginTop: spacing.xs, color: colors.danger, fontSize: 12 },
+  pressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
 });
