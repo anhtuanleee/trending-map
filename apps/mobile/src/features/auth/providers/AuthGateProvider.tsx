@@ -50,9 +50,10 @@ export function AuthGateProvider({ children }: { children: React.ReactNode }) {
             style={[styles.sheet, { paddingBottom: insets.bottom + spacing.xl }]}
             onPress={(event) => event.stopPropagation()}
           >
+            <View style={styles.handle} />
             <View style={styles.sheetHeader}>
               <View style={styles.iconWrap}>
-                <ShieldCheck color={colors.primary} size={24} />
+                <ShieldCheck color={colors.accentInk} size={24} />
               </View>
               <Pressable accessibilityLabel="Đóng" style={styles.closeButton} onPress={close}>
                 <X color={colors.inkMuted} size={20} />
@@ -64,7 +65,7 @@ export function AuthGateProvider({ children }: { children: React.ReactNode }) {
               giá.
             </Text>
             <Pressable style={styles.primaryButton} onPress={continueToAuth}>
-              <Text style={styles.primaryButtonText}>Đăng nhập bằng email</Text>
+              <Text style={styles.primaryButtonText}>Tiếp tục đăng nhập</Text>
             </Pressable>
             <Pressable style={styles.secondaryButton} onPress={close}>
               <Text style={styles.secondaryButtonText}>Để sau</Text>
@@ -89,39 +90,54 @@ const styles = StyleSheet.create({
     backgroundColor: colors.overlay,
   },
   sheet: {
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
     padding: spacing.xl,
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    marginBottom: spacing.xl,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
   },
   sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   iconWrap: {
     width: 48,
     height: 48,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.accent,
   },
   closeButton: {
     width: 42,
     height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 21,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceMuted,
   },
-  title: { marginTop: spacing.xl, color: colors.ink, fontSize: 24, fontWeight: '900' },
+  title: {
+    marginTop: spacing.xl,
+    color: colors.ink,
+    fontSize: 27,
+    lineHeight: 34,
+    fontWeight: '800',
+    letterSpacing: -0.6,
+  },
   description: { marginTop: spacing.sm, color: colors.inkMuted, fontSize: 15, lineHeight: 22 },
   primaryButton: {
     minHeight: 54,
     marginTop: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    backgroundColor: colors.accent,
   },
-  primaryButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
+  primaryButtonText: { color: colors.accentInk, fontSize: 15, fontWeight: '800' },
   secondaryButton: {
     minHeight: 50,
     marginTop: spacing.md,
@@ -129,7 +145,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
   },
   secondaryButtonText: { color: colors.ink, fontSize: 14, fontWeight: '800' },

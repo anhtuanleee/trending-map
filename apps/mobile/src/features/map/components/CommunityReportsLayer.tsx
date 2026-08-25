@@ -9,10 +9,11 @@ import { colors } from '@/theme';
 
 type Props = {
   reports: MapItem[];
+  selectedReportId?: string | null;
   onSelect: (report: MapItem) => void;
 };
 
-export function CommunityReportsLayer({ reports, onSelect }: Props) {
+export function CommunityReportsLayer({ reports, selectedReportId, onSelect }: Props) {
   const collection = useMemo<FeatureCollection<Point>>(
     () => ({
       type: 'FeatureCollection',
@@ -27,10 +28,11 @@ export function CommunityReportsLayer({ reports, onSelect }: Props) {
           id: report.id,
           severity: report.severity,
           verificationStatus: report.verificationStatus,
+          selected: report.id === selectedReportId,
         },
       })),
     }),
-    [reports],
+    [reports, selectedReportId],
   );
 
   const handlePress = (event: NativeSyntheticEvent<PressEventWithFeatures>) => {
@@ -54,9 +56,20 @@ export function CommunityReportsLayer({ reports, onSelect }: Props) {
         filter={['has', 'point_count']}
         paint={{
           'circle-color': colors.ink,
-          'circle-radius': ['step', ['get', 'point_count'], 18, 10, 22, 30, 28],
-          'circle-stroke-color': colors.surface,
+          'circle-radius': ['step', ['get', 'point_count'], 19, 10, 23, 30, 29],
+          'circle-stroke-color': colors.accent,
           'circle-stroke-width': 3,
+        }}
+      />
+      <Layer
+        id="selected-report-halo"
+        type="circle"
+        filter={['all', ['!', ['has', 'point_count']], ['==', ['get', 'selected'], true]]}
+        paint={{
+          'circle-color': colors.primarySoft,
+          'circle-radius': 19,
+          'circle-stroke-color': colors.primary,
+          'circle-stroke-width': 2,
         }}
       />
       <Layer
@@ -75,9 +88,9 @@ export function CommunityReportsLayer({ reports, onSelect }: Props) {
             colors.warning,
             colors.info,
           ],
-          'circle-radius': 10,
+          'circle-radius': 11,
           'circle-stroke-color': colors.surface,
-          'circle-stroke-width': 3,
+          'circle-stroke-width': 4,
         }}
       />
     </GeoJSONSource>

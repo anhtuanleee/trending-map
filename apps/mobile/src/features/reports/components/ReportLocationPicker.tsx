@@ -206,7 +206,7 @@ export function ReportLocationPicker({
           </Pressable>
           <View style={styles.headerCopy}>
             <Text style={styles.title}>Chọn vị trí báo cáo</Text>
-            <Text style={styles.subtitle}>Kéo bản đồ để đặt pin đúng hiện trường</Text>
+            <Text style={styles.subtitle}>Kéo bản đồ để ghim đúng hiện trường</Text>
           </View>
         </View>
 
@@ -245,7 +245,7 @@ export function ReportLocationPicker({
             </Text>
           ) : null}
           <Text style={styles.privacyCopy}>
-            Tọa độ được dùng để tìm nhãn địa chỉ khi xác nhận pin và chỉ lưu khi mày đăng báo cáo.
+            Chỉ lưu tọa độ sau khi mày xác nhận và đăng báo cáo.
           </Text>
           <Pressable
             disabled={isResolving}
@@ -253,11 +253,11 @@ export function ReportLocationPicker({
             onPress={() => void handleConfirm()}
           >
             {isResolving ? (
-              <ActivityIndicator color={colors.surface} />
+              <ActivityIndicator color={colors.accentInk} />
             ) : (
               <>
-                <Check color={colors.surface} size={20} />
-                <Text style={styles.confirmText}>Dùng vị trí này</Text>
+                <Check color={colors.accentInk} size={20} />
+                <Text style={styles.confirmText}>Xác nhận vị trí</Text>
               </>
             )}
           </Pressable>
@@ -278,20 +278,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    backgroundColor: colors.mapSurfaceStrong,
+    backgroundColor: colors.mapOverlay,
     paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.lg,
   },
   iconButton: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.md,
+    backgroundColor: colors.surface,
   },
   headerCopy: { flex: 1 },
-  title: { color: colors.ink, fontSize: 17, fontWeight: '900' },
+  title: { color: colors.ink, fontSize: 18, fontWeight: '800' },
   subtitle: { marginTop: 2, color: colors.inkMuted, fontSize: 12 },
   pinWrap: {
     position: 'absolute',
@@ -315,20 +315,25 @@ const styles = StyleSheet.create({
     height: 52,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 26,
-    backgroundColor: colors.surface,
+    borderRadius: radius.md,
+    backgroundColor: colors.mapSurfaceStrong,
+    shadowColor: colors.shadow,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.14,
+    shadowRadius: 18,
+    elevation: 7,
   },
   footer: {
     position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
-    padding: spacing.lg,
+    padding: spacing.lgPlus,
   },
-  coordinateLabel: { color: colors.ink, fontSize: 15, fontWeight: '900' },
+  coordinateLabel: { color: colors.ink, fontSize: 16, fontWeight: '800' },
   accuracyLabel: { marginTop: spacing.xs, color: colors.primary, fontSize: 12, fontWeight: '800' },
   placementError: {
     marginBottom: spacing.md,
@@ -336,7 +341,15 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
   },
-  privacyCopy: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 12, lineHeight: 17 },
+  privacyCopy: {
+    marginTop: spacing.sm,
+    borderRadius: radius.sm,
+    backgroundColor: colors.canvas,
+    color: colors.inkMuted,
+    padding: spacing.md,
+    fontSize: 12,
+    lineHeight: 17,
+  },
   locationError: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -347,7 +360,7 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   locationErrorText: { flex: 1, color: colors.danger, fontSize: 12, lineHeight: 17 },
-  locationErrorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
+  locationErrorAction: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   confirmButton: {
     minHeight: 54,
     marginTop: spacing.lg,
@@ -355,9 +368,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    backgroundColor: colors.accent,
   },
-  confirmText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
+  confirmText: { color: colors.accentInk, fontSize: 15, fontWeight: '800' },
   disabled: { opacity: 0.6 },
 });

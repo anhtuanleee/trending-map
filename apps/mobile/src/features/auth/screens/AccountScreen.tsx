@@ -22,6 +22,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { SectionLabel } from '@/components/ui';
 import { colors, radius, spacing } from '@/theme';
 
 import { useAuth } from '../providers/AuthProvider';
@@ -84,7 +85,7 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
         </Pressable>
         <View style={styles.guestContent}>
           <View style={styles.largeIcon}>
-            <ShieldCheck color={colors.primary} size={34} />
+            <ShieldCheck color={colors.accent} size={34} />
           </View>
           <Text style={styles.guestTitle}>Đăng nhập để quản lý tài khoản</Text>
           <Text style={styles.guestDescription}>
@@ -135,7 +136,7 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
         </View>
       </View>
 
-      <Text style={styles.sectionLabel}>TÀI KHOẢN</Text>
+      <SectionLabel>Tài khoản</SectionLabel>
       <View style={styles.card}>
         <View style={styles.infoRow}>
           <Mail color={colors.inkMuted} size={20} />
@@ -148,7 +149,7 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
 
       {subscriptionEntry}
 
-      <Text style={styles.sectionLabel}>CÁ NHÂN HÓA</Text>
+      <SectionLabel>Cá nhân hóa</SectionLabel>
       <View style={styles.card}>
         {upcomingItems.map(({ label, icon: Icon }, index) => (
           <View
@@ -200,14 +201,14 @@ const styles = StyleSheet.create({
   helper: { color: colors.inkMuted },
   accountContent: { paddingHorizontal: spacing.xl },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerTitle: { color: colors.ink, fontSize: 18, fontWeight: '900' },
+  headerTitle: { color: colors.ink, fontSize: 19, fontWeight: '800' },
   headerSpacer: { width: 44 },
   back: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: radius.md,
     backgroundColor: colors.surface,
   },
   guestContent: {
@@ -218,12 +219,19 @@ const styles = StyleSheet.create({
   largeIcon: {
     width: 64,
     height: 64,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.ink,
   },
-  guestTitle: { marginTop: spacing.xl, color: colors.ink, fontSize: 28, fontWeight: '900' },
+  guestTitle: {
+    marginTop: spacing.xl,
+    color: colors.ink,
+    fontSize: 30,
+    lineHeight: 37,
+    fontWeight: '800',
+    letterSpacing: -0.7,
+  },
   guestDescription: {
     marginTop: spacing.md,
     color: colors.inkMuted,
@@ -235,11 +243,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    backgroundColor: colors.accent,
     paddingHorizontal: spacing.md,
   },
-  primaryButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
+  primaryButtonText: { color: colors.accentInk, fontSize: 15, fontWeight: '800' },
   secondaryButton: {
     minHeight: 50,
     marginTop: spacing.md,
@@ -247,47 +255,49 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
   },
   secondaryButtonText: { color: colors.ink, fontWeight: '800' },
   profile: {
-    marginVertical: spacing.xxl,
+    marginTop: spacing.xl,
+    marginBottom: spacing.md,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.lg,
+    overflow: 'hidden',
+    borderRadius: radius.xl,
+    backgroundColor: colors.ink,
+    padding: spacing.xl,
   },
   avatar: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
+    width: 68,
+    height: 68,
+    borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent,
   },
-  avatarText: { color: colors.surface, fontSize: 18, fontWeight: '900' },
+  avatarText: { color: colors.accentInk, fontSize: 18, fontWeight: '800' },
   profileCopy: { flex: 1 },
-  profileName: { color: colors.ink, fontSize: 20, fontWeight: '900' },
-  profileMeta: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 13 },
+  profileName: { color: colors.onPrimary, fontSize: 21, fontWeight: '800' },
+  profileMeta: { marginTop: spacing.xs, color: colors.onPrimary, fontSize: 12, opacity: 0.7 },
   demoBadge: {
     alignSelf: 'flex-start',
     marginTop: spacing.sm,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-    color: colors.primary,
+    backgroundColor: colors.accent,
+    color: colors.accentInk,
     paddingHorizontal: spacing.sm,
     paddingVertical: spacing.xs,
     fontSize: 10,
-    fontWeight: '900',
+    fontWeight: '800',
   },
-  sectionLabel: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '900',
+  card: {
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.lg,
   },
-  card: { borderRadius: radius.lg, backgroundColor: colors.surface, paddingHorizontal: spacing.lg },
   infoRow: {
     minHeight: 68,
     flexDirection: 'row',
@@ -296,16 +306,24 @@ const styles = StyleSheet.create({
   },
   rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
   rowCopy: { flex: 1 },
-  rowTitle: { color: colors.ink, fontSize: 14, fontWeight: '800' },
+  rowTitle: { color: colors.ink, fontSize: 14, fontWeight: '700' },
   rowMeta: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 12 },
-  soon: { color: colors.inkMuted, fontSize: 11, fontWeight: '700' },
+  soon: {
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
+    color: colors.inkMuted,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    fontSize: 10,
+    fontWeight: '700',
+  },
   privacyCard: {
     marginTop: spacing.xl,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.md,
     borderRadius: radius.lg,
-    backgroundColor: colors.primarySoft,
+    backgroundColor: colors.accentSoft,
     padding: spacing.lg,
   },
   privacyCopy: { flex: 1, color: colors.inkMuted, fontSize: 13, lineHeight: 19 },
@@ -318,9 +336,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    backgroundColor: colors.dangerSoft,
   },
-  logoutText: { color: colors.danger, fontSize: 15, fontWeight: '900' },
+  logoutText: { color: colors.danger, fontSize: 15, fontWeight: '800' },
   disabled: { opacity: 0.6 },
 });

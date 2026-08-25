@@ -1,4 +1,5 @@
 import type { VerificationStatus } from '@trending-map/contracts';
+import { BadgeCheck, CircleAlert, CircleDashed, UsersRound } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, spacing } from '@/theme';
@@ -10,12 +11,29 @@ const labels: Record<VerificationStatus, string> = {
   disputed: 'Đang tranh luận',
 };
 
+const tones = {
+  unverified: { background: colors.surfaceMuted, foreground: colors.inkMuted, Icon: CircleDashed },
+  community_verified: {
+    background: colors.primarySoft,
+    foreground: colors.primary,
+    Icon: UsersRound,
+  },
+  official_verified: {
+    background: colors.officialSoft,
+    foreground: colors.official,
+    Icon: BadgeCheck,
+  },
+  disputed: { background: colors.warningSoft, foreground: colors.warning, Icon: CircleAlert },
+} as const;
+
 export function StatusBadge({ status }: { status: VerificationStatus }) {
+  const tone = tones[status];
+  const Icon = tone.Icon;
+
   return (
-    <View style={[styles.badge, status === 'official_verified' && styles.official]}>
-      <Text style={[styles.text, status === 'official_verified' && styles.officialText]}>
-        {labels[status]}
-      </Text>
+    <View style={[styles.badge, { backgroundColor: tone.background }]}>
+      <Icon color={tone.foreground} size={13} strokeWidth={2.5} />
+      <Text style={[styles.text, { color: tone.foreground }]}>{labels[status]}</Text>
     </View>
   );
 }
@@ -23,12 +41,12 @@ export function StatusBadge({ status }: { status: VerificationStatus }) {
 const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
     paddingHorizontal: spacing.md,
     paddingVertical: 6,
   },
-  official: { backgroundColor: colors.officialSoft },
-  text: { color: colors.primary, fontSize: 12, fontWeight: '700' },
-  officialText: { color: colors.official },
+  text: { fontSize: 11, fontWeight: '800' },
 });

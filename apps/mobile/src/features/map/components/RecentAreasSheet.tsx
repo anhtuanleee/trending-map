@@ -43,6 +43,7 @@ export function RecentAreasSheet({
           style={[styles.sheet, { paddingBottom: insets.bottom + spacing.md }]}
           onPress={(event) => event.stopPropagation()}
         >
+          <View style={styles.handle} />
           <View style={styles.header}>
             <View>
               <Text style={styles.title}>Khu vực gần đây</Text>
@@ -111,10 +112,18 @@ const styles = StyleSheet.create({
   sheet: {
     maxHeight: '72%',
     minHeight: 380,
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.md,
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    marginBottom: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
   },
   header: {
     flexDirection: 'row',
@@ -123,29 +132,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
   },
-  title: { color: colors.ink, fontSize: 20, fontWeight: '900' },
+  title: { color: colors.ink, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
   subtitle: { marginTop: 3, color: colors.inkMuted, fontSize: 12 },
   closeButton: {
     width: 42,
     height: 42,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 21,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceMuted,
   },
   state: { minHeight: 160, alignItems: 'center', justifyContent: 'center' },
   error: { paddingHorizontal: spacing.lg, color: colors.danger, fontSize: 12 },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
   emptyList: { flexGrow: 1 },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
-  emptyTitle: { marginTop: spacing.md, color: colors.ink, fontSize: 16, fontWeight: '900' },
+  emptyTitle: { marginTop: spacing.md, color: colors.ink, fontSize: 16, fontWeight: '800' },
   emptyText: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 13 },
   areaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    paddingVertical: spacing.md,
+    marginBottom: spacing.sm,
+    borderRadius: radius.lg,
+    backgroundColor: colors.canvas,
+    padding: spacing.md,
   },
   areaMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   areaIcon: {
@@ -153,8 +163,8 @@ const styles = StyleSheet.create({
     height: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 20,
-    backgroundColor: colors.canvas,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primarySoft,
   },
   areaCopy: { flex: 1 },
   areaName: { color: colors.ink, fontSize: 14, fontWeight: '800' },
@@ -164,6 +174,6 @@ const styles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: radius.md,
   },
 });

@@ -140,7 +140,7 @@ export function SubscriptionScreen() {
 
       <View style={styles.hero}>
         <View style={styles.heroIcon}>
-          <Crown color={colors.primary} size={30} />
+          <Crown color={colors.accentInk} size={30} />
         </View>
         <Text style={styles.eyebrow}>TRENDING MAP PLUS</Text>
         <Text style={styles.heroTitle}>Theo dõi điều quan trọng với mày</Text>
@@ -232,7 +232,7 @@ export function SubscriptionScreen() {
         disabled={!subscription.billingAvailable || billingPending || subscription.tier === 'plus'}
         onPress={() => void handlePurchase()}
       >
-        {billingPending ? <ActivityIndicator color={colors.surface} /> : null}
+        {billingPending ? <ActivityIndicator color={colors.accentInk} /> : null}
         <Text style={styles.purchaseButtonText}>
           {subscription.tier === 'plus'
             ? 'Plus đang hoạt động'
@@ -269,7 +269,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   centeredCopy: { flex: 1, justifyContent: 'center', paddingBottom: 90 },
-  disabledTitle: { marginTop: spacing.lg, color: colors.ink, fontSize: 26, fontWeight: '900' },
+  disabledTitle: {
+    marginTop: spacing.lg,
+    color: colors.ink,
+    fontSize: 28,
+    lineHeight: 35,
+    fontWeight: '800',
+  },
   disabledDescription: {
     marginTop: spacing.md,
     color: colors.inkMuted,
@@ -282,20 +288,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  headerTitle: { color: colors.ink, fontSize: 18, fontWeight: '900' },
+  headerTitle: { color: colors.ink, fontSize: 19, fontWeight: '800' },
   headerSpacer: { width: 44 },
   back: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 22,
+    borderRadius: radius.md,
     backgroundColor: colors.surface,
   },
   hero: {
     margin: spacing.xl,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primarySoft,
+    overflow: 'hidden',
+    borderRadius: radius.xl,
+    backgroundColor: colors.ink,
     padding: spacing.xl,
   },
   heroIcon: {
@@ -304,37 +311,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radius.lg,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.accent,
   },
-  eyebrow: { marginTop: spacing.lg, color: colors.primary, fontSize: 11, fontWeight: '900' },
+  eyebrow: {
+    marginTop: spacing.lg,
+    color: colors.accent,
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
   heroTitle: {
     marginTop: spacing.sm,
-    color: colors.ink,
-    fontSize: 27,
-    lineHeight: 33,
-    fontWeight: '900',
+    color: colors.onPrimary,
+    fontSize: 29,
+    lineHeight: 35,
+    fontWeight: '800',
+    letterSpacing: -0.7,
   },
   heroDescription: {
     marginTop: spacing.md,
-    color: colors.inkMuted,
+    color: colors.onPrimary,
     fontSize: 14,
     lineHeight: 21,
+    opacity: 0.72,
   },
   currentPlan: {
     marginTop: spacing.lg,
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.overlayLight,
     paddingTop: spacing.md,
   },
-  currentPlanLabel: { color: colors.inkMuted, fontSize: 12 },
-  currentPlanValue: { color: colors.primary, fontSize: 12, fontWeight: '900' },
+  currentPlanLabel: { color: colors.onPrimary, fontSize: 12, opacity: 0.68 },
+  currentPlanValue: { color: colors.accent, fontSize: 12, fontWeight: '800' },
   periodRow: {
     marginHorizontal: spacing.xl,
     flexDirection: 'row',
     gap: spacing.sm,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
     padding: spacing.xs,
   },
@@ -345,7 +360,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.dangerSoft,
     padding: spacing.md,
   },
-  errorTitle: { color: colors.danger, fontSize: 13, fontWeight: '900' },
+  errorTitle: { color: colors.danger, fontSize: 13, fontWeight: '800' },
   errorDescription: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 12 },
   periodButton: {
     flex: 1,
@@ -354,28 +369,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.sm,
   },
-  periodButtonActive: { backgroundColor: colors.primary },
-  periodButtonText: { color: colors.inkMuted, fontWeight: '800' },
-  periodButtonTextActive: { color: colors.surface },
+  periodButtonActive: { backgroundColor: colors.ink },
+  periodButtonText: { color: colors.inkMuted, fontWeight: '700' },
+  periodButtonTextActive: { color: colors.onPrimary },
   priceCard: {
     marginHorizontal: spacing.xl,
     marginTop: spacing.md,
     alignItems: 'center',
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
+    borderRadius: radius.xl,
+    backgroundColor: colors.accentSoft,
     padding: spacing.xl,
   },
-  price: { color: colors.ink, fontSize: 31, fontWeight: '900' },
+  price: { color: colors.ink, fontSize: 34, fontWeight: '800', letterSpacing: -0.8 },
   pricePeriod: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 12 },
   saving: {
     marginTop: spacing.sm,
     borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-    color: colors.primary,
+    backgroundColor: colors.accent,
+    color: colors.accentInk,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     fontSize: 11,
-    fontWeight: '900',
+    fontWeight: '800',
   },
   sectionTitle: {
     marginHorizontal: spacing.xl,
@@ -383,11 +398,11 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
     color: colors.ink,
     fontSize: 18,
-    fontWeight: '900',
+    fontWeight: '800',
   },
   featuresCard: {
     marginHorizontal: spacing.xl,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     backgroundColor: colors.surface,
     paddingHorizontal: spacing.lg,
   },
@@ -404,7 +419,7 @@ const styles = StyleSheet.create({
   checkIconPlanned: { backgroundColor: colors.canvas },
   featureCopy: { flex: 1 },
   featureTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  featureTitle: { flex: 1, color: colors.ink, fontSize: 14, fontWeight: '900' },
+  featureTitle: { flex: 1, color: colors.ink, fontSize: 14, fontWeight: '800' },
   phase: { color: colors.inkMuted, fontSize: 9, fontWeight: '800' },
   phaseEnabled: { color: colors.primary },
   featureDescription: {
@@ -413,7 +428,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
   },
-  featureLimit: { marginTop: spacing.sm, color: colors.primary, fontSize: 11, fontWeight: '900' },
+  featureLimit: { marginTop: spacing.sm, color: colors.primary, fontSize: 11, fontWeight: '800' },
   purchaseButton: {
     minHeight: 56,
     marginHorizontal: spacing.xl,
@@ -422,19 +437,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
+    borderRadius: radius.lg,
+    backgroundColor: colors.accent,
   },
-  purchaseButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
+  purchaseButtonText: { color: colors.accentInk, fontSize: 15, fontWeight: '800' },
   primaryButton: {
     minHeight: 54,
     marginTop: spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     backgroundColor: colors.primary,
   },
-  primaryButtonText: { color: colors.surface, fontWeight: '900' },
+  primaryButtonText: { color: colors.surface, fontWeight: '800' },
   restoreButton: {
     minHeight: 48,
     marginHorizontal: spacing.xl,
