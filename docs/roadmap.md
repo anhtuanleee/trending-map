@@ -17,13 +17,14 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 
 - [x] Engagement foundation: shared contracts, safe timeline view, saved items, server-only outbox
       và rollout flags mặc định tắt.
-- Admin auth + moderator role gate.
+- [x] Admin email OTP + moderator role gate tại RPC/Edge boundary.
 - Moderation case detail; approve, reject, resolve, merge duplicate và audit action.
 - Duplicate candidate query dựa trên category radius/window, sau đó thêm scoring.
 - [x] Ghi `report_status_history` tự động khi verification/operational status đổi.
 - [x] Live incident timeline: public read, owner update, lifecycle transition và rollout gate.
 - [x] Photo evidence upload: sanitize JPEG, signed private upload, metadata, retry và pending moderation.
-- Media publication: thumbnail worker, malware/content scan, moderator approve/reject và public URL.
+- [x] Photo publication: signed private preview, claim, moderator approve/reject và public URL.
+- Thumbnail variants, malware/content scan tự động và retention cleanup cho private originals.
 - Scheduled invocation cho `expire_stale_reports`.
 - Rate limiting và abuse controls cho submit/confirmation/OTP.
 

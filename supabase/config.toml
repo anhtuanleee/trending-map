@@ -39,3 +39,9 @@ verify_jwt = true
 
 [functions.complete-report-media-upload]
 verify_jwt = true
+
+[functions.get-report-media-moderation-queue]
+verify_jwt = true
+
+[functions.moderate-report-media]
+verify_jwt = true

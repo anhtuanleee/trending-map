@@ -18,7 +18,7 @@ Mobile và admin không chia sẻ UI runtime. Chúng chia sẻ type/validation v
 | Path                  | Trách nhiệm                                                              |
 | --------------------- | ------------------------------------------------------------------------ |
 | `apps/mobile`         | Expo/React Native client, guest browse, auth gate và contribution flows. |
-| `apps/admin`          | Next.js moderation dashboard chạy server-side.                           |
+| `apps/admin`          | Next.js moderation dashboard với browser auth và role-gated commands.    |
 | `packages/contracts`  | Zod schemas và TypeScript types dùng chung.                              |
 | `packages/ui-tokens`  | Token màu/kích thước có thể chia sẻ giữa clients.                        |
 | `supabase/migrations` | Schema, indexes, RLS, grants, views và RPC.                              |
@@ -39,7 +39,8 @@ flowchart LR
 
 - **Public reads** dùng `get_map_items` và `public_report_details`. Hai boundary này cố ý loại reporter identity và internal trust score.
 - **Authenticated commands** đi qua Edge Functions rồi tới security-definer RPC. JWT của người dùng được forward, nên `auth.uid()` vẫn là actor thật.
-- **Admin reads** chạy server-side với `SUPABASE_SERVICE_ROLE_KEY`. Key này không được xuất hiện trong client bundle.
+- **Admin moderation** dùng anon key + caller JWT; RPC kiểm tra `moderator`. Edge Function mới giữ
+  service role để ký private preview/copy approved object, key không xuất hiện trong client bundle.
 
 ## Các quyết định kiến trúc
 
