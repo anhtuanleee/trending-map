@@ -1,10 +1,13 @@
 'use client';
 
-import type { ReportMediaModerationItem } from '@trending-map/contracts';
+import type { ReportMediaModerationItem, ReportModerationItem } from '@trending-map/contracts';
 import type { Session } from '@supabase/supabase-js';
 import {
   CheckCircle2,
+  BadgeCheck,
+  Ban,
   CircleGauge,
+  CircleCheckBig,
   ImageIcon,
   LoaderCircle,
   LogOut,
@@ -16,10 +19,18 @@ import {
 } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { demoMediaQueue, getMediaModerationQueue, moderateMedia } from '@/lib/moderation';
+import {
+  demoMediaQueue,
+  demoReportQueue,
+  getMediaModerationQueue,
+  getReportModerationQueue,
+  moderateMedia,
+  moderateReport,
+} from '@/lib/moderation';
 import { getSupabaseBrowserClient, hasSupabaseConfig } from '@/lib/supabase-browser';
 
 type AuthStep = 'email' | 'code';
+type QueueMode = 'reports' | 'media';
 
 function formatAge(value: string) {
   const minutes = Math.max(1, Math.round((Date.now() - new Date(value).getTime()) / 60_000));
@@ -46,7 +57,11 @@ export function AdminDashboard() {
   const [authStep, setAuthStep] = useState<AuthStep>('email');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
+  const [queueMode, setQueueMode] = useState<QueueMode>('reports');
   const [rows, setRows] = useState<ReportMediaModerationItem[]>(configured ? [] : demoMediaQueue);
+  const [reportRows, setReportRows] = useState<ReportModerationItem[]>(
+    configured ? [] : demoReportQueue,
+  );
   const [reasons, setReasons] = useState<Record<string, string>>({});
   const [busyId, setBusyId] = useState<string | null>(null);
   const [loading, setLoading] = useState(configured);
@@ -58,12 +73,20 @@ export function AdminDashboard() {
   const loadQueue = useCallback(async () => {
     if (!configured || !supabase) {
       setRows(demoMediaQueue);
+      setReportRows(demoReportQueue);
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      setRows(await getMediaModerationQueue(supabase));
+      const [media, reports] = await Promise.allSettled([
+        getMediaModerationQueue(supabase),
+        getReportModerationQueue(supabase),
+      ]);
+      if (media.status === 'fulfilled') setRows(media.value);
+      if (reports.status === 'fulfilled') setReportRows(reports.value);
+      const failed = [media, reports].find((result) => result.status === 'rejected');
+      if (failed?.status === 'rejected') setError(readableError(failed.reason));
     } catch (loadError) {
       setError(readableError(loadError));
     } finally {
@@ -82,7 +105,10 @@ export function AdminDashboard() {
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       if (nextSession) setTimeout(() => void loadQueue(), 0);
-      else setRows([]);
+      else {
+        setRows([]);
+        setReportRows([]);
+      }
     });
     return () => data.subscription.unsubscribe();
   }, [configured, loadQueue, supabase]);
@@ -136,6 +162,39 @@ export function AdminDashboard() {
       }
       setRows((current) => current.filter((item) => item.mediaId !== row.mediaId));
       setNotice(decision === 'approve' ? 'Ảnh đã được duyệt và xuất bản.' : 'Ảnh đã bị từ chối.');
+    } catch (moderationError) {
+      setError(readableError(moderationError));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function decideReport(row: ReportModerationItem, action: 'approve' | 'resolve' | 'reject') {
+    const reason = reasons[row.caseId]?.trim();
+    if (action !== 'approve' && !reason) {
+      setError('Nhập lý do trước khi resolve hoặc reject báo cáo.');
+      return;
+    }
+    setBusyId(row.caseId);
+    setError(null);
+    setNotice(null);
+    try {
+      if (configured && supabase) {
+        await moderateReport(supabase, {
+          caseId: row.caseId,
+          action,
+          reason,
+          idempotencyKey: crypto.randomUUID(),
+        });
+      }
+      setReportRows((current) => current.filter((item) => item.caseId !== row.caseId));
+      setNotice(
+        action === 'approve'
+          ? 'Báo cáo đã được điều phối viên xác minh.'
+          : action === 'resolve'
+            ? 'Báo cáo đã chuyển sang resolved.'
+            : 'Báo cáo đã bị reject và ẩn khỏi public view.',
+      );
     } catch (moderationError) {
       setError(readableError(moderationError));
     } finally {
@@ -207,8 +266,10 @@ export function AdminDashboard() {
     );
   }
 
-  const urgent = rows.filter((row) => ['critical', 'high'].includes(row.severity)).length;
+  const activeRows = queueMode === 'reports' ? reportRows : rows;
+  const urgent = activeRows.filter((row) => ['critical', 'high'].includes(row.severity)).length;
   const totalSize = rows.reduce((sum, row) => sum + row.fileSizeBytes, 0);
+  const disputed = reportRows.filter((row) => row.verificationStatus === 'disputed').length;
 
   return (
     <div className="shell">
@@ -219,7 +280,7 @@ export function AdminDashboard() {
         </div>
         <nav>
           <a className="active" href="#queue">
-            <ShieldCheck size={18} /> Ảnh chờ duyệt
+            <ShieldCheck size={18} /> Kiểm duyệt
           </a>
           <a href="#map">
             <Map size={18} /> Bản đồ vận hành
@@ -253,9 +314,11 @@ export function AdminDashboard() {
         <header>
           <div>
             <p className="eyebrow">TRUNG TÂM VẬN HÀNH</p>
-            <h1>Kiểm duyệt ảnh hiện trường</h1>
+            <h1>{queueMode === 'reports' ? 'Kiểm duyệt báo cáo' : 'Kiểm duyệt ảnh hiện trường'}</h1>
             <p className="lead">
-              Chỉ ảnh được duyệt mới được copy sang public bucket và xuất hiện trên app.
+              {queueMode === 'reports'
+                ? 'Xác minh, kết thúc hoặc loại báo cáo bằng transition được kiểm soát ở database.'
+                : 'Chỉ ảnh được duyệt mới được copy sang public bucket và xuất hiện trên app.'}
             </p>
           </div>
           <button className="secondary" disabled={loading} onClick={() => void loadQueue()}>
@@ -263,11 +326,28 @@ export function AdminDashboard() {
           </button>
         </header>
 
+        <div className="queue-tabs" role="tablist" aria-label="Loại hàng đợi">
+          <button
+            className={queueMode === 'reports' ? 'selected' : ''}
+            onClick={() => setQueueMode('reports')}
+            role="tab"
+          >
+            Báo cáo <span>{reportRows.length}</span>
+          </button>
+          <button
+            className={queueMode === 'media' ? 'selected' : ''}
+            onClick={() => setQueueMode('media')}
+            role="tab"
+          >
+            Ảnh hiện trường <span>{rows.length}</span>
+          </button>
+        </div>
+
         <section className="stats" aria-label="Tóm tắt hàng đợi">
           <article>
             <span>Đang chờ</span>
-            <strong>{rows.length}</strong>
-            <small>Ảnh JPEG private</small>
+            <strong>{activeRows.length}</strong>
+            <small>{queueMode === 'reports' ? 'Moderation case mở' : 'Ảnh JPEG private'}</small>
           </article>
           <article>
             <span>Ưu tiên cao</span>
@@ -275,9 +355,13 @@ export function AdminDashboard() {
             <small>Critical và high severity</small>
           </article>
           <article>
-            <span>Dung lượng</span>
-            <strong>{formatBytes(totalSize)}</strong>
-            <small>Tổng dữ liệu cần xem</small>
+            <span>{queueMode === 'reports' ? 'Đang tranh luận' : 'Dung lượng'}</span>
+            <strong>{queueMode === 'reports' ? disputed : formatBytes(totalSize)}</strong>
+            <small>
+              {queueMode === 'reports'
+                ? 'Cộng đồng có tín hiệu trái chiều'
+                : 'Tổng dữ liệu cần xem'}
+            </small>
           </article>
         </section>
 
@@ -285,91 +369,184 @@ export function AdminDashboard() {
         {notice && <p className="message success banner">{notice}</p>}
 
         <section className="queue" id="queue">
-          <div className="queue-head">
-            <div>
-              <h2>Ảnh mới nhất</h2>
-              <p>Signed preview hết hạn sau 10 phút; refresh để tạo URL mới.</p>
-            </div>
-            {!configured && <span className="demo-badge">DEMO MODE</span>}
-          </div>
+          {queueMode === 'media' ? (
+            <>
+              <div className="queue-head">
+                <div>
+                  <h2>Ảnh mới nhất</h2>
+                  <p>Signed preview hết hạn sau 10 phút; refresh để tạo URL mới.</p>
+                </div>
+                {!configured && <span className="demo-badge">DEMO MODE</span>}
+              </div>
 
-          {loading ? (
-            <div className="empty-state">
-              <LoaderCircle className="spin" /> Đang tải hàng đợi…
-            </div>
-          ) : rows.length === 0 ? (
-            <div className="empty-state">
-              <CheckCircle2 /> Không còn ảnh chờ duyệt.
-            </div>
+              {loading ? (
+                <div className="empty-state">
+                  <LoaderCircle className="spin" /> Đang tải hàng đợi…
+                </div>
+              ) : rows.length === 0 ? (
+                <div className="empty-state">
+                  <CheckCircle2 /> Không còn ảnh chờ duyệt.
+                </div>
+              ) : (
+                <div className="media-grid">
+                  {rows.map((row) => (
+                    <article className="media-card" key={row.mediaId}>
+                      <div className="preview-wrap">
+                        {/* Signed URLs are generated only after the moderator role check. */}
+                        <img alt={`Bằng chứng cho ${row.reportTitle}`} src={row.previewUrl} />
+                        <span className={`severity-pill ${row.severity}`}>{row.severity}</span>
+                      </div>
+                      <div className="media-content">
+                        <div className="media-meta">
+                          <span>
+                            <ImageIcon size={14} /> {row.categoryName}
+                          </span>
+                          <span>{formatAge(row.uploadedAt)}</span>
+                        </div>
+                        <h3>{row.reportTitle}</h3>
+                        <p>{row.addressLabel ?? 'Chưa có tên khu vực'}</p>
+                        <dl>
+                          <div>
+                            <dt>Kích thước</dt>
+                            <dd>
+                              {row.width} × {row.height}
+                            </dd>
+                          </div>
+                          <div>
+                            <dt>Dung lượng</dt>
+                            <dd>{formatBytes(row.fileSizeBytes)}</dd>
+                          </div>
+                        </dl>
+                        <label className="reason-field">
+                          Lý do nếu từ chối
+                          <textarea
+                            maxLength={500}
+                            onChange={(event) =>
+                              setReasons((current) => ({
+                                ...current,
+                                [row.mediaId]: event.target.value,
+                              }))
+                            }
+                            placeholder="Ảnh mờ, không liên quan, chứa dữ liệu nhạy cảm…"
+                            value={reasons[row.mediaId] ?? ''}
+                          />
+                        </label>
+                        <div className="actions">
+                          <button
+                            className="reject"
+                            disabled={busyId === row.mediaId}
+                            onClick={() => void decide(row, 'reject')}
+                          >
+                            <XCircle size={17} /> Từ chối
+                          </button>
+                          <button
+                            className="approve"
+                            disabled={busyId === row.mediaId}
+                            onClick={() => void decide(row, 'approve')}
+                          >
+                            {busyId === row.mediaId ? (
+                              <LoaderCircle className="spin" size={17} />
+                            ) : (
+                              <CheckCircle2 size={17} />
+                            )}{' '}
+                            Duyệt ảnh
+                          </button>
+                        </div>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="media-grid">
-              {rows.map((row) => (
-                <article className="media-card" key={row.mediaId}>
-                  <div className="preview-wrap">
-                    {/* Signed URLs are generated only after the moderator role check. */}
-                    <img alt={`Bằng chứng cho ${row.reportTitle}`} src={row.previewUrl} />
-                    <span className={`severity-pill ${row.severity}`}>{row.severity}</span>
-                  </div>
-                  <div className="media-content">
-                    <div className="media-meta">
-                      <span>
-                        <ImageIcon size={14} /> {row.categoryName}
-                      </span>
-                      <span>{formatAge(row.uploadedAt)}</span>
-                    </div>
-                    <h3>{row.reportTitle}</h3>
-                    <p>{row.addressLabel ?? 'Chưa có tên khu vực'}</p>
-                    <dl>
-                      <div>
-                        <dt>Kích thước</dt>
-                        <dd>
-                          {row.width} × {row.height}
-                        </dd>
+            <>
+              <div className="queue-head">
+                <div>
+                  <h2>Báo cáo cần quyết định</h2>
+                  <p>Ưu tiên severity cao và report đang disputed; reason chỉ lưu nội bộ.</p>
+                </div>
+                {!configured && <span className="demo-badge">DEMO MODE</span>}
+              </div>
+
+              {loading ? (
+                <div className="empty-state">
+                  <LoaderCircle className="spin" /> Đang tải hàng đợi…
+                </div>
+              ) : reportRows.length === 0 ? (
+                <div className="empty-state">
+                  <CheckCircle2 /> Không còn báo cáo chờ duyệt.
+                </div>
+              ) : (
+                <div className="report-grid">
+                  {reportRows.map((row) => (
+                    <article className="report-card" key={row.caseId}>
+                      <div className="report-card-head">
+                        <div>
+                          <span className="report-category">{row.categoryName}</span>
+                          <h3>{row.title}</h3>
+                        </div>
+                        <span className={`severity-pill static ${row.severity}`}>
+                          {row.severity}
+                        </span>
                       </div>
-                      <div>
-                        <dt>Dung lượng</dt>
-                        <dd>{formatBytes(row.fileSizeBytes)}</dd>
+                      <p className="report-description">{row.description}</p>
+                      <p className="report-location">
+                        {row.addressLabel ?? 'Chưa có tên khu vực'} · {formatAge(row.createdAt)}
+                      </p>
+                      <div className="report-signals">
+                        <span className={`verification ${row.verificationStatus}`}>
+                          {row.verificationStatus === 'disputed'
+                            ? 'Đang tranh luận'
+                            : row.verificationStatus === 'community_verified'
+                              ? 'Cộng đồng xác nhận'
+                              : 'Chưa xác minh'}
+                        </span>
+                        <span>{row.confirmationCount} xác nhận</span>
+                        <span>{row.notThereCount} phản đối</span>
+                        <span>Priority {row.priority}</span>
                       </div>
-                    </dl>
-                    <label className="reason-field">
-                      Lý do nếu từ chối
-                      <textarea
-                        maxLength={500}
-                        onChange={(event) =>
-                          setReasons((current) => ({
-                            ...current,
-                            [row.mediaId]: event.target.value,
-                          }))
-                        }
-                        placeholder="Ảnh mờ, không liên quan, chứa dữ liệu nhạy cảm…"
-                        value={reasons[row.mediaId] ?? ''}
-                      />
-                    </label>
-                    <div className="actions">
-                      <button
-                        className="reject"
-                        disabled={busyId === row.mediaId}
-                        onClick={() => void decide(row, 'reject')}
-                      >
-                        <XCircle size={17} /> Từ chối
-                      </button>
-                      <button
-                        className="approve"
-                        disabled={busyId === row.mediaId}
-                        onClick={() => void decide(row, 'approve')}
-                      >
-                        {busyId === row.mediaId ? (
-                          <LoaderCircle className="spin" size={17} />
-                        ) : (
-                          <CheckCircle2 size={17} />
-                        )}{' '}
-                        Duyệt ảnh
-                      </button>
-                    </div>
-                  </div>
-                </article>
-              ))}
-            </div>
+                      <label className="reason-field">
+                        Ghi chú nội bộ
+                        <textarea
+                          maxLength={500}
+                          onChange={(event) =>
+                            setReasons((current) => ({
+                              ...current,
+                              [row.caseId]: event.target.value,
+                            }))
+                          }
+                          placeholder="Bắt buộc khi resolve/reject; không hiển thị công khai."
+                          value={reasons[row.caseId] ?? ''}
+                        />
+                      </label>
+                      <div className="report-actions">
+                        <button
+                          className="approve"
+                          disabled={busyId === row.caseId}
+                          onClick={() => void decideReport(row, 'approve')}
+                        >
+                          <BadgeCheck size={17} /> Xác minh
+                        </button>
+                        <button
+                          className="resolve"
+                          disabled={busyId === row.caseId}
+                          onClick={() => void decideReport(row, 'resolve')}
+                        >
+                          <CircleCheckBig size={17} /> Kết thúc
+                        </button>
+                        <button
+                          className="reject"
+                          disabled={busyId === row.caseId}
+                          onClick={() => void decideReport(row, 'reject')}
+                        >
+                          <Ban size={17} /> Loại bỏ
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </section>
       </main>

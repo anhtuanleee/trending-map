@@ -14,44 +14,46 @@ Nguyên tắc sản phẩm cốt lõi:
 
 ## Ma trận feature
 
-| Khu vực       | Capability                     | Trạng thái     | Ghi chú hiện tại                                                                      |
-| ------------- | ------------------------------ | -------------- | ------------------------------------------------------------------------------------- |
-| Mobile map    | Xem map khi chưa đăng nhập     | **Hoạt động**  | Dùng demo data khi thiếu Supabase env.                                                |
-| Mobile map    | Hiển thị marker và cluster     | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                               |
-| Mobile map    | Tracking vị trí hiện tại       | **Hoạt động**  | Foreground-only, last-known → current high accuracy → live tracking và camera follow. |
-| Mobile map    | Báo cáo trong viewport         | **Hoạt động**  | Camera bounds được debounce rồi truyền vào RPC; demo data cũng lọc theo cùng vùng.    |
-| Mobile map    | Nearby reports                 | **Hoạt động**  | List 1/5/15 km, distance backend và chuyển mode GPS/camera khi pan.                   |
-| Mobile map    | Khu vực gần đây                | **Hoạt động**  | Tối đa 8 center/zoom coarse local, hỗ trợ pin và không ghi GPS history.               |
-| Mobile map    | Preview và mở chi tiết report  | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                                    |
-| Mobile map    | Search, category filter        | **Foundation** | Category filter đã hoạt động; search/deep-link params chưa nối.                       |
-| Mobile map    | Query theo viewport thật       | **Hoạt động**  | Query key gồm bounds, zoom, filter, center và giữ dữ liệu cũ khi pan/refetch.         |
-| Auth          | Đăng nhập OTP qua email        | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.              |
-| Auth          | Đăng nhập Google OAuth         | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.       |
-| Auth          | Auth gate có return URL        | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.            |
-| Auth          | Tài khoản và đăng xuất         | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.        |
-| Reporting     | Tạo report                     | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                           |
-| Reporting     | Chọn vị trí report             | **Hoạt động**  | GPS-first, manual khi denied, accuracy guard 100 m và reverse geocode best-effort.    |
-| Reporting     | Ẩn tên công khai               | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                 |
-| Reporting     | Upload ảnh hiện trường         | **Hoạt động**  | Tối đa 3 JPEG private, sanitize + signed upload + retry; rollout mặc định tắt.        |
-| Reporting     | Duyệt/publish ảnh              | **Hoạt động**  | Moderator claim, approve/reject, private→public copy và approved-only public URL.     |
-| Reporting     | Upload/duyệt video             | **Planned**    | MVP hiện chỉ nhận sanitized JPEG; video chưa có pipeline.                             |
-| Trust         | “Tôi cũng thấy” / “Không còn”  | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                  |
-| Trust         | Community verification         | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`.      |
-| Trust         | Official verification          | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.              |
-| Comments      | Bình luận report               | **Foundation** | Có schema; chưa có policy command và UI.                                              |
-| Follow        | Theo dõi khu vực               | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                          |
-| Notifications | Push notification              | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                       |
-| Engagement    | Live incident timeline         | **Hoạt động**  | Guest read + owner command + lifecycle UI; rollout mặc định tắt.                      |
-| Engagement    | Save report/event và reminder  | **Foundation** | Có user-owned schema/RLS; chưa có action/UI/scheduler.                                |
-| Operations    | Notification outbox            | **Foundation** | Server-only queue có dedupe/retry fields; chưa có worker.                             |
-| Operations    | Feature rollout                | **Hoạt động**  | RPC + mobile hook; tám feature mới mặc định tắt.                                      |
-| Subscription  | Plan/entitlement/feature flags | **Foundation** | Free/Plus contract, RLS read-own, preview UI và billing adapter mặc định tắt.         |
-| Subscription  | Purchase/restore/store webhook | **Planned**    | Chưa cài billing SDK, chưa tạo store products và chưa có verified webhook.            |
-| Admin         | Auth + hàng đợi ảnh            | **Hoạt động**  | Email OTP, DB moderator gate, signed private preview hoặc demo mode.                  |
-| Admin         | Approve/reject ảnh             | **Hoạt động**  | Command idempotent; reject cần lý do, approve mới publish public URL.                 |
-| Admin         | Report resolve/merge/filter    | **Foundation** | Chưa có command xử lý report/duplicate; dashboard hiện tập trung vào media.           |
-| Admin         | Duplicate risk                 | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                        |
-| Operations    | Auto-expire report             | **Foundation** | Có RPC và status-history trigger; chưa có scheduled job trong repo.                   |
+| Khu vực       | Capability                      | Trạng thái     | Ghi chú hiện tại                                                                      |
+| ------------- | ------------------------------- | -------------- | ------------------------------------------------------------------------------------- |
+| Mobile map    | Xem map khi chưa đăng nhập      | **Hoạt động**  | Dùng demo data khi thiếu Supabase env.                                                |
+| Mobile map    | Hiển thị marker và cluster      | **Hoạt động**  | MapLibre `GeoJSONSource`; marker đổi màu theo severity.                               |
+| Mobile map    | Tracking vị trí hiện tại        | **Hoạt động**  | Foreground-only, last-known → current high accuracy → live tracking và camera follow. |
+| Mobile map    | Báo cáo trong viewport          | **Hoạt động**  | Camera bounds được debounce rồi truyền vào RPC; demo data cũng lọc theo cùng vùng.    |
+| Mobile map    | Nearby reports                  | **Hoạt động**  | List 1/5/15 km, distance backend và chuyển mode GPS/camera khi pan.                   |
+| Mobile map    | Khu vực gần đây                 | **Hoạt động**  | Tối đa 8 center/zoom coarse local, hỗ trợ pin và không ghi GPS history.               |
+| Mobile map    | Preview và mở chi tiết report   | **Hoạt động**  | Chọn marker để xem card, sau đó mở route chi tiết.                                    |
+| Mobile map    | Search, category filter         | **Foundation** | Category filter đã hoạt động; search/deep-link params chưa nối.                       |
+| Mobile map    | Query theo viewport thật        | **Hoạt động**  | Query key gồm bounds, zoom, filter, center và giữ dữ liệu cũ khi pan/refetch.         |
+| Auth          | Đăng nhập OTP qua email         | **Hoạt động**  | Supabase Email OTP, resend 60 giây và demo mode chấp nhận mã sáu chữ số.              |
+| Auth          | Đăng nhập Google OAuth          | **Hoạt động**  | Browser OAuth, custom deep-link callback, session persistence và demo fallback.       |
+| Auth          | Auth gate có return URL         | **Hoạt động**  | Guest được chuyển tới auth khi tạo/xác nhận report, kể cả từ trang detail.            |
+| Auth          | Tài khoản và đăng xuất          | **Hoạt động**  | Có account route, trạng thái guest/member, xác nhận logout và xóa query cache.        |
+| Reporting     | Tạo report                      | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                           |
+| Reporting     | Chọn vị trí report              | **Hoạt động**  | GPS-first, manual khi denied, accuracy guard 100 m và reverse geocode best-effort.    |
+| Reporting     | Ẩn tên công khai                | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                 |
+| Reporting     | Upload ảnh hiện trường          | **Hoạt động**  | Tối đa 3 JPEG private, sanitize + signed upload + retry; rollout mặc định tắt.        |
+| Reporting     | Duyệt/publish ảnh               | **Hoạt động**  | Moderator claim, approve/reject, private→public copy và approved-only public URL.     |
+| Reporting     | Upload/duyệt video              | **Planned**    | MVP hiện chỉ nhận sanitized JPEG; video chưa có pipeline.                             |
+| Trust         | “Tôi cũng thấy” / “Không còn”   | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                  |
+| Trust         | Community verification          | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`.      |
+| Trust         | Moderator verification          | **Hoạt động**  | Provenance riêng `moderator_verified`; confirmation không tự hạ cấp trạng thái này.   |
+| Trust         | Official verification           | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.              |
+| Comments      | Bình luận report                | **Foundation** | Có schema; chưa có policy command và UI.                                              |
+| Follow        | Theo dõi khu vực                | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                          |
+| Notifications | Push notification               | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                       |
+| Engagement    | Live incident timeline          | **Hoạt động**  | Guest read + owner command + lifecycle UI; rollout mặc định tắt.                      |
+| Engagement    | Save report/event và reminder   | **Foundation** | Có user-owned schema/RLS; chưa có action/UI/scheduler.                                |
+| Operations    | Notification outbox             | **Foundation** | Server-only queue có dedupe/retry fields; chưa có worker.                             |
+| Operations    | Feature rollout                 | **Hoạt động**  | RPC + mobile hook; tám feature mới mặc định tắt.                                      |
+| Subscription  | Plan/entitlement/feature flags  | **Foundation** | Free/Plus contract, RLS read-own, preview UI và billing adapter mặc định tắt.         |
+| Subscription  | Purchase/restore/store webhook  | **Planned**    | Chưa cài billing SDK, chưa tạo store products và chưa có verified webhook.            |
+| Admin         | Auth + hàng đợi ảnh             | **Hoạt động**  | Email OTP, DB moderator gate, signed private preview hoặc demo mode.                  |
+| Admin         | Approve/reject ảnh              | **Hoạt động**  | Command idempotent; reject cần lý do, approve mới publish public URL.                 |
+| Admin         | Report approve/resolve/reject   | **Hoạt động**  | Queue ưu tiên, private reason, audit/history/outbox và DB-enforced transitions.       |
+| Admin         | Duplicate merge/filter nâng cao | **Foundation** | Chưa có candidate scoring, merge command hoặc saved filter.                           |
+| Admin         | Duplicate risk                  | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                        |
+| Operations    | Auto-expire report              | **Foundation** | Có RPC và status-history trigger; chưa có scheduled job trong repo.                   |
 
 ## Luồng người dùng chính
 
@@ -83,6 +85,6 @@ Nguyên tắc sản phẩm cốt lõi:
 ## Ngoài phạm vi bản hiện tại
 
 Chưa nên mô tả là đã hoàn thiện: billing subscription, tìm kiếm địa điểm, realtime refresh, video
-upload, comment, notification fan-out, duplicate detection, report resolve/merge moderation,
+upload, comment, notification fan-out, duplicate detection/merge,
 official-source ingestion, offline mode, analytics và E2E tests. Các phần này nằm trong
 [roadmap](./roadmap.md).

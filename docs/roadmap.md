@@ -18,7 +18,8 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 - [x] Engagement foundation: shared contracts, safe timeline view, saved items, server-only outbox
       và rollout flags mặc định tắt.
 - [x] Admin email OTP + moderator role gate tại RPC/Edge boundary.
-- Moderation case detail; approve, reject, resolve, merge duplicate và audit action.
+- [x] Moderation case queue; approve, reject, resolve, immutable action result và audit/history.
+- Duplicate case detail, candidate comparison và merge command.
 - Duplicate candidate query dựa trên category radius/window, sau đó thêm scoring.
 - [x] Ghi `report_status_history` tự động khi verification/operational status đổi.
 - [x] Live incident timeline: public read, owner update, lifecycle transition và rollout gate.

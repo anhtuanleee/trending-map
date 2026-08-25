@@ -45,3 +45,9 @@ verify_jwt = true
 
 [functions.moderate-report-media]
 verify_jwt = true
+
+[functions.get-report-moderation-queue]
+verify_jwt = true
+
+[functions.moderate-report-case]
+verify_jwt = true

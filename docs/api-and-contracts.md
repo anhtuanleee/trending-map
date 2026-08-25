@@ -138,6 +138,20 @@ sang public bucket rồi gọi service-role-only finalizer; failure trả claim 
 approved URL, audit log, outbox và public timeline. Client/moderator JWT không thể gọi trực tiếp
 finalizer hoặc tự cung cấp public URL.
 
+### `POST /functions/v1/get-report-moderation-queue`
+
+Yêu cầu role `moderator`. Response theo `ReportModerationItem[]`, gồm nội dung report, category,
+severity, public trust/lifecycle signal và moderation priority; cố ý loại `created_by`,
+`trust_score_internal`, reporter profile và resolution reason.
+
+### `POST /functions/v1/moderate-report-case`
+
+Nhận `caseId`, `action`, optional `reason` và `idempotencyKey`. `resolve`/`reject` bắt buộc reason;
+`approve` chuyển verification sang `moderator_verified`, không giả làm `official_verified`.
+`resolve` đóng report nhưng giữ detail/timeline công khai; `reject` loại report khỏi public view.
+RPC khóa case/report, ghi immutable action result, status history, audit và notification outbox trong
+cùng transaction. Public timeline chỉ nhận thông điệp trung tính, không nhận private reason.
+
 ## Validation và idempotency
 
 - Title: 6–120 ký tự; description: 12–1200.
@@ -151,6 +165,8 @@ finalizer hoặc tự cung cấp public URL.
   cùng media ID là idempotent.
 - Moderation claim có TTL 15 phút; cùng moderator/key retry idempotent và command khác không thể
   publish trên claim còn hiệu lực.
+- Report moderation retry cùng actor/key trả action result cũ; tái sử dụng key cho case/action khác
+  bị từ chối.
 
 ## Error contract hiện tại
 
