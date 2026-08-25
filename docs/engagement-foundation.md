@@ -93,8 +93,11 @@ Override này chỉ có hiệu lực khi `isDemoMode = true`; app đã cấu hì
 - RPC tạo reservation idempotent; signed token chỉ ghi đúng path trong bucket private.
 - Retry nhận biết reservation/object đã tồn tại để tiếp tục completion mà không tạo row hoặc file mới.
 - Completion kiểm tra object size/MIME rồi chuyển sang `uploaded` và enqueue moderation event.
-- Chỉ media có `moderation_status = 'approved'` mới có thể xuất hiện trong public detail. Branch này
-  chưa triển khai worker thumbnail hay moderator command chuyển file sang public bucket.
+- Admin Email OTP session phải có role moderator để nhận signed preview URL private.
+- Approve claim row, copy canonical JPEG sang public bucket rồi service-role-only finalize URL; reject
+  bắt buộc lý do. Publication lỗi trả claim về queue và xóa public object chưa finalize.
+- Chỉ media có `moderation_status = 'approved'` mới xuất hiện trong public detail. Thumbnail variants,
+  automated malware/content scan và video vẫn chưa triển khai.
 
 Bật preview Supabase bằng server flag:
 

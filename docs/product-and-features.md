@@ -33,7 +33,8 @@ Nguyên tắc sản phẩm cốt lõi:
 | Reporting     | Chọn vị trí report             | **Hoạt động**  | GPS-first, manual khi denied, accuracy guard 100 m và reverse geocode best-effort.    |
 | Reporting     | Ẩn tên công khai               | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                 |
 | Reporting     | Upload ảnh hiện trường         | **Hoạt động**  | Tối đa 3 JPEG private, sanitize + signed upload + retry; rollout mặc định tắt.        |
-| Reporting     | Duyệt/publish ảnh và video     | **Foundation** | Approved-only public view có sẵn; thumbnail worker, moderation command/video chưa có. |
+| Reporting     | Duyệt/publish ảnh              | **Hoạt động**  | Moderator claim, approve/reject, private→public copy và approved-only public URL.     |
+| Reporting     | Upload/duyệt video             | **Planned**    | MVP hiện chỉ nhận sanitized JPEG; video chưa có pipeline.                             |
 | Trust         | “Tôi cũng thấy” / “Không còn”  | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                  |
 | Trust         | Community verification         | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`.      |
 | Trust         | Official verification          | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.              |
@@ -46,8 +47,9 @@ Nguyên tắc sản phẩm cốt lõi:
 | Operations    | Feature rollout                | **Hoạt động**  | RPC + mobile hook; tám feature mới mặc định tắt.                                      |
 | Subscription  | Plan/entitlement/feature flags | **Foundation** | Free/Plus contract, RLS read-own, preview UI và billing adapter mặc định tắt.         |
 | Subscription  | Purchase/restore/store webhook | **Planned**    | Chưa cài billing SDK, chưa tạo store products và chưa có verified webhook.            |
-| Admin         | Danh sách moderation           | **Hoạt động**  | Next dashboard đọc Supabase bằng service role hoặc demo rows.                         |
-| Admin         | Filter/approve/reject/merge    | **Foundation** | UI shell đã có; button/filter chưa thực thi command.                                  |
+| Admin         | Auth + hàng đợi ảnh            | **Hoạt động**  | Email OTP, DB moderator gate, signed private preview hoặc demo mode.                  |
+| Admin         | Approve/reject ảnh             | **Hoạt động**  | Command idempotent; reject cần lý do, approve mới publish public URL.                 |
+| Admin         | Report resolve/merge/filter    | **Foundation** | Chưa có command xử lý report/duplicate; dashboard hiện tập trung vào media.           |
 | Admin         | Duplicate risk                 | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                        |
 | Operations    | Auto-expire report             | **Foundation** | Có RPC và status-history trigger; chưa có scheduled job trong repo.                   |
 
@@ -80,7 +82,7 @@ Nguyên tắc sản phẩm cốt lõi:
 
 ## Ngoài phạm vi bản hiện tại
 
-Chưa nên mô tả là đã hoàn thiện: billing subscription, tìm kiếm địa điểm, filter thật, realtime
-refresh, media moderation/publication, video upload, comment, notification fan-out, duplicate detection, moderation actions,
+Chưa nên mô tả là đã hoàn thiện: billing subscription, tìm kiếm địa điểm, realtime refresh, video
+upload, comment, notification fan-out, duplicate detection, report resolve/merge moderation,
 official-source ingestion, offline mode, analytics và E2E tests. Các phần này nằm trong
 [roadmap](./roadmap.md).

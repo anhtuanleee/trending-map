@@ -1,82 +1,64 @@
-import { createClient } from '@supabase/supabase-js';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  moderateReportMediaResultSchema,
+  reportMediaModerationQueueSchema,
+  type ModerateReportMediaInput,
+  type ModerateReportMediaResult,
+  type ReportMediaModerationItem,
+} from '@trending-map/contracts';
 
-export type ModerationReport = {
-  id: string;
-  category: string;
-  title: string;
-  district: string;
-  severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
-  status: 'unverified' | 'community_verified' | 'official_verified' | 'disputed';
-  confirmations: number;
-  age: string;
-  duplicateRisk: 'low' | 'medium' | 'high';
-};
-
-const demoRows: ModerationReport[] = [
+export const demoMediaQueue: ReportMediaModerationItem[] = [
   {
-    id: '2e130699-a737-4942-bf43-f9f217bdf84b',
-    category: 'Ngập nước',
-    title: 'Ngập sâu trên đường Nguyễn Huệ',
-    district: 'Quận 1',
+    mediaId: '2e130699-a737-4942-bf43-f9f217bdf84b',
+    reportId: '42a37a67-b480-4809-8658-97cfcbd34c63',
+    reportTitle: 'Ngập sâu trên đường Nguyễn Huệ',
+    categoryName: 'Ngập nước',
+    addressLabel: 'Quận 1, TP.HCM',
     severity: 'high',
-    status: 'community_verified',
-    confirmations: 14,
-    age: '8 phút',
-    duplicateRisk: 'medium',
+    mimeType: 'image/jpeg',
+    width: 1280,
+    height: 960,
+    fileSizeBytes: 420_000,
+    uploadedAt: new Date(Date.now() - 8 * 60_000).toISOString(),
+    status: 'uploaded',
+    previewUrl:
+      'https://images.unsplash.com/photo-1547683905-f686c993aae5?auto=format&fit=crop&w=1200&q=80',
   },
   {
-    id: '42a37a67-b480-4809-8658-97cfcbd34c63',
-    category: 'Ổ gà',
-    title: 'Ổ gà lớn sát giao lộ',
-    district: 'Quận 1',
-    severity: 'medium',
-    status: 'unverified',
-    confirmations: 1,
-    age: '30 phút',
-    duplicateRisk: 'low',
-  },
-  {
-    id: '966922b1-d61e-43a3-a26a-c21c802dbe11',
-    category: 'Cây đổ',
-    title: 'Cây lớn chắn một phần đường',
-    district: 'Quận 3',
+    mediaId: '966922b1-d61e-43a3-a26a-c21c802dbe11',
+    reportId: 'b4d16486-3422-4a26-b3b7-cefc0b73c21d',
+    reportTitle: 'Cây lớn chắn một phần đường',
+    categoryName: 'Cây đổ',
+    addressLabel: 'Quận 3, TP.HCM',
     severity: 'critical',
-    status: 'disputed',
-    confirmations: 5,
-    age: '42 phút',
-    duplicateRisk: 'high',
+    mimeType: 'image/jpeg',
+    width: 1600,
+    height: 1200,
+    fileSizeBytes: 780_000,
+    uploadedAt: new Date(Date.now() - 42 * 60_000).toISOString(),
+    status: 'uploaded',
+    previewUrl:
+      'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1200&q=80',
   },
 ];
 
-export async function getModerationQueue(): Promise<ModerationReport[]> {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !serviceKey) return demoRows;
-
-  const supabase = createClient(url, serviceKey, {
-    auth: { persistSession: false, autoRefreshToken: false },
+export async function getMediaModerationQueue(
+  supabase: SupabaseClient,
+): Promise<ReportMediaModerationItem[]> {
+  const { data, error } = await supabase.functions.invoke('get-report-media-moderation-queue', {
+    body: {},
   });
-  const { data, error } = await supabase
-    .from('public_report_details')
-    .select(
-      'id,category_name,title,address_label,severity,verification_status,confirmation_count,created_at',
-    )
-    .order('created_at', { ascending: false })
-    .limit(50);
   if (error) throw error;
+  return reportMediaModerationQueueSchema.parse(data?.items ?? []);
+}
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    category: row.category_name,
-    title: row.title,
-    district: row.address_label ?? 'Chưa rõ khu vực',
-    severity: row.severity,
-    status: row.verification_status,
-    confirmations: row.confirmation_count,
-    age: new Intl.RelativeTimeFormat('vi', { numeric: 'auto' }).format(
-      -Math.max(1, Math.round((Date.now() - new Date(row.created_at).getTime()) / 60_000)),
-      'minute',
-    ),
-    duplicateRisk: 'low',
-  }));
+export async function moderateMedia(
+  supabase: SupabaseClient,
+  input: ModerateReportMediaInput,
+): Promise<ModerateReportMediaResult> {
+  const { data, error } = await supabase.functions.invoke('moderate-report-media', {
+    body: input,
+  });
+  if (error) throw error;
+  return moderateReportMediaResultSchema.parse(data);
 }

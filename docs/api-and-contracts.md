@@ -124,6 +124,20 @@ Authenticated command nhận `mediaId` và idempotency key. Edge Function xác n
 size/MIME khớp reservation; RPC caller-owned chuyển state sang `uploaded`, ghi audit và enqueue
 `evidence_added`. Completion không approve hoặc publish ảnh.
 
+### `POST /functions/v1/get-report-media-moderation-queue`
+
+Yêu cầu session có role `moderator`. RPC kiểm tra role trước khi Edge Function dùng service role ký
+preview URL private có hạn 10 phút. Response theo `ReportMediaModerationItem[]`, không trả
+`created_by`, trust metadata hoặc raw storage path cho browser.
+
+### `POST /functions/v1/moderate-report-media`
+
+Nhận `mediaId`, `decision`, optional `reason` và `idempotencyKey`; reject bắt buộc lý do. RPC caller
+JWT claim ảnh trước khi publication. Với approve, Edge Function mới copy sanitized JPEG từ private
+sang public bucket rồi gọi service-role-only finalizer; failure trả claim về queue. Finalizer cập nhật
+approved URL, audit log, outbox và public timeline. Client/moderator JWT không thể gọi trực tiếp
+finalizer hoặc tự cung cấp public URL.
+
 ## Validation và idempotency
 
 - Title: 6–120 ký tự; description: 12–1200.
@@ -135,6 +149,8 @@ size/MIME khớp reservation; RPC caller-owned chuyển state sang `uploaded`, g
 - Media reservation khóa theo report để concurrent request không vượt giới hạn ba ảnh.
 - Retry cùng image key tái sử dụng row/path; object đã tồn tại sẽ bỏ qua transfer và completion
   cùng media ID là idempotent.
+- Moderation claim có TTL 15 phút; cùng moderator/key retry idempotent và command khác không thể
+  publish trên claim còn hiệu lực.
 
 ## Error contract hiện tại
 

@@ -13,7 +13,12 @@
 | Đọc subscription entitlement của mình        | Không | Có                      | Có                           |
 | Ghi subscription entitlement                 | Không | Không                   | Trusted billing backend only |
 | Đọc moderation cases/audit logs              | Không | Không                   | Có                           |
-| Admin dashboard bằng service role            | Không | Không                   | Server-only operator         |
+| Xem private media moderation queue           | Không | Không                   | Có, signed preview 10 phút   |
+| Approve/reject media                         | Không | Không                   | Có, RPC kiểm tra role        |
+
+Admin đăng nhập Email OTP bằng anon key. Role `moderator` trong `user_roles` là authorization
+boundary thật; UI state không cấp quyền. Service role chỉ tồn tại trong Supabase Edge Function để
+ký URL private và finalize publication, không nằm trong Next/browser env.
 
 ## OTP flow
 

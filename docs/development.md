@@ -53,8 +53,18 @@ App Store key hoặc service-role key ở đây. Xem [`subscriptions.md`](./subs
 
 Xem `apps/admin/.env.example`:
 
-- Supabase URL có thể dùng ở server/client theo nhu cầu.
-- `SUPABASE_SERVICE_ROLE_KEY` là server-only secret, không dùng prefix `NEXT_PUBLIC_`.
+- `NEXT_PUBLIC_SUPABASE_URL`: Project Settings → API → Project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: Project Settings → API → publishable/anon key.
+- Không đặt `SUPABASE_SERVICE_ROLE_KEY` trong admin env hoặc browser bundle. Edge Functions nhận
+  secret này từ Supabase runtime để ký private preview và publish ảnh.
+
+Tạo user moderator qua Auth rồi gán role bằng SQL operator (thay UUID thật):
+
+```sql
+update public.user_roles set role = 'moderator' where user_id = '<auth-user-uuid>';
+```
+
+Nếu thiếu hai biến public, admin chạy demo mode và không ghi Supabase.
 
 ## Chạy ứng dụng
 
@@ -153,6 +163,8 @@ supabase functions serve submit-report
 supabase functions serve confirm-report
 supabase functions serve create-report-media-upload
 supabase functions serve complete-report-media-upload
+supabase functions serve get-report-media-moderation-queue
+supabase functions serve moderate-report-media
 ```
 
 `db reset` áp dụng migrations và seed lại dữ liệu local. Không chạy với target production nếu chưa kiểm tra project ref.

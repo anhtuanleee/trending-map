@@ -30,7 +30,7 @@ erDiagram
 | `official_sources`          | Nguồn chính thức                                      | Data foundation                                   |
 | `reports`                   | Entity trung tâm, geometry, lifecycle và trust counts | Hoạt động                                         |
 | `report_confirmations`      | Một vote hiện tại cho mỗi user/report                 | Hoạt động                                         |
-| `report_media`              | Private upload lifecycle và moderation status         | Upload hoạt động; publication còn foundation      |
+| `report_media`              | Private upload, moderator claim và public publication | Photo vertical slice hoạt động                    |
 | `report_comments`           | Bình luận có soft-hide                                | Foundation                                        |
 | `report_status_history`     | Lịch sử đổi trạng thái                                | Hoạt động; trigger tự ghi                         |
 | `report_updates`            | Timeline note/status/evidence đã publish              | Hoạt động qua public read + owner command         |
@@ -90,11 +90,12 @@ Public clients chỉ đọc:
 - Direct writes vào report/confirmation bị thu hồi; write path đi qua RPC được grant cụ thể.
 - Timeline public read không lộ ownership; `can_update_report` chỉ trả boolean cho authenticated user.
 - Add timeline update chỉ dành cho report creator/moderator và idempotent theo report/key.
-- Member chỉ đọc metadata media do mình tạo; moderator đọc được để kiểm duyệt.
-- Community upload dùng signed token vào bucket private; chỉ service-role trong Edge Function được
-  kiểm tra object. Bucket public dành cho pipeline approved sau này.
+- Member chỉ đọc metadata media do mình tạo; moderator queue được role-gate trước khi ký preview.
+- Community upload dùng signed token vào bucket private. Approve claim ảnh trước, Edge Function
+  copy object sang bucket public, service-role-only RPC finalize URL; reject không publish object.
 
-Service-role admin bỏ qua RLS và chỉ được tạo ở Next server module. Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `NEXT_PUBLIC_*` hoặc mobile env.
+Admin browser chỉ dùng anon key cùng moderator JWT. Service role chỉ tồn tại trong Edge Function;
+không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `NEXT_PUBLIC_*`, admin env hoặc mobile env.
 
 ## Database invariants quan trọng
 
@@ -108,3 +109,5 @@ Service-role admin bỏ qua RLS và chỉ được tạo ở Next server module.
 - Media community chỉ là JPEG 1–1.600 px, 1–5 MB; tối đa ba row active/report và idempotent
   theo `(created_by, idempotency_key)`.
 - `uploaded` chỉ nghĩa là đã nhận file private, không phải đã approved/public.
+- Approve/reject idempotent theo moderator/key; claim active ngăn hai moderator publish đồng thời.
+- Chỉ service-role finalizer được gắn public URL sau khi canonical object đã tồn tại.
