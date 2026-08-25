@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  addReportUpdateInputSchema,
   featureRolloutsSchema,
   notificationEventSchema,
   reportTimelineItemSchema,
@@ -56,5 +57,28 @@ describe('engagement contracts', () => {
         data: { severity: 'critical' },
       }).type,
     ).toBe('official_alert');
+  });
+
+  it('requires content for notes and a safe lifecycle target for status changes', () => {
+    const base = {
+      reportId: '5c0fae3d-83d8-4b49-9228-54862b7dc06f',
+      idempotencyKey: '40234c66-a54f-4c33-98e9-e16dfa2a0d59',
+    };
+
+    expect(addReportUpdateInputSchema.safeParse({ ...base, kind: 'note' }).success).toBe(false);
+    expect(
+      addReportUpdateInputSchema.safeParse({
+        ...base,
+        kind: 'status_change',
+        operationalStatus: 'resolved',
+      }).success,
+    ).toBe(true);
+    expect(
+      addReportUpdateInputSchema.safeParse({
+        ...base,
+        kind: 'status_change',
+        operationalStatus: 'rejected',
+      }).success,
+    ).toBe(false);
   });
 });

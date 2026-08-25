@@ -50,6 +50,36 @@ Mobile dùng `useFeatureRollout(key)`. Khi không có Supabase env hoặc RPC l�
 công, placeholder của toàn bộ feature là `false`. Không có feature mới nào tự bật chỉ vì app được
 update.
 
+## Live incident timeline
+
+`live_incident_timeline` đã có vertical slice hoàn chỉnh nhưng rollout vẫn mặc định tắt:
+
+- Guest/member đọc tối đa 100 update đã publish qua `get_report_timeline()`.
+- Chỉ người tạo report hoặc moderator nhận `can_update_report = true`; RPC không trả ownership ID.
+- Update đi qua Edge Function `add-report-update` và RPC idempotent `add_report_update`.
+- Member chỉ được chuyển `active → resolving/resolved`, `resolving → active/resolved` và
+  `resolved → active`; moderator dùng cùng transition an toàn ở command này.
+- Status change tự ghi `report_status_history`, enqueue outbox event và invalidate map/detail/timeline.
+- Report `resolving` vẫn xuất hiện trong viewport, có thể được xác nhận và được auto-expire.
+
+Để preview trên một Supabase environment, server operator có thể bật flag (không cần rebuild app):
+
+```sql
+update public.feature_rollouts
+set enabled = true, audience = 'all'
+where feature_key = 'live_incident_timeline';
+```
+
+Tắt lại bằng `enabled = false`. Việc bật flag không cấp quyền add update; RLS/RPC vẫn enforce actor.
+
+Khi chạy demo mode không có Supabase env, có thể preview UI mà không đổi server:
+
+```dotenv
+EXPO_PUBLIC_DEMO_FEATURE_PREVIEW_KEYS=live_incident_timeline
+```
+
+Override này chỉ có hiệu lực khi `isDemoMode = true`; app đã cấu hình Supabase luôn dùng server rollout.
+
 ## Privacy và reliability
 
 - `public_report_timeline` không chứa `created_by`, `trust_score_internal`, `hidden_at` hoặc raw GPS.

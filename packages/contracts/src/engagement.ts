@@ -20,6 +20,38 @@ export const reportTimelineItemSchema = z.object({
   createdAt: z.string().datetime(),
 });
 
+export const reportTimelineSchema = z.array(reportTimelineItemSchema).max(100);
+
+export const updateOperationalStatusSchema = z.enum(['active', 'resolving', 'resolved']);
+
+export const addReportUpdateInputSchema = z
+  .object({
+    reportId: z.string().uuid(),
+    kind: z.enum(['note', 'status_change']),
+    body: z.string().trim().min(1).max(1000).optional(),
+    operationalStatus: updateOperationalStatusSchema.optional(),
+    idempotencyKey: z.string().uuid(),
+  })
+  .superRefine((value, context) => {
+    if (value.kind === 'note' && !value.body) {
+      context.addIssue({
+        code: 'custom',
+        path: ['body'],
+        message: 'Cập nhật hiện trường cần nội dung.',
+      });
+    }
+
+    if (value.kind === 'status_change' && !value.operationalStatus) {
+      context.addIssue({
+        code: 'custom',
+        path: ['operationalStatus'],
+        message: 'Cập nhật trạng thái cần trạng thái mới.',
+      });
+    }
+  });
+
+export const canUpdateReportResultSchema = z.object({ canUpdate: z.boolean() });
+
 export const notificationEventTypeSchema = z.enum([
   'report_created',
   'report_updated',
@@ -68,6 +100,9 @@ export const featureRolloutsSchema = z.array(featureRolloutSchema);
 
 export type ReportUpdateKind = z.infer<typeof reportUpdateKindSchema>;
 export type ReportTimelineItem = z.infer<typeof reportTimelineItemSchema>;
+export type UpdateOperationalStatus = z.infer<typeof updateOperationalStatusSchema>;
+export type AddReportUpdateInput = z.infer<typeof addReportUpdateInputSchema>;
+export type CanUpdateReportResult = z.infer<typeof canUpdateReportResultSchema>;
 export type NotificationEventType = z.infer<typeof notificationEventTypeSchema>;
 export type NotificationEvent = z.infer<typeof notificationEventSchema>;
 export type SavedItemKind = z.infer<typeof savedItemKindSchema>;

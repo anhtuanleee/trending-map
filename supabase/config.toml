@@ -30,3 +30,6 @@ verify_jwt = true
 
 [functions.confirm-report]
 verify_jwt = true
+
+[functions.add-report-update]
+verify_jwt = true

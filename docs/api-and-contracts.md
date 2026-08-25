@@ -24,6 +24,17 @@ feature rollout. Public timeline contract cố ý không có reporter identity, 
 metadata. `get_feature_rollouts()` trả effective flags đã tính audience ở backend; client không dùng
 flag thay cho authorization.
 
+### `get_report_timeline` RPC
+
+Public read trả tối đa 100 item đã publish theo report, mới nhất trước. Payload gồm update kind, nội
+dung, operational status, official flag/source label và timestamp; không có actor ID.
+
+### `add-report-update` Edge Function
+
+Authenticated command nhận `AddReportUpdateInput`: note cần body; status change chỉ nhận `active`,
+`resolving`, `resolved`; mọi request cần UUID idempotency key. RPC phía sau kiểm tra người tạo
+report/moderator, transition hợp lệ, ghi timeline + audit + outbox trong cùng transaction.
+
 ## Public reads
 
 ### `get_map_items` RPC
