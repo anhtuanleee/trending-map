@@ -63,6 +63,33 @@ pnpm --filter @trending-map/mobile android
 pnpm --filter @trending-map/mobile ios
 ```
 
+## NativeWind
+
+Mobile dùng NativeWind v4 với Tailwind CSS v3. CSS entry được import một lần tại
+`apps/mobile/app/_layout.tsx`; Metro xử lý `apps/mobile/global.css` qua
+`apps/mobile/metro.config.js`. Tailwind scan cả `app` và `src` theo cấu hình trong
+`apps/mobile/tailwind.config.js`.
+
+Static layout/spacing/typography mới có thể dùng `className`. Các giá trị phụ thuộc runtime như
+MapLibre paint expression, animation style, tọa độ hoặc màu theo dữ liệu vẫn dùng object/StyleSheet.
+Không migrate toàn bộ UI trong một lần; khi chỉnh một component thì chuyển phần static của component
+đó và giữ `src/theme`/`ui-tokens` làm nguồn semantic design value.
+
+Sau khi sửa Babel, Metro, Tailwind hoặc global CSS, xóa cache Metro rồi chạy lại:
+
+```bash
+pnpm --filter @trending-map/mobile exec expo start --clear
+```
+
+Kiểm tra riêng pipeline Tailwind:
+
+```bash
+pnpm --filter @trending-map/mobile exec tailwindcss \
+  -i ./global.css \
+  -o /tmp/trending-map-nativewind.css \
+  --minify
+```
+
 Google OAuth cần development/production build để custom scheme quay lại app. Sau khi cài build,
 kiểm tra callback trên thiết bị bằng:
 

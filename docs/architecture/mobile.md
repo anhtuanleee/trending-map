@@ -3,6 +3,7 @@
 ## Stack
 
 - Expo SDK 57, React Native 0.86 và Expo Router.
+- NativeWind v4 + Tailwind CSS v3 cho static component styling.
 - MapLibre React Native cho map, marker và clustering.
 - TanStack Query cho server state.
 - React Hook Form + Zod resolver cho form state/validation.
@@ -35,6 +36,11 @@ flowchart TB
 Mỗi feature chỉ tạo subfolder khi có file thực tế. Import nội bộ dùng relative path; route hoặc
 feature khác chỉ đi qua public `index.ts`. Static option của feature nằm trong `model/*.config.ts`,
 network schema nằm trong `packages/contracts`, còn design values nằm trong `theme`.
+
+NativeWind là presentation adapter, không phải nguồn design token mới. Static utility class được dùng
+cho layout, spacing và typography; palette/radius semantic tiếp tục xuất phát từ `src/theme` hoặc
+`packages/ui-tokens`. Dynamic map paint, animation và style phụ thuộc dữ liệu vẫn là React Native
+style object để giữ type và runtime behavior rõ ràng.
 
 ## Routing hiện tại
 
