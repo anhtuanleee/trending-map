@@ -1,7 +1,29 @@
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet } from 'react-native';
+import { Pressable } from 'react-native';
 
-import { colors, radius } from '@/theme';
+// ---------------------------------------------------------------------------
+// Variant definition
+// ---------------------------------------------------------------------------
+
+const iconButtonStyle = tva({
+  base: 'w-12 h-12 items-center justify-center rounded-[18px] bg-map-surface-strong',
+  variants: {
+    selected: {
+      true: 'bg-primary-soft',
+      false: '',
+    },
+    elevated: {
+      true: 'shadow-sm',
+      false: '',
+    },
+  },
+  defaultVariants: { selected: false, elevated: false },
+});
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
 type IconButtonProps = {
   accessibilityLabel: string;
@@ -10,6 +32,10 @@ type IconButtonProps = {
   selected?: boolean;
   elevated?: boolean;
 };
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function IconButton({
   accessibilityLabel,
@@ -22,35 +48,14 @@ export function IconButton({
     <Pressable
       accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
-      style={({ pressed }) => [
-        styles.button,
-        selected && styles.selected,
-        elevated && styles.elevated,
-        pressed && styles.pressed,
-      ]}
+      className={iconButtonStyle({ selected, elevated })}
+      // Acceptable exception: dynamic press animation value per gluestack-ui-v5 guidelines
+      style={({ pressed }) =>
+        pressed ? { opacity: 0.78, transform: [{ scale: 0.95 }] } : undefined
+      }
       onPress={onPress}
     >
       {children}
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    width: 48,
-    height: 48,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.mapSurfaceStrong,
-  },
-  selected: { backgroundColor: colors.primarySoft },
-  elevated: {
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.12,
-    shadowRadius: 20,
-    elevation: 7,
-  },
-  pressed: { opacity: 0.78, transform: [{ scale: 0.95 }] },
-});

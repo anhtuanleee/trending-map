@@ -45,6 +45,31 @@ export const moderateReportMediaResultSchema = z.object({
   publicUrl: z.string().url().nullable(),
 });
 
+export const reportViolationReasonSchema = z.enum([
+  'false_information',
+  'privacy_violation',
+  'panic_rumor',
+  'defamation',
+  'casualty_speculation',
+  'other',
+]);
+
+export const reportViolationInputSchema = z.object({
+  reportId: z.string().uuid(),
+  reason: reportViolationReasonSchema,
+  details: z.string().trim().max(1000).optional(),
+  idempotencyKey: z.string().uuid(),
+});
+
+export const reportViolationResultSchema = z.object({
+  reportId: z.string().uuid(),
+  accepted: z.boolean(),
+  message: z.string().optional(),
+});
+
 export type ReportMediaModerationItem = z.infer<typeof reportMediaModerationItemSchema>;
 export type ModerateReportMediaInput = z.infer<typeof moderateReportMediaInputSchema>;
 export type ModerateReportMediaResult = z.infer<typeof moderateReportMediaResultSchema>;
+export type ReportViolationReason = z.infer<typeof reportViolationReasonSchema>;
+export type ReportViolationInput = z.infer<typeof reportViolationInputSchema>;
+export type ReportViolationResult = z.infer<typeof reportViolationResultSchema>;

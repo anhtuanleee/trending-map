@@ -1,18 +1,9 @@
-import { StyleSheet, Text } from 'react-native';
-
-import { colors, spacing } from '@/theme';
+import { Text } from 'react-native';
 
 export function SectionLabel({ children }: { children: string }) {
-  return <Text style={styles.label}>{children.toUpperCase()}</Text>;
+  return (
+    <Text className="mt-5 mb-2 text-primary text-[11px] font-extrabold tracking-[0.8px] uppercase">
+      {children}
+    </Text>
+  );
 }
-
-const styles = StyleSheet.create({
-  label: {
-    marginTop: spacing.lgPlus,
-    marginBottom: spacing.sm,
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '800',
-    letterSpacing: 0.8,
-  },
-});

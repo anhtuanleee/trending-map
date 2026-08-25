@@ -57,7 +57,7 @@ export function NearbyReportsSheet({
         >
           <View style={styles.handle} />
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerCopy}>
               <Text style={styles.title}>{modeLabel}</Text>
               <Text style={styles.subtitle}>{reports.length} báo cáo phù hợp</Text>
             </View>
@@ -100,14 +100,20 @@ export function NearbyReportsSheet({
             </Pressable>
           ) : null}
 
-          {!isLoading && !isError ? (
+          {!isLoading && !isError && reports.length === 0 ? (
+            <View style={styles.emptyState}>
+              <MapPin color={colors.inkMuted} size={26} />
+              <Text style={styles.emptyTitle}>Chưa có báo cáo gần đây</Text>
+              <Text style={styles.stateText}>Thử chọn bán kính lớn hơn hoặc di chuyển bản đồ.</Text>
+            </View>
+          ) : null}
+
+          {!isLoading && !isError && reports.length > 0 ? (
             <FlatList
               data={reports}
               keyExtractor={(report) => report.id}
-              contentContainerStyle={reports.length === 0 ? styles.emptyList : styles.list}
-              ListEmptyComponent={
-                <Text style={styles.stateText}>Chưa có báo cáo trong bán kính đã chọn.</Text>
-              }
+              style={styles.listView}
+              contentContainerStyle={styles.list}
               renderItem={({ item }) => (
                 <Pressable style={styles.reportRow} onPress={() => onSelect(item)}>
                   <View style={styles.reportIcon}>
@@ -137,7 +143,6 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.overlay },
   sheet: {
     maxHeight: '78%',
-    minHeight: 420,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
@@ -157,6 +162,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg,
   },
+  headerCopy: { flex: 1, paddingRight: spacing.md },
   title: { color: colors.ink, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
   subtitle: { marginTop: 3, color: colors.inkMuted, fontSize: 12 },
   closeButton: {
@@ -197,8 +203,21 @@ const styles = StyleSheet.create({
   stateText: { textAlign: 'center', color: colors.inkMuted, fontSize: 13 },
   errorText: { color: colors.danger, fontSize: 13 },
   retryText: { color: colors.primary, fontSize: 13, fontWeight: '800' },
+  emptyState: {
+    alignItems: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
+  emptyTitle: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.xs,
+    color: colors.ink,
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  listView: { flexShrink: 1 },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
-  emptyList: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
   reportRow: {
     flexDirection: 'row',
     gap: spacing.md,

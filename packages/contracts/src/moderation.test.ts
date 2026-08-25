@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { moderateReportMediaInputSchema, reportMediaModerationItemSchema } from './moderation';
+import {
+  moderateReportMediaInputSchema,
+  reportMediaModerationItemSchema,
+  reportViolationInputSchema,
+} from './moderation';
 
 const mediaId = '2e130699-a737-4942-bf43-f9f217bdf84b';
 
@@ -45,5 +49,16 @@ describe('media moderation contracts', () => {
         idempotencyKey: 'b4d16486-3422-4a26-b3b7-cefc0b73c21d',
       }).success,
     ).toBe(true);
+  });
+
+  it('validates user violation reporting input', () => {
+    const reportId = '42a37a67-b480-4809-8658-97cfcbd34c63';
+    const parsed = reportViolationInputSchema.safeParse({
+      reportId,
+      reason: 'false_information',
+      details: 'Vị trí này không có ngập nước thực tế',
+      idempotencyKey: 'b4d16486-3422-4a26-b3b7-cefc0b73c21d',
+    });
+    expect(parsed.success).toBe(true);
   });
 });

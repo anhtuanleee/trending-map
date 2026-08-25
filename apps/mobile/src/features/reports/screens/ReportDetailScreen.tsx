@@ -1,15 +1,32 @@
+import type { ReportViolationReason } from '@trending-map/contracts';
+import * as Crypto from 'expo-crypto';
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Check, Clock3, MapPin, Sparkles, UsersRound, X } from 'lucide-react-native';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  AlertTriangle,
+  ArrowLeft,
+  Check,
+  Clock3,
+  Flag,
+  MapPin,
+  ShieldAlert,
+  ShieldCheck,
+  Sparkles,
+  UsersRound,
+  X,
+} from 'lucide-react-native';
+import { useState } from 'react';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { StatusBadge } from '@/components/ui';
+import { AppButton, StatusBadge } from '@/components/ui';
 import { useAuthGate } from '@/features/auth';
 import { useFeatureRollout } from '@/features/feature-rollouts';
 import { colors, radius, spacing } from '@/theme';
 
 import { ReportTimeline } from '../components/ReportTimeline';
 import { useConfirmReport, useReport } from '../hooks/useReport';
+import { useReportViolation } from '../hooks/useReportViolation';
+import { LEGAL_DISCLAIMER } from '../model/report-form.config';
 
 const operationalLabels = {
   active: 'ĐANG DIỄN RA',
@@ -20,16 +37,81 @@ const operationalLabels = {
   rejected: 'ĐÃ GỠ',
 } as const;
 
+const VIOLATION_REASONS: { key: ReportViolationReason; label: string; desc: string }[] = [
+  {
+    key: 'false_information',
+    label: 'Thông tin sai sự thật',
+    desc: 'Hiện trường thực tế không giống như báo cáo miêu tả',
+  },
+  {
+    key: 'privacy_violation',
+    label: 'Xâm phạm quyền hình ảnh / riêng tư',
+    desc: 'Có ảnh chụp lén cận mặt cá nhân, biển số xe hoặc tư gia',
+  },
+  {
+    key: 'panic_rumor',
+    label: 'Tin đồn giật gân / hoang mang',
+    desc: 'Suy đoán quá mức về vỡ đê, sập cầu, thảm họa chưa kiểm chứng',
+  },
+  {
+    key: 'casualty_speculation',
+    label: 'Nêu số liệu thương vong',
+    desc: 'Đăng tải thông tin về người chết, mất tích, bị thương trái quy định',
+  },
+  {
+    key: 'defamation',
+    label: 'Công kích / bôi nhọ cá nhân',
+    desc: 'Bình luận scandal, xúc phạm hoặc vu khống danh dự',
+  },
+  {
+    key: 'other',
+    label: 'Lý do khác',
+    desc: 'Vi phạm quy chuẩn cộng đồng khác',
+  },
+];
+
 export function ReportDetailScreen({ id }: { id: string }) {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const requireAuth = useAuthGate();
   const reportQuery = useReport(id);
   const confirmation = useConfirmReport(id);
+  const violationMutation = useReportViolation();
   const timelineRollout = useFeatureRollout('live_incident_timeline');
+
+  const [violationModalVisible, setViolationModalVisible] = useState(false);
+  const [selectedReason, setSelectedReason] = useState<ReportViolationReason>('false_information');
+  const [violationDetails, setViolationDetails] = useState('');
+  const [violationSuccessMessage, setViolationSuccessMessage] = useState<string | null>(null);
 
   const handleConfirmation = (kind: 'seen' | 'not_there') => {
     requireAuth(`/report/${id}`, () => confirmation.mutate(kind), 'Đăng nhập để xác nhận');
+  };
+
+  const handleOpenViolation = () => {
+    requireAuth(
+      `/report/${id}`,
+      () => setViolationModalVisible(true),
+      'Đăng nhập để báo cáo vi phạm',
+    );
+  };
+
+  const handleSubmitViolation = async () => {
+    try {
+      const result = await violationMutation.mutateAsync({
+        reportId: id,
+        reason: selectedReason,
+        details: violationDetails.trim() || undefined,
+        idempotencyKey: Crypto.randomUUID(),
+      });
+      setViolationModalVisible(false);
+      setViolationSuccessMessage(
+        result.message ?? 'Báo cáo vi phạm đã được gửi tới đội ngũ kiểm duyệt.',
+      );
+      setViolationDetails('');
+    } catch {
+      // Handled via violationMutation.isError
+    }
   };
 
   const report = reportQuery.data;
@@ -94,6 +176,12 @@ export function ReportDetailScreen({ id }: { id: string }) {
             <Sparkles color={colors.event} size={18} />
           </View>
 
+          {/* Legal Disclaimer Box */}
+          <View style={styles.disclaimerBox}>
+            <ShieldCheck color={colors.primary} size={16} />
+            <Text style={styles.disclaimerCopy}>{LEGAL_DISCLAIMER}</Text>
+          </View>
+
           <Text style={styles.sectionLabel}>THÔNG TIN HIỆN TRƯỜNG</Text>
           <Text style={styles.description}>{report.description}</Text>
 
@@ -105,6 +193,22 @@ export function ReportDetailScreen({ id }: { id: string }) {
             <Text style={styles.success}>Cảm ơn bạn đã xác nhận.</Text>
           ) : null}
           {confirmation.isError ? <Text style={styles.error}>Không thể gửi xác nhận.</Text> : null}
+
+          {violationSuccessMessage ? (
+            <View style={styles.violationSuccessCard}>
+              <ShieldCheck color={colors.primary} size={18} />
+              <Text style={styles.violationSuccessText}>{violationSuccessMessage}</Text>
+            </View>
+          ) : null}
+
+          {/* Report False / Violation Button */}
+          <Pressable
+            style={({ pressed }) => [styles.violationButton, pressed && styles.pressed]}
+            onPress={handleOpenViolation}
+          >
+            <Flag color={colors.danger} size={16} />
+            <Text style={styles.violationButtonText}>Báo cáo sai sự thật / Xâm phạm quyền</Text>
+          </Pressable>
         </View>
       </ScrollView>
 
@@ -136,6 +240,76 @@ export function ReportDetailScreen({ id }: { id: string }) {
           </Pressable>
         </View>
       ) : null}
+
+      {/* Violation Reporting Modal */}
+      <Modal
+        visible={violationModalVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setViolationModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalSheet, { paddingBottom: insets.bottom + spacing.lg }]}>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalHeaderCopy}>
+                <Text style={styles.modalTitle}>Báo cáo vi phạm hiện trường</Text>
+                <Text style={styles.modalSubtitle}>
+                  Giúp giữ môi trường thông tin trung thực, an toàn theo pháp luật
+                </Text>
+              </View>
+              <Pressable style={styles.modalClose} onPress={() => setViolationModalVisible(false)}>
+                <X color={colors.ink} size={20} />
+              </Pressable>
+            </View>
+
+            <ScrollView style={styles.modalBody}>
+              <Text style={styles.reasonLabel}>Chọn lý do báo cáo:</Text>
+              {VIOLATION_REASONS.map((item) => {
+                const active = selectedReason === item.key;
+                return (
+                  <Pressable
+                    key={item.key}
+                    style={[styles.reasonOption, active && styles.reasonOptionActive]}
+                    onPress={() => setSelectedReason(item.key)}
+                  >
+                    <View style={[styles.reasonRadio, active && styles.reasonRadioActive]}>
+                      {active ? <View style={styles.reasonRadioDot} /> : null}
+                    </View>
+                    <View style={styles.reasonCopy}>
+                      <Text style={[styles.reasonTitle, active && styles.reasonTitleActive]}>
+                        {item.label}
+                      </Text>
+                      <Text style={styles.reasonDesc}>{item.desc}</Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+
+              <Text style={styles.reasonLabel}>Mô tả thêm (Không bắt buộc):</Text>
+              <TextInput
+                value={violationDetails}
+                onChangeText={setViolationDetails}
+                multiline
+                placeholder="Cung cấp thêm chi tiết để đội ngũ kiểm duyệt xử lý nhanh..."
+                style={styles.violationInput}
+              />
+
+              {violationMutation.isError ? (
+                <Text style={styles.error}>Gửi báo cáo thất bại. Vui lòng thử lại.</Text>
+              ) : null}
+
+              <View style={{ marginTop: spacing.lg }}>
+                <AppButton
+                  label={violationMutation.isPending ? 'Đang gửi…' : 'Gửi báo cáo vi phạm'}
+                  tone="danger"
+                  loading={violationMutation.isPending}
+                  onPress={() => void handleSubmitViolation()}
+                />
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -199,10 +373,10 @@ const styles = StyleSheet.create({
   title: {
     marginTop: spacing.md,
     color: colors.ink,
-    fontSize: 29,
-    lineHeight: 36,
+    fontSize: 27,
+    lineHeight: 34,
     fontWeight: '800',
-    letterSpacing: -0.7,
+    letterSpacing: -0.5,
   },
   metaCard: {
     marginTop: spacing.lg,
@@ -233,6 +407,23 @@ const styles = StyleSheet.create({
   socialCopy: { flex: 1 },
   socialValue: { color: colors.ink, fontSize: 14, fontWeight: '800' },
   socialMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 11 },
+  disclaimerBox: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceMuted,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+  },
+  disclaimerCopy: {
+    flex: 1,
+    color: colors.inkMuted,
+    fontSize: 11,
+    lineHeight: 16,
+  },
   sectionLabel: {
     marginTop: spacing.xl,
     color: colors.primary,
@@ -240,7 +431,37 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.8,
   },
-  description: { marginTop: spacing.sm, color: colors.inkMuted, fontSize: 16, lineHeight: 26 },
+  description: { marginTop: spacing.sm, color: colors.inkMuted, fontSize: 15, lineHeight: 24 },
+  violationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
+    marginTop: spacing.xxl,
+    paddingVertical: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.dangerSoft,
+  },
+  violationButtonText: {
+    color: colors.danger,
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  violationSuccessCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.md,
+    backgroundColor: colors.primarySoft,
+  },
+  violationSuccessText: {
+    flex: 1,
+    color: colors.primary,
+    fontSize: 12,
+    fontWeight: '700',
+  },
   actionBar: {
     position: 'absolute',
     left: 0,
@@ -282,4 +503,92 @@ const styles = StyleSheet.create({
   error: { marginTop: spacing.md, color: colors.danger, textAlign: 'center' },
   disabled: { opacity: 0.6 },
   pressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(9, 37, 30, 0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalSheet: {
+    maxHeight: '85%',
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    paddingBottom: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  modalHeaderCopy: { flex: 1, paddingRight: spacing.md },
+  modalTitle: { color: colors.ink, fontSize: 17, fontWeight: '800' },
+  modalSubtitle: { color: colors.inkMuted, fontSize: 12, marginTop: 2 },
+  modalClose: {
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceMuted,
+  },
+  modalBody: { paddingVertical: spacing.md },
+  reasonLabel: {
+    color: colors.ink,
+    fontSize: 13,
+    fontWeight: '700',
+    marginTop: spacing.md,
+    marginBottom: spacing.xs,
+  },
+  reasonOption: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.sm,
+    backgroundColor: colors.surface,
+  },
+  reasonOptionActive: {
+    borderColor: colors.danger,
+    backgroundColor: colors.dangerSoft,
+  },
+  reasonRadio: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: colors.inkMuted,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  reasonRadioActive: {
+    borderColor: colors.danger,
+  },
+  reasonRadioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.danger,
+  },
+  reasonCopy: { flex: 1 },
+  reasonTitle: { color: colors.ink, fontSize: 13, fontWeight: '700' },
+  reasonTitleActive: { color: colors.danger },
+  reasonDesc: { color: colors.inkMuted, fontSize: 11, marginTop: 2 },
+  violationInput: {
+    minHeight: 80,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    color: colors.ink,
+    fontSize: 13,
+    textAlignVertical: 'top',
+  },
 });

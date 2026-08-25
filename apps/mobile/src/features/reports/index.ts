@@ -6,6 +6,7 @@ export {
   useCanUpdateReport,
   useReportTimeline,
 } from './hooks/useReportTimeline';
+export { useReportViolation } from './hooks/useReportViolation';
 export { useSubmitReport } from './hooks/useSubmitReport';
 export { NewReportScreen } from './screens/NewReportScreen';
 export { ReportDetailScreen } from './screens/ReportDetailScreen';

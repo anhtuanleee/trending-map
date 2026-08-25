@@ -1,9 +1,9 @@
 import { coordinateSchema, type Coordinate } from '@trending-map/contracts';
-import * as SecureStore from 'expo-secure-store';
 import { z } from 'zod';
 
 import { appConfig } from '@/config';
 import { roundCoordinate } from '@/lib/geo';
+import { platformStorage } from '@/lib/storage/platform-storage';
 
 const maximumRecentAreas = 8;
 
@@ -41,15 +41,15 @@ function orderAndLimit(areas: RecentArea[]) {
 
 async function persistRecentAreas(areas: RecentArea[]) {
   const normalized = orderAndLimit(areas);
-  await SecureStore.setItemAsync(appConfig.storageKeys.recentAreas, JSON.stringify(normalized));
+  await platformStorage.setItem(appConfig.storageKeys.recentAreas, JSON.stringify(normalized));
   return normalized;
 }
 
 export async function getRecentAreas(): Promise<RecentArea[]> {
-  const current = await SecureStore.getItemAsync(appConfig.storageKeys.recentAreas);
+  const current = await platformStorage.getItem(appConfig.storageKeys.recentAreas);
   const legacy = current
     ? null
-    : await SecureStore.getItemAsync(appConfig.storageKeys.legacyRecentAreas);
+    : await platformStorage.getItem(appConfig.storageKeys.legacyRecentAreas);
   const raw = current ?? legacy;
   if (!raw) return [];
 

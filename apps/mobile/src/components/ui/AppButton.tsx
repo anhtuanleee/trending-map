@@ -1,17 +1,67 @@
+import { tva } from '@gluestack-ui/utils/nativewind-utils';
 import type { ReactNode } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, Text } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme';
+// ---------------------------------------------------------------------------
+// Variant definitions
+// ---------------------------------------------------------------------------
+
+const buttonStyle = tva({
+  base: 'flex-row items-center justify-center gap-2 rounded-[18px] px-6',
+  variants: {
+    tone: {
+      primary: 'bg-primary',
+      secondary: 'border border-border bg-surface',
+      accent: 'bg-accent',
+      ghost: 'bg-surface-muted',
+      danger: 'bg-danger-soft',
+    },
+    size: {
+      medium: 'min-h-[48px]',
+      large: 'min-h-[56px]',
+    },
+    inactive: {
+      true: 'opacity-50',
+      false: '',
+    },
+  },
+  defaultVariants: { tone: 'primary', size: 'large', inactive: false },
+});
+
+const labelStyle = tva({
+  base: 'text-[15px] font-extrabold',
+  variants: {
+    tone: {
+      primary: 'text-on-primary',
+      secondary: 'text-ink',
+      accent: 'text-accent-ink',
+      ghost: 'text-ink',
+      danger: 'text-danger',
+    },
+  },
+  defaultVariants: { tone: 'primary' },
+});
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+type Tone = 'primary' | 'secondary' | 'accent' | 'ghost' | 'danger';
+type Size = 'medium' | 'large';
 
 type AppButtonProps = {
   label: string;
   onPress: () => void;
   icon?: ReactNode;
-  tone?: 'primary' | 'secondary' | 'accent' | 'ghost' | 'danger';
-  size?: 'medium' | 'large';
+  tone?: Tone;
+  size?: Size;
   disabled?: boolean;
   loading?: boolean;
 };
+
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
 
 export function AppButton({
   label,
@@ -22,53 +72,23 @@ export function AppButton({
   disabled = false,
   loading = false,
 }: AppButtonProps) {
-  const inactive = disabled || loading;
+  const isInactive = disabled || loading;
+  // ActivityIndicator does not accept className — use raw hex matching token values
+  const spinnerColor = tone === 'accent' ? '#24350b' : '#ffffff';
 
   return (
     <Pressable
       accessibilityRole="button"
-      disabled={inactive}
-      style={({ pressed }) => [
-        styles.button,
-        styles[tone],
-        styles[size],
-        pressed && !inactive && styles.pressed,
-        inactive && styles.disabled,
-      ]}
+      disabled={isInactive}
+      className={buttonStyle({ tone, size, inactive: isInactive })}
+      // Acceptable exception: dynamic press animation value per gluestack-ui-v5 guidelines
+      style={({ pressed }) =>
+        pressed && !isInactive ? { opacity: 0.82, transform: [{ scale: 0.98 }] } : {}
+      }
       onPress={onPress}
     >
-      {loading ? (
-        <ActivityIndicator color={tone === 'accent' ? colors.accentInk : colors.onPrimary} />
-      ) : (
-        icon
-      )}
-      <Text style={[styles.label, styles[`${tone}Label`]]}>{label}</Text>
+      {loading ? <ActivityIndicator color={spinnerColor} /> : icon}
+      <Text className={labelStyle({ tone })}>{label}</Text>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.lg,
-  },
-  medium: { minHeight: 48 },
-  large: { minHeight: 56 },
-  primary: { backgroundColor: colors.primary },
-  secondary: { borderWidth: 1, borderColor: colors.border, backgroundColor: colors.surface },
-  accent: { backgroundColor: colors.accent },
-  ghost: { backgroundColor: colors.surfaceMuted },
-  danger: { backgroundColor: colors.dangerSoft },
-  pressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
-  disabled: { opacity: 0.48 },
-  label: { fontSize: 15, fontWeight: '800' },
-  primaryLabel: { color: colors.onPrimary },
-  secondaryLabel: { color: colors.ink },
-  accentLabel: { color: colors.accentInk },
-  ghostLabel: { color: colors.ink },
-  dangerLabel: { color: colors.danger },
-});

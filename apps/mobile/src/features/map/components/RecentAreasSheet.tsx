@@ -45,7 +45,7 @@ export function RecentAreasSheet({
         >
           <View style={styles.handle} />
           <View style={styles.header}>
-            <View>
+            <View style={styles.headerCopy}>
               <Text style={styles.title}>Khu vực gần đây</Text>
               <Text style={styles.subtitle}>Chỉ lưu tối đa 8 tâm đã làm tròn trên thiết bị</Text>
             </View>
@@ -61,18 +61,20 @@ export function RecentAreasSheet({
           ) : null}
           {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          {!isLoading ? (
+          {!isLoading && areas.length === 0 ? (
+            <View style={styles.empty}>
+              <Clock3 color={colors.inkMuted} size={28} />
+              <Text style={styles.emptyTitle}>Chưa có khu vực gần đây</Text>
+              <Text style={styles.emptyText}>Kéo bản đồ để lưu khu vực đầu tiên.</Text>
+            </View>
+          ) : null}
+
+          {!isLoading && areas.length > 0 ? (
             <FlatList
               data={areas}
               keyExtractor={(area) => area.id}
-              contentContainerStyle={areas.length === 0 ? styles.emptyList : styles.list}
-              ListEmptyComponent={
-                <View style={styles.empty}>
-                  <Clock3 color={colors.inkMuted} size={28} />
-                  <Text style={styles.emptyTitle}>Chưa có khu vực gần đây</Text>
-                  <Text style={styles.emptyText}>Kéo bản đồ để lưu khu vực đầu tiên.</Text>
-                </View>
-              }
+              style={styles.listView}
+              contentContainerStyle={styles.list}
               renderItem={({ item }) => (
                 <View style={styles.areaRow}>
                   <Pressable style={styles.areaMain} onPress={() => onSelect(item)}>
@@ -111,7 +113,6 @@ const styles = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: colors.overlay },
   sheet: {
     maxHeight: '72%',
-    minHeight: 380,
     borderTopLeftRadius: radius.xl,
     borderTopRightRadius: radius.xl,
     backgroundColor: colors.surface,
@@ -132,6 +133,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
   },
+  headerCopy: { flex: 1, paddingRight: spacing.md },
   title: { color: colors.ink, fontSize: 22, fontWeight: '800', letterSpacing: -0.4 },
   subtitle: { marginTop: 3, color: colors.inkMuted, fontSize: 12 },
   closeButton: {
@@ -144,9 +146,15 @@ const styles = StyleSheet.create({
   },
   state: { minHeight: 160, alignItems: 'center', justifyContent: 'center' },
   error: { paddingHorizontal: spacing.lg, color: colors.danger, fontSize: 12 },
+  listView: { flexShrink: 1 },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.lg },
-  emptyList: { flexGrow: 1 },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: spacing.xl },
+  empty: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
+  },
   emptyTitle: { marginTop: spacing.md, color: colors.ink, fontSize: 16, fontWeight: '800' },
   emptyText: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 13 },
   areaRow: {
