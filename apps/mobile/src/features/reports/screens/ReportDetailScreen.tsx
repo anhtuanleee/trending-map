@@ -5,9 +5,20 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/ui';
 import { useAuthGate } from '@/features/auth';
+import { useFeatureRollout } from '@/features/feature-rollouts';
 import { colors, radius, spacing } from '@/theme';
 
+import { ReportTimeline } from '../components/ReportTimeline';
 import { useConfirmReport, useReport } from '../hooks/useReport';
+
+const operationalLabels = {
+  active: 'ĐANG DIỄN RA',
+  monitoring: 'ĐANG THEO DÕI',
+  resolving: 'ĐANG XỬ LÝ',
+  resolved: 'ĐÃ GIẢI QUYẾT',
+  expired: 'ĐÃ HẾT HẠN',
+  rejected: 'ĐÃ GỠ',
+} as const;
 
 export function ReportDetailScreen({ id }: { id: string }) {
   const router = useRouter();
@@ -15,6 +26,7 @@ export function ReportDetailScreen({ id }: { id: string }) {
   const requireAuth = useAuthGate();
   const reportQuery = useReport(id);
   const confirmation = useConfirmReport(id);
+  const timelineRollout = useFeatureRollout('live_incident_timeline');
 
   const handleConfirmation = (kind: 'seen' | 'not_there') => {
     requireAuth(`/report/${id}`, () => confirmation.mutate(kind), 'Đăng nhập để xác nhận');
@@ -31,9 +43,11 @@ export function ReportDetailScreen({ id }: { id: string }) {
     );
   }
 
+  const confirmable = ['active', 'monitoring', 'resolving'].includes(report.operationalStatus);
+
   return (
     <View style={styles.screen}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 150 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: confirmable ? 150 : spacing.xxl }}>
         <View style={[styles.hero, { paddingTop: insets.top + spacing.md }]}>
           <View style={styles.heroGlow} />
           <Pressable
@@ -47,7 +61,7 @@ export function ReportDetailScreen({ id }: { id: string }) {
               <Text style={styles.heroSymbol}>{report.categorySlug === 'music' ? '♪' : '!'}</Text>
             </View>
             <View>
-              <Text style={styles.liveLabel}>ĐANG DIỄN RA</Text>
+              <Text style={styles.liveLabel}>{operationalLabels[report.operationalStatus]}</Text>
               <Text style={styles.category}>{report.categoryName}</Text>
             </View>
           </View>
@@ -83,6 +97,10 @@ export function ReportDetailScreen({ id }: { id: string }) {
           <Text style={styles.sectionLabel}>THÔNG TIN HIỆN TRƯỜNG</Text>
           <Text style={styles.description}>{report.description}</Text>
 
+          {timelineRollout.enabled ? (
+            <ReportTimeline reportId={id} currentStatus={report.operationalStatus} />
+          ) : null}
+
           {confirmation.isSuccess ? (
             <Text style={styles.success}>Cảm ơn bạn đã xác nhận.</Text>
           ) : null}
@@ -90,32 +108,34 @@ export function ReportDetailScreen({ id }: { id: string }) {
         </View>
       </ScrollView>
 
-      <View style={[styles.actionBar, { paddingBottom: insets.bottom + spacing.md }]}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.primaryAction,
-            pressed && styles.pressed,
-            confirmation.isPending && styles.disabled,
-          ]}
-          disabled={confirmation.isPending}
-          onPress={() => handleConfirmation('seen')}
-        >
-          <Check color={colors.accentInk} size={19} />
-          <Text style={styles.primaryActionText}>Tôi cũng thấy</Text>
-        </Pressable>
-        <Pressable
-          style={({ pressed }) => [
-            styles.secondaryAction,
-            pressed && styles.pressed,
-            confirmation.isPending && styles.disabled,
-          ]}
-          disabled={confirmation.isPending}
-          onPress={() => handleConfirmation('not_there')}
-        >
-          <X color={colors.ink} size={18} />
-          <Text style={styles.secondaryActionText}>Không còn</Text>
-        </Pressable>
-      </View>
+      {confirmable ? (
+        <View style={[styles.actionBar, { paddingBottom: insets.bottom + spacing.md }]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.primaryAction,
+              pressed && styles.pressed,
+              confirmation.isPending && styles.disabled,
+            ]}
+            disabled={confirmation.isPending}
+            onPress={() => handleConfirmation('seen')}
+          >
+            <Check color={colors.accentInk} size={19} />
+            <Text style={styles.primaryActionText}>Tôi cũng thấy</Text>
+          </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.secondaryAction,
+              pressed && styles.pressed,
+              confirmation.isPending && styles.disabled,
+            ]}
+            disabled={confirmation.isPending}
+            onPress={() => handleConfirmation('not_there')}
+          >
+            <X color={colors.ink} size={18} />
+            <Text style={styles.secondaryActionText}>Không còn</Text>
+          </Pressable>
+        </View>
+      ) : null}
     </View>
   );
 }

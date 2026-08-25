@@ -33,7 +33,7 @@ erDiagram
 | `report_media`              | Metadata media và moderation status                   | Foundation                                        |
 | `report_comments`           | Bình luận có soft-hide                                | Foundation                                        |
 | `report_status_history`     | Lịch sử đổi trạng thái                                | Hoạt động; trigger tự ghi                         |
-| `report_updates`            | Timeline note/status/evidence đã publish              | Foundation; public safe view đã có                |
+| `report_updates`            | Timeline note/status/evidence đã publish              | Hoạt động qua public read + owner command         |
 | `notification_outbox`       | Queue delivery server-only, retry bằng dedupe key     | Foundation                                        |
 | `user_saved_items`          | Report/event user chủ động lưu và reminder            | Foundation                                        |
 | `feature_rollouts`          | Server-owned rollout theo audience                    | Hoạt động; tất cả key mặc định tắt                |
@@ -88,6 +88,8 @@ Public clients chỉ đọc:
 - User chỉ đọc confirmations của chính mình.
 - Moderator đọc moderation cases và audit logs.
 - Direct writes vào report/confirmation bị thu hồi; write path đi qua RPC được grant cụ thể.
+- Timeline public read không lộ ownership; `can_update_report` chỉ trả boolean cho authenticated user.
+- Add timeline update chỉ dành cho report creator/moderator và idempotent theo report/key.
 
 Service-role admin bỏ qua RLS và chỉ được tạo ở Next server module. Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `NEXT_PUBLIC_*` hoặc mobile env.
 

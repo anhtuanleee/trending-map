@@ -39,7 +39,7 @@ Nguyên tắc sản phẩm cốt lõi:
 | Comments      | Bình luận report               | **Foundation** | Có schema; chưa có policy command và UI.                                              |
 | Follow        | Theo dõi khu vực               | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                          |
 | Notifications | Push notification              | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                       |
-| Engagement    | Live incident timeline         | **Foundation** | Contract, update table và safe public view đã có; chưa có command/UI.                 |
+| Engagement    | Live incident timeline         | **Hoạt động**  | Guest read + owner command + lifecycle UI; rollout mặc định tắt.                      |
 | Engagement    | Save report/event và reminder  | **Foundation** | Có user-owned schema/RLS; chưa có action/UI/scheduler.                                |
 | Operations    | Notification outbox            | **Foundation** | Server-only queue có dedupe/retry fields; chưa có worker.                             |
 | Operations    | Feature rollout                | **Hoạt động**  | RPC + mobile hook; tám feature mới mặc định tắt.                                      |

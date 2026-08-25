@@ -29,6 +29,13 @@ không đặt trong `.env` hoặc `EXPO_PUBLIC_*`. Xem hướng dẫn chi tiết
 Google OAuth cũng không thêm mobile env: Google Web Client ID/secret được cấu hình trong Supabase.
 App dùng scheme `trendingmap` từ `app.json` và callback `trendingmap://auth/callback`.
 
+Feature rollout lấy từ Supabase khi app đã cấu hình backend. Chỉ trong demo mode, có thể preview UI
+đang rollout mà không bật production flag:
+
+```dotenv
+EXPO_PUBLIC_DEMO_FEATURE_PREVIEW_KEYS=live_incident_timeline
+```
+
 Subscription foundation mặc định tắt. Có thể tạo `apps/mobile/.env.local` và bật preview mà chưa
 bật paywall/billing:
 
