@@ -10,9 +10,10 @@ const severityRank: Record<MapItem['severity'], number> = {
 
 const verificationRank: Record<MapItem['verificationStatus'], number> = {
   official_verified: 0,
-  community_verified: 1,
-  unverified: 2,
-  disputed: 3,
+  moderator_verified: 1,
+  community_verified: 2,
+  unverified: 3,
+  disputed: 4,
 };
 
 export function sortNearbyReports(left: MapItem, right: MapItem) {

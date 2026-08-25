@@ -40,7 +40,8 @@ erDiagram
 | `followed_areas`            | Polygon và filter cảnh báo theo user                  | Foundation                                        |
 | `push_devices`              | Expo push token theo user                             | Foundation                                        |
 | `subscription_entitlements` | Server-owned mirror của Free/Plus entitlement         | Foundation; mobile read-own, billing chưa nối     |
-| `moderation_cases`          | Hàng đợi/case kiểm duyệt                              | Foundation                                        |
+| `moderation_cases`          | Hàng đợi và resolution kiểm duyệt report              | Hoạt động                                         |
+| `report_moderation_actions` | Kết quả action idempotent, actor và private reason    | Hoạt động; moderator read-only                    |
 | `audit_logs`                | Actor/action/entity metadata                          | Submit đang ghi audit log                         |
 
 ## Report lifecycle
@@ -87,6 +88,8 @@ Public clients chỉ đọc:
 - User chỉ đọc subscription entitlement của mình; mobile không được tự ghi tier/status.
 - User chỉ đọc confirmations của chính mình.
 - Moderator đọc moderation cases và audit logs.
+- Report moderation queue không trả reporter/trust internals; approve/resolve/reject đi qua RPC
+  caller-JWT và lưu immutable action result.
 - Direct writes vào report/confirmation bị thu hồi; write path đi qua RPC được grant cụ thể.
 - Timeline public read không lộ ownership; `can_update_report` chỉ trả boolean cho authenticated user.
 - Add timeline update chỉ dành cho report creator/moderator và idempotent theo report/key.
@@ -111,3 +114,6 @@ không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `NEXT_PUBLIC_*`, admin env 
 - `uploaded` chỉ nghĩa là đã nhận file private, không phải đã approved/public.
 - Approve/reject idempotent theo moderator/key; claim active ngăn hai moderator publish đồng thời.
 - Chỉ service-role finalizer được gắn public URL sau khi canonical object đã tồn tại.
+- `moderator_verified` và `official_verified` là hai provenance khác nhau; community recalculation
+  không được hạ cấp cả hai.
+- Reject đổi lifecycle sang `rejected` nên public views tự loại report; resolve giữ detail/timeline.

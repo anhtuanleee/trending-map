@@ -15,10 +15,15 @@
 | Đọc moderation cases/audit logs              | Không | Không                   | Có                           |
 | Xem private media moderation queue           | Không | Không                   | Có, signed preview 10 phút   |
 | Approve/reject media                         | Không | Không                   | Có, RPC kiểm tra role        |
+| Approve/resolve/reject report                | Không | Không                   | Có, action retry-safe        |
 
 Admin đăng nhập Email OTP bằng anon key. Role `moderator` trong `user_roles` là authorization
 boundary thật; UI state không cấp quyền. Service role chỉ tồn tại trong Supabase Edge Function để
 ký URL private và finalize publication, không nằm trong Next/browser env.
+
+Moderator approve tạo provenance công khai `moderator_verified`, tách biệt
+`official_verified` vốn chỉ dành cho nguồn chính thức. Resolution reason, actor và immutable action
+row chỉ moderator đọc được; chúng không đi vào public report/timeline contract.
 
 ## OTP flow
 

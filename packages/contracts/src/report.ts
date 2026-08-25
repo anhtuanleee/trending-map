@@ -5,6 +5,7 @@ export const severitySchema = z.enum(['info', 'low', 'medium', 'high', 'critical
 export const verificationStatusSchema = z.enum([
   'unverified',
   'community_verified',
+  'moderator_verified',
   'official_verified',
   'disputed',
 ]);

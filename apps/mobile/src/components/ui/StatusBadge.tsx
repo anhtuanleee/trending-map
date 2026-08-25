@@ -1,5 +1,11 @@
 import type { VerificationStatus } from '@trending-map/contracts';
-import { BadgeCheck, CircleAlert, CircleDashed, UsersRound } from 'lucide-react-native';
+import {
+  BadgeCheck,
+  CircleAlert,
+  CircleDashed,
+  ShieldCheck,
+  UsersRound,
+} from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { colors, radius, spacing } from '@/theme';
@@ -7,6 +13,7 @@ import { colors, radius, spacing } from '@/theme';
 const labels: Record<VerificationStatus, string> = {
   unverified: 'Chưa xác minh',
   community_verified: 'Cộng đồng xác nhận',
+  moderator_verified: 'Điều phối viên xác minh',
   official_verified: 'Nguồn chính thức',
   disputed: 'Đang tranh luận',
 };
@@ -17,6 +24,11 @@ const tones = {
     background: colors.primarySoft,
     foreground: colors.primary,
     Icon: UsersRound,
+  },
+  moderator_verified: {
+    background: colors.primarySoft,
+    foreground: colors.primary,
+    Icon: ShieldCheck,
   },
   official_verified: {
     background: colors.officialSoft,

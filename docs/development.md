@@ -165,6 +165,8 @@ supabase functions serve create-report-media-upload
 supabase functions serve complete-report-media-upload
 supabase functions serve get-report-media-moderation-queue
 supabase functions serve moderate-report-media
+supabase functions serve get-report-moderation-queue
+supabase functions serve moderate-report-case
 ```
 
 `db reset` áp dụng migrations và seed lại dữ liệu local. Không chạy với target production nếu chưa kiểm tra project ref.
