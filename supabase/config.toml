@@ -33,3 +33,9 @@ verify_jwt = true
 
 [functions.add-report-update]
 verify_jwt = true
+
+[functions.create-report-media-upload]
+verify_jwt = true
+
+[functions.complete-report-media-upload]
+verify_jwt = true

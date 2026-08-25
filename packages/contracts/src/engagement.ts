@@ -98,6 +98,57 @@ export const featureRolloutSchema = z.object({
 
 export const featureRolloutsSchema = z.array(featureRolloutSchema);
 
+export const reportMediaUploadStatusSchema = z.enum([
+  'pending',
+  'uploaded',
+  'processing',
+  'approved',
+  'rejected',
+  'failed',
+]);
+
+export const localReportImageSchema = z.object({
+  idempotencyKey: z.string().uuid(),
+  uri: z.string().min(1),
+  width: z.number().int().positive().max(1600),
+  height: z.number().int().positive().max(1600),
+  mimeType: z.literal('image/jpeg'),
+  fileSizeBytes: z.number().int().positive().max(5_000_000),
+});
+
+export const prepareReportMediaUploadInputSchema = z.object({
+  reportId: z.string().uuid(),
+  mimeType: z.literal('image/jpeg'),
+  width: z.number().int().positive().max(1600),
+  height: z.number().int().positive().max(1600),
+  fileSizeBytes: z.number().int().positive().max(5_000_000),
+  idempotencyKey: z.string().uuid(),
+});
+
+export const prepareReportMediaUploadResultSchema = z.discriminatedUnion('uploadRequired', [
+  z.object({
+    mediaId: z.string().uuid(),
+    uploadRequired: z.literal(true),
+    bucket: z.literal('report-evidence-private'),
+    path: z.string().min(1),
+    token: z.string().min(1),
+  }),
+  z.object({
+    mediaId: z.string().uuid(),
+    uploadRequired: z.literal(false),
+  }),
+]);
+
+export const completeReportMediaUploadInputSchema = z.object({
+  mediaId: z.string().uuid(),
+  idempotencyKey: z.string().uuid(),
+});
+
+export const completeReportMediaUploadResultSchema = z.object({
+  mediaId: z.string().uuid(),
+  status: z.literal('uploaded'),
+});
+
 export type ReportUpdateKind = z.infer<typeof reportUpdateKindSchema>;
 export type ReportTimelineItem = z.infer<typeof reportTimelineItemSchema>;
 export type UpdateOperationalStatus = z.infer<typeof updateOperationalStatusSchema>;
@@ -109,3 +160,9 @@ export type SavedItemKind = z.infer<typeof savedItemKindSchema>;
 export type SavedItem = z.infer<typeof savedItemSchema>;
 export type FeatureRolloutKey = z.infer<typeof featureRolloutKeySchema>;
 export type FeatureRollout = z.infer<typeof featureRolloutSchema>;
+export type ReportMediaUploadStatus = z.infer<typeof reportMediaUploadStatusSchema>;
+export type LocalReportImage = z.infer<typeof localReportImageSchema>;
+export type PrepareReportMediaUploadInput = z.infer<typeof prepareReportMediaUploadInputSchema>;
+export type PrepareReportMediaUploadResult = z.infer<typeof prepareReportMediaUploadResultSchema>;
+export type CompleteReportMediaUploadInput = z.infer<typeof completeReportMediaUploadInputSchema>;
+export type CompleteReportMediaUploadResult = z.infer<typeof completeReportMediaUploadResultSchema>;

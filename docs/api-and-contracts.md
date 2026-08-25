@@ -35,6 +35,12 @@ Authenticated command nhận `AddReportUpdateInput`: note cần body; status cha
 `resolving`, `resolved`; mọi request cần UUID idempotency key. RPC phía sau kiểm tra người tạo
 report/moderator, transition hợp lệ, ghi timeline + audit + outbox trong cùng transaction.
 
+### Photo evidence contracts
+
+`LocalReportImage` và `PrepareReportMediaUploadInput` chỉ chấp nhận JPEG tối đa 1.600 px mỗi chiều,
+5 MB và UUID idempotency key. Reservation response là union theo `uploadRequired`: khi `true` mới có
+private bucket/path/token; khi `false`, client bỏ qua transfer và gọi completion để resume retry.
+
 ## Public reads
 
 ### `get_map_items` RPC
@@ -99,6 +105,25 @@ Body theo `ConfirmationInput`: `reportId`, `kind`, optional coordinate và `idem
 
 Cả hai endpoint yêu cầu Authorization header. Edge Function dùng anon key cùng caller JWT, không dùng service role cho community commands.
 
+### `POST /functions/v1/create-report-media-upload`
+
+Authenticated command nhận `reportId`, `mimeType`, `width`, `height`, `fileSizeBytes` và
+`idempotencyKey`. RPC kiểm tra suspension, caller là report owner/moderator, report còn active, giới
+hạn ba ảnh/report và tạo private path idempotent. Edge Function chỉ dùng service role server-side để
+phát signed upload token.
+
+### Signed Storage upload
+
+Khi reservation trả `uploadRequired: true`, mobile đọc sanitized file thành `ArrayBuffer` và upload
+vào `report-evidence-private` bằng signed token. Bucket chỉ nhận `image/jpeg`, tối đa 5 MB và không
+public. Mobile không nhận service-role key.
+
+### `POST /functions/v1/complete-report-media-upload`
+
+Authenticated command nhận `mediaId` và idempotency key. Edge Function xác nhận object tồn tại,
+size/MIME khớp reservation; RPC caller-owned chuyển state sang `uploaded`, ghi audit và enqueue
+`evidence_added`. Completion không approve hoặc publish ảnh.
+
 ## Validation và idempotency
 
 - Title: 6–120 ký tự; description: 12–1200.
@@ -107,6 +132,9 @@ Cả hai endpoint yêu cầu Authorization header. Edge Function dùng anon key 
 - Client tạo UUID idempotency cho mỗi intent mới.
 - Retry cùng submit key của cùng user trả report cũ.
 - Confirmation update vote hiện tại theo user/report thay vì tạo nhiều vote.
+- Media reservation khóa theo report để concurrent request không vượt giới hạn ba ảnh.
+- Retry cùng image key tái sử dụng row/path; object đã tồn tại sẽ bỏ qua transfer và completion
+  cùng media ID là idempotent.
 
 ## Error contract hiện tại
 

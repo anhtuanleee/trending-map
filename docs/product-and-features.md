@@ -32,7 +32,8 @@ Nguyên tắc sản phẩm cốt lõi:
 | Reporting     | Tạo report                     | **Hoạt động**  | Form + Zod + Edge Function + RPC; cần Supabase để lưu thật.                           |
 | Reporting     | Chọn vị trí report             | **Hoạt động**  | GPS-first, manual khi denied, accuracy guard 100 m và reverse geocode best-effort.    |
 | Reporting     | Ẩn tên công khai               | **Hoạt động**  | Public view/RPC không trả reporter identity; backend vẫn giữ user ID.                 |
-| Reporting     | Upload ảnh/video               | **Foundation** | Có bảng `report_media`; chưa có upload UI, storage workflow hay moderation.           |
+| Reporting     | Upload ảnh hiện trường         | **Hoạt động**  | Tối đa 3 JPEG private, sanitize + signed upload + retry; rollout mặc định tắt.        |
+| Reporting     | Duyệt/publish ảnh và video     | **Foundation** | Approved-only public view có sẵn; thumbnail worker, moderation command/video chưa có. |
 | Trust         | “Tôi cũng thấy” / “Không còn”  | **Hoạt động**  | Authenticated command, một confirmation/user/report, có idempotency.                  |
 | Trust         | Community verification         | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`.      |
 | Trust         | Official verification          | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.              |
@@ -67,6 +68,8 @@ Nguyên tắc sản phẩm cốt lõi:
 4. Form kiểm tra payload bằng shared Zod schema; submit vẫn auth-gated với deep link trực tiếp.
 5. Edge Function giữ JWT của người dùng và gọi RPC `submit_report`.
 6. RPC kiểm tra suspension, category, coordinate, idempotency; sau đó tạo report ở trạng thái `unverified`.
+7. Nếu rollout ảnh bật, app upload tuần tự các JPEG đã re-encode vào bucket private và giữ màn hình
+   để retry nếu một ảnh lỗi.
 
 ### Cộng đồng xác nhận
 
@@ -78,6 +81,6 @@ Nguyên tắc sản phẩm cốt lõi:
 ## Ngoài phạm vi bản hiện tại
 
 Chưa nên mô tả là đã hoàn thiện: billing subscription, tìm kiếm địa điểm, filter thật, realtime
-refresh, media upload, comment, notification fan-out, duplicate detection, moderation actions,
+refresh, media moderation/publication, video upload, comment, notification fan-out, duplicate detection, moderation actions,
 official-source ingestion, offline mode, analytics và E2E tests. Các phần này nằm trong
 [roadmap](./roadmap.md).
