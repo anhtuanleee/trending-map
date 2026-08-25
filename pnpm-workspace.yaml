@@ -13,3 +13,7 @@ minimumReleaseAgeExclude:
 onlyBuiltDependencies:
   - esbuild
   - sharp
+
+overrides:
+  lightningcss: 1.29.1
+
