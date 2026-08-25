@@ -1,6 +1,6 @@
 # Tài liệu Trending Map
 
-Tài liệu này mô tả đúng trạng thái code tại ngày 24/08/2026. Mỗi capability được gắn một mức độ hoàn thiện để phân biệt phần đã chạy end-to-end với UI hoặc data foundation.
+Tài liệu này mô tả đúng trạng thái code tại ngày 25/08/2026. Mỗi capability được gắn một mức độ hoàn thiện để phân biệt phần đã chạy end-to-end với UI hoặc data foundation.
 
 ## Quy ước trạng thái
 

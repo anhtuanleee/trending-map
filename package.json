@@ -8,6 +8,12 @@
   },
   "scripts": {
     "dev:mobile": "pnpm --filter @trending-map/mobile start",
+    "dev:mobile:clear": "pnpm --filter @trending-map/mobile start:clear",
+    "dev:mobile:web": "pnpm --filter @trending-map/mobile web",
+    "mobile:android": "pnpm --filter @trending-map/mobile android",
+    "mobile:ios": "pnpm --filter @trending-map/mobile ios",
+    "build:mobile:android": "pnpm --filter @trending-map/mobile export:android",
+    "build:mobile:web": "pnpm --filter @trending-map/mobile export:web",
     "dev:admin": "pnpm --filter @trending-map/admin dev",
     "build:admin": "pnpm --filter @trending-map/admin build",
     "typecheck": "pnpm -r typecheck",

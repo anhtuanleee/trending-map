@@ -28,6 +28,9 @@
         "backgroundColor": "#176B51"
       }
     },
+    "web": {
+      "bundler": "metro"
+    },
     "experiments": {
       "typedRoutes": true
     }

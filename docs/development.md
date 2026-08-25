@@ -51,16 +51,64 @@ Xem `apps/admin/.env.example`:
 
 ## Chạy ứng dụng
 
+Do MapLibre chứa native code, không chạy mobile app bằng Expo Go. Lần đầu hoặc sau khi đổi native
+dependency, build và cài development client local:
+
+```bash
+pnpm mobile:android
+# hoặc trên macOS
+pnpm mobile:ios
+```
+
+Sau khi development client đã được cài trên simulator/device, chạy Metro hằng ngày bằng:
+
 ```bash
 pnpm dev:mobile
+pnpm dev:mobile:clear # dùng khi vừa đổi Babel/Metro/NativeWind config
+```
+
+Web và admin có command riêng:
+
+```bash
+pnpm dev:mobile:web
 pnpm dev:admin
 ```
 
-Các native command của mobile:
+Không dùng `pnpm dev:mobile` rồi quét QR bằng Expo Go: Expo Go không chứa native MapLibre module.
+`expo-dev-client` tạo development build có custom scheme và native dependencies đúng với app.
+
+Production bundle smoke test không cần emulator/device:
 
 ```bash
-pnpm --filter @trending-map/mobile android
-pnpm --filter @trending-map/mobile ios
+pnpm build:mobile:android
+pnpm build:mobile:web
+```
+
+## NativeWind
+
+Mobile dùng NativeWind v4 với Tailwind CSS v3. CSS entry được import một lần tại
+`apps/mobile/app/_layout.tsx`; Metro xử lý `apps/mobile/global.css` qua
+`apps/mobile/metro.config.js`. Tailwind scan cả `app` và `src` theo cấu hình trong
+`apps/mobile/tailwind.config.js`.
+
+Static layout/spacing/typography mới có thể dùng `className`. Các giá trị phụ thuộc runtime như
+MapLibre paint expression, animation style, tọa độ hoặc màu theo dữ liệu vẫn dùng object/StyleSheet.
+Không migrate toàn bộ UI trong một lần; khi chỉnh một component thì chuyển phần static của component
+đó và giữ `src/theme`/`ui-tokens` làm nguồn semantic design value.
+
+Sau khi sửa Babel, Metro, Tailwind hoặc global CSS, xóa cache Metro rồi chạy lại:
+
+```bash
+pnpm dev:mobile:clear
+```
+
+Kiểm tra riêng pipeline Tailwind:
+
+```bash
+pnpm --filter @trending-map/mobile exec tailwindcss \
+  -i ./global.css \
+  -o /tmp/trending-map-nativewind.css \
+  --minify
 ```
 
 Google OAuth cần development/production build để custom scheme quay lại app. Sau khi cài build,
