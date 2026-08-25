@@ -51,16 +51,37 @@ Xem `apps/admin/.env.example`:
 
 ## Chạy ứng dụng
 
+Do MapLibre chứa native code, không chạy mobile app bằng Expo Go. Lần đầu hoặc sau khi đổi native
+dependency, build và cài development client local:
+
+```bash
+pnpm mobile:android
+# hoặc trên macOS
+pnpm mobile:ios
+```
+
+Sau khi development client đã được cài trên simulator/device, chạy Metro hằng ngày bằng:
+
 ```bash
 pnpm dev:mobile
+pnpm dev:mobile:clear # dùng khi vừa đổi Babel/Metro/NativeWind config
+```
+
+Web và admin có command riêng:
+
+```bash
+pnpm dev:mobile:web
 pnpm dev:admin
 ```
 
-Các native command của mobile:
+Không dùng `pnpm dev:mobile` rồi quét QR bằng Expo Go: Expo Go không chứa native MapLibre module.
+`expo-dev-client` tạo development build có custom scheme và native dependencies đúng với app.
+
+Production bundle smoke test không cần emulator/device:
 
 ```bash
-pnpm --filter @trending-map/mobile android
-pnpm --filter @trending-map/mobile ios
+pnpm build:mobile:android
+pnpm build:mobile:web
 ```
 
 ## NativeWind
@@ -78,7 +99,7 @@ Không migrate toàn bộ UI trong một lần; khi chỉnh một component thì
 Sau khi sửa Babel, Metro, Tailwind hoặc global CSS, xóa cache Metro rồi chạy lại:
 
 ```bash
-pnpm --filter @trending-map/mobile exec expo start --clear
+pnpm dev:mobile:clear
 ```
 
 Kiểm tra riêng pipeline Tailwind:
