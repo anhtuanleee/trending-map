@@ -11,11 +11,18 @@
 | Report type         | `incident`, `scheduled_event`, `area_alert`                                        |
 | Severity            | `info`, `low`, `medium`, `high`, `critical`                                        |
 | Verification        | `unverified`, `community_verified`, `official_verified`, `disputed`                |
-| Operational         | `active`, `monitoring`, `resolved`, `expired`, `rejected`                          |
+| Operational         | `active`, `monitoring`, `resolving`, `resolved`, `expired`, `rejected`             |
 | Confirmation        | `seen`, `not_there`, `incorrect`                                                   |
 | App role            | `member`, `trusted`, `official`, `moderator`                                       |
 | Subscription tier   | `free`, `plus`                                                                     |
 | Subscription status | `inactive`, `trialing`, `active`, `grace_period`, `past_due`, `expired`, `revoked` |
+
+## Engagement contracts
+
+`engagement.ts` định nghĩa payload dùng chung cho report timeline, notification event, saved item và
+feature rollout. Public timeline contract cố ý không có reporter identity, trust score hay moderation
+metadata. `get_feature_rollouts()` trả effective flags đã tính audience ở backend; client không dùng
+flag thay cho authorization.
 
 ## Public reads
 

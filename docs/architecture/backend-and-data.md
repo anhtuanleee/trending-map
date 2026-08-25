@@ -18,6 +18,8 @@ erDiagram
   REPORTS ||--o{ CONFIRMATIONS : receives
   PROFILES ||--o{ CONFIRMATIONS : submits
   REPORTS ||--o{ MEDIA : contains
+  REPORTS ||--o{ UPDATES : publishes
+  PROFILES ||--o{ SAVED_ITEMS : saves
 ```
 
 | Bảng                        | Mục đích                                              | Trạng thái sử dụng                                |
@@ -30,7 +32,11 @@ erDiagram
 | `report_confirmations`      | Một vote hiện tại cho mỗi user/report                 | Hoạt động                                         |
 | `report_media`              | Metadata media và moderation status                   | Foundation                                        |
 | `report_comments`           | Bình luận có soft-hide                                | Foundation                                        |
-| `report_status_history`     | Lịch sử đổi trạng thái                                | Foundation; chưa có trigger ghi tự động           |
+| `report_status_history`     | Lịch sử đổi trạng thái                                | Hoạt động; trigger tự ghi                         |
+| `report_updates`            | Timeline note/status/evidence đã publish              | Foundation; public safe view đã có                |
+| `notification_outbox`       | Queue delivery server-only, retry bằng dedupe key     | Foundation                                        |
+| `user_saved_items`          | Report/event user chủ động lưu và reminder            | Foundation                                        |
+| `feature_rollouts`          | Server-owned rollout theo audience                    | Hoạt động; tất cả key mặc định tắt                |
 | `followed_areas`            | Polygon và filter cảnh báo theo user                  | Foundation                                        |
 | `push_devices`              | Expo push token theo user                             | Foundation                                        |
 | `subscription_entitlements` | Server-owned mirror của Free/Plus entitlement         | Foundation; mobile read-own, billing chưa nối     |
@@ -54,7 +60,10 @@ stateDiagram-v2
   official_verified --> official_verified: cộng đồng không hạ cấp
 ```
 
-Operational values hiện có: `active`, `monitoring`, `resolved`, `expired`, `rejected`. RPC `expire_stale_reports` chuyển report quá `expires_at` sang `expired`; repo chưa cấu hình cron gọi RPC này.
+Operational values hiện có: `active`, `monitoring`, `resolving`, `resolved`, `expired`, `rejected`.
+Trigger `reports_capture_status_history` tự ghi cả thay đổi verification và operational status. RPC
+`expire_stale_reports` chuyển report quá `expires_at` sang `expired`; repo chưa cấu hình cron gọi RPC
+này.
 
 ## Expiry và duplicate metadata
 

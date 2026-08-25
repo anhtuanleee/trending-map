@@ -15,10 +15,12 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 
 ## P1 — trust và moderation
 
+- [x] Engagement foundation: shared contracts, safe timeline view, saved items, server-only outbox
+      và rollout flags mặc định tắt.
 - Admin auth + moderator role gate.
 - Moderation case detail; approve, reject, resolve, merge duplicate và audit action.
 - Duplicate candidate query dựa trên category radius/window, sau đó thêm scoring.
-- Ghi `report_status_history` tự động khi verification/operational status đổi.
+- [x] Ghi `report_status_history` tự động khi verification/operational status đổi.
 - Media upload pipeline: signed upload, metadata, thumbnail, moderation và public URL.
 - Scheduled invocation cho `expire_stale_reports`.
 - Rate limiting và abuse controls cho submit/confirmation/OTP.

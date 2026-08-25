@@ -39,12 +39,16 @@ Nguyên tắc sản phẩm cốt lõi:
 | Comments      | Bình luận report               | **Foundation** | Có schema; chưa có policy command và UI.                                              |
 | Follow        | Theo dõi khu vực               | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                          |
 | Notifications | Push notification              | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                       |
+| Engagement    | Live incident timeline         | **Foundation** | Contract, update table và safe public view đã có; chưa có command/UI.                 |
+| Engagement    | Save report/event và reminder  | **Foundation** | Có user-owned schema/RLS; chưa có action/UI/scheduler.                                |
+| Operations    | Notification outbox            | **Foundation** | Server-only queue có dedupe/retry fields; chưa có worker.                             |
+| Operations    | Feature rollout                | **Hoạt động**  | RPC + mobile hook; tám feature mới mặc định tắt.                                      |
 | Subscription  | Plan/entitlement/feature flags | **Foundation** | Free/Plus contract, RLS read-own, preview UI và billing adapter mặc định tắt.         |
 | Subscription  | Purchase/restore/store webhook | **Planned**    | Chưa cài billing SDK, chưa tạo store products và chưa có verified webhook.            |
 | Admin         | Danh sách moderation           | **Hoạt động**  | Next dashboard đọc Supabase bằng service role hoặc demo rows.                         |
 | Admin         | Filter/approve/reject/merge    | **Foundation** | UI shell đã có; button/filter chưa thực thi command.                                  |
 | Admin         | Duplicate risk                 | **Foundation** | Có category radius/window và cột demo; chưa có scoring engine.                        |
-| Operations    | Auto-expire report             | **Foundation** | Có RPC `expire_stale_reports`; chưa có scheduled job trong repo.                      |
+| Operations    | Auto-expire report             | **Foundation** | Có RPC và status-history trigger; chưa có scheduled job trong repo.                   |
 
 ## Luồng người dùng chính
 
