@@ -33,7 +33,7 @@ Feature rollout lấy từ Supabase khi app đã cấu hình backend. Chỉ tron
 đang rollout mà không bật production flag:
 
 ```dotenv
-EXPO_PUBLIC_DEMO_FEATURE_PREVIEW_KEYS=live_incident_timeline
+EXPO_PUBLIC_DEMO_FEATURE_PREVIEW_KEYS=live_incident_timeline,photo_evidence_upload
 ```
 
 Subscription foundation mặc định tắt. Có thể tạo `apps/mobile/.env.local` và bật preview mà chưa
@@ -139,6 +139,11 @@ Recent areas cần test: chỉ pan/zoom do user mới tạo record, camera follo
 được làm tròn 0,01°, zoom 0,5, danh sách không vượt quá 8 và pin đưa khu vực lên đầu. Dữ liệu hiện chỉ
 ở local SecureStore; chưa sync vào `followed_areas`.
 
+Photo evidence cần rebuild development client sau khi cài `expo-image-picker` và
+`expo-image-manipulator`. Test các case: denied/blocked rồi mở Settings, chọn 1–3 ảnh, ảnh nguồn trên
+20 MB, output trên 5 MB, remove preview, mất mạng giữa bộ ảnh, retry sau khi object đã upload nhưng
+completion thất bại và xác nhận media chưa duyệt không xuất hiện trong public detail.
+
 ## Supabase local
 
 ```bash
@@ -146,6 +151,8 @@ supabase start
 supabase db reset
 supabase functions serve submit-report
 supabase functions serve confirm-report
+supabase functions serve create-report-media-upload
+supabase functions serve complete-report-media-upload
 ```
 
 `db reset` áp dụng migrations và seed lại dữ liệu local. Không chạy với target production nếu chưa kiểm tra project ref.

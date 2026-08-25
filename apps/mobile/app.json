@@ -16,6 +16,14 @@
           "locationWhenInUsePermission": "Cho phép Trending Map dùng vị trí khi ứng dụng đang mở để hiển thị nội dung quanh bạn. Vị trí chỉ được dùng cho báo cáo khi bạn chủ động chọn."
         }
       ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Cho phép Trending Map chọn ảnh bạn chủ động đính kèm làm bằng chứng hiện trường. Ảnh được xử lý để loại metadata vị trí trước khi tải lên.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
       "@maplibre/maplibre-react-native"
     ],
     "ios": {

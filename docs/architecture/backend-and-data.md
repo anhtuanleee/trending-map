@@ -30,7 +30,7 @@ erDiagram
 | `official_sources`          | Nguồn chính thức                                      | Data foundation                                   |
 | `reports`                   | Entity trung tâm, geometry, lifecycle và trust counts | Hoạt động                                         |
 | `report_confirmations`      | Một vote hiện tại cho mỗi user/report                 | Hoạt động                                         |
-| `report_media`              | Metadata media và moderation status                   | Foundation                                        |
+| `report_media`              | Private upload lifecycle và moderation status         | Upload hoạt động; publication còn foundation      |
 | `report_comments`           | Bình luận có soft-hide                                | Foundation                                        |
 | `report_status_history`     | Lịch sử đổi trạng thái                                | Hoạt động; trigger tự ghi                         |
 | `report_updates`            | Timeline note/status/evidence đã publish              | Hoạt động qua public read + owner command         |
@@ -90,6 +90,9 @@ Public clients chỉ đọc:
 - Direct writes vào report/confirmation bị thu hồi; write path đi qua RPC được grant cụ thể.
 - Timeline public read không lộ ownership; `can_update_report` chỉ trả boolean cho authenticated user.
 - Add timeline update chỉ dành cho report creator/moderator và idempotent theo report/key.
+- Member chỉ đọc metadata media do mình tạo; moderator đọc được để kiểm duyệt.
+- Community upload dùng signed token vào bucket private; chỉ service-role trong Edge Function được
+  kiểm tra object. Bucket public dành cho pipeline approved sau này.
 
 Service-role admin bỏ qua RLS và chỉ được tạo ở Next server module. Không đưa `SUPABASE_SERVICE_ROLE_KEY` vào biến `NEXT_PUBLIC_*` hoặc mobile env.
 
@@ -102,3 +105,6 @@ Service-role admin bỏ qua RLS và chỉ được tạo ở Next server module.
 - Report chỉ nhận confirmation khi đang `active` hoặc `monitoring`.
 - Contribution bị chặn nếu profile đang suspended.
 - Official verification không bị community recalculation hạ cấp.
+- Media community chỉ là JPEG 1–1.600 px, 1–5 MB; tối đa ba row active/report và idempotent
+  theo `(created_by, idempotency_key)`.
+- `uploaded` chỉ nghĩa là đã nhận file private, không phải đã approved/public.

@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import {
   submitReportInputSchema,
   type Coordinate,
+  type LocalReportImage,
   type SubmitReportInput,
 } from '@trending-map/contracts';
 import * as Crypto from 'expo-crypto';
@@ -22,11 +23,14 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { AppButton, SectionLabel } from '@/components/ui';
 import { useAuthGate } from '@/features/auth';
+import { useFeatureRollout } from '@/features/feature-rollouts';
 import { formatCoordinate } from '@/lib/format';
 import { colors, radius, spacing } from '@/theme';
 
+import { PhotoEvidencePicker } from '../components/PhotoEvidencePicker';
 import { ReportLocationPicker } from '../components/ReportLocationPicker';
 import { useSubmitReport } from '../hooks/useSubmitReport';
+import { useUploadReportEvidence } from '../hooks/useUploadReportEvidence';
 import { reportCategories } from '../model/report-form.config';
 
 type SelectedLocation = {
@@ -40,6 +44,7 @@ export function NewReportScreen() {
   const requireAuth = useAuthGate();
   const [locationPickerVisible, setLocationPickerVisible] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState<SelectedLocation | null>(null);
+  const [evidenceImages, setEvidenceImages] = useState<LocalReportImage[]>([]);
   const { control, handleSubmit, watch, setValue, formState } = useForm<SubmitReportInput>({
     resolver: zodResolver(submitReportInputSchema),
     defaultValues: {
@@ -54,6 +59,8 @@ export function NewReportScreen() {
     },
   });
   const mutation = useSubmitReport();
+  const evidenceUpload = useUploadReportEvidence();
+  const evidenceRollout = useFeatureRollout('photo_evidence_upload');
   const selectedCategory = watch('categoryId');
   const categoryVisuals = [
     { Icon: Droplets, color: colors.weather, background: colors.infoSoft },
@@ -70,10 +77,24 @@ export function NewReportScreen() {
   const submit = handleSubmit((value) => {
     requireAuth(
       '/report/new',
-      () => mutation.mutate(value, { onSuccess: () => router.replace('/?submitted=1') }),
+      () => {
+        void (async () => {
+          try {
+            const report = await mutation.mutateAsync(value);
+            if (evidenceRollout.enabled && evidenceImages.length > 0) {
+              await evidenceUpload.mutateAsync({ reportId: report.id, images: evidenceImages });
+            }
+            router.replace('/?submitted=1');
+          } catch {
+            // Each mutation exposes the relevant retryable error state below.
+          }
+        })();
+      },
       'Đăng nhập để đăng báo cáo',
     );
   });
+
+  const submitting = mutation.isPending || evidenceUpload.isPending;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -169,6 +190,17 @@ export function NewReportScreen() {
           )}
         />
 
+        {evidenceRollout.enabled ? (
+          <View style={styles.evidenceSection}>
+            <SectionLabel>Bằng chứng</SectionLabel>
+            <PhotoEvidencePicker
+              images={evidenceImages}
+              disabled={submitting}
+              onChange={setEvidenceImages}
+            />
+          </View>
+        ) : null}
+
         <Controller
           control={control}
           name="description"
@@ -205,14 +237,21 @@ export function NewReportScreen() {
         />
 
         <AppButton
-          label={mutation.isPending ? 'Đang gửi…' : 'Đăng báo cáo'}
+          label={
+            evidenceUpload.isPending ? 'Đang tải ảnh…' : submitting ? 'Đang gửi…' : 'Đăng báo cáo'
+          }
           icon={<Send color={colors.accentInk} size={18} />}
           tone="accent"
-          loading={mutation.isPending}
+          loading={submitting}
           onPress={() => void submit()}
         />
         {mutation.isError ? (
           <Text style={styles.error}>Không thể gửi báo cáo. Hãy thử lại.</Text>
+        ) : null}
+        {evidenceUpload.isError ? (
+          <Text style={styles.error}>
+            Báo cáo đã được lưu nhưng chưa tải đủ ảnh. Bấm đăng lại để tiếp tục an toàn.
+          </Text>
         ) : null}
       </ScrollView>
 
@@ -342,6 +381,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     padding: spacing.lg,
   },
+  evidenceSection: { marginTop: spacing.lgPlus },
   error: { marginTop: spacing.xs, color: colors.danger, fontSize: 12 },
   pressed: { opacity: 0.82, transform: [{ scale: 0.98 }] },
 });

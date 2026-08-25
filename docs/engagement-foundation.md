@@ -15,6 +15,7 @@ saved items và feature rollout. Đây là nền móng; các feature chưa đư�
 | `NotificationEvent`       | Event client-safe; delivery target và lỗi worker không nằm trong payload. |
 | `SavedItem`               | Report/event user chủ động lưu, optional reminder.                        |
 | `FeatureRollout`          | Trạng thái hiệu lực của một feature và config không nhạy cảm.             |
+| `LocalReportImage`        | JPEG đã re-encode, giới hạn kích thước và có idempotency key riêng.       |
 
 Payload từ Supabase vẫn phải được parse bằng Zod tại API boundary.
 
@@ -28,6 +29,7 @@ Payload từ Supabase vẫn phải được parse bằng Zod tại API boundary.
 | `notification_outbox`    | Server/service role                            | Queue retry-safe bằng `dedupe_key`; client không có grant.      |
 | `user_saved_items`       | Member quản lý row của chính mình              | Nền tảng cho save event/report và reminder.                     |
 | `feature_rollouts`       | Server-owned                                   | Tám feature engagement được seed với `enabled = false`.         |
+| `report_media`           | Owner/moderator đọc metadata                   | Private upload lifecycle; media chưa duyệt không đi vào view.   |
 
 `get_feature_rollouts()` là public RPC chỉ trả `feature_key`, effective `enabled` và config an
 toàn. Audience được tính ở backend (`all`, `authenticated`, `plus`, `internal`). Flag chỉ điều khiển
@@ -80,6 +82,34 @@ EXPO_PUBLIC_DEMO_FEATURE_PREVIEW_KEYS=live_incident_timeline
 
 Override này chỉ có hiệu lực khi `isDemoMode = true`; app đã cấu hình Supabase luôn dùng server rollout.
 
+## Photo evidence upload
+
+`photo_evidence_upload` đã có vertical slice upload ảnh nhưng rollout vẫn mặc định tắt:
+
+- Member chọn tối đa ba ảnh từ màn tạo report; guest vẫn bị auth gate ở bước submit.
+- Mobile chặn file nguồn trên 20 MB, resize tối đa 1.600 px, re-encode JPEG quality 0,82 và không
+  chuyển tiếp EXIF/GPS của file nguồn.
+- Mỗi ảnh tối đa 5 MB; client contract, Edge Function, RPC constraint và Storage bucket cùng enforce.
+- RPC tạo reservation idempotent; signed token chỉ ghi đúng path trong bucket private.
+- Retry nhận biết reservation/object đã tồn tại để tiếp tục completion mà không tạo row hoặc file mới.
+- Completion kiểm tra object size/MIME rồi chuyển sang `uploaded` và enqueue moderation event.
+- Chỉ media có `moderation_status = 'approved'` mới có thể xuất hiện trong public detail. Branch này
+  chưa triển khai worker thumbnail hay moderator command chuyển file sang public bucket.
+
+Bật preview Supabase bằng server flag:
+
+```sql
+update public.feature_rollouts
+set enabled = true, audience = 'authenticated'
+where feature_key = 'photo_evidence_upload';
+```
+
+Hoặc preview UI trong demo mode:
+
+```dotenv
+EXPO_PUBLIC_DEMO_FEATURE_PREVIEW_KEYS=photo_evidence_upload
+```
+
 ## Privacy và reliability
 
 - `public_report_timeline` không chứa `created_by`, `trust_score_internal`, `hidden_at` hoặc raw GPS.
@@ -87,3 +117,5 @@ Override này chỉ có hiệu lực khi `isDemoMode = true`; app đã cấu hì
 - Saved item yêu cầu đăng nhập và được RLS giới hạn theo `auth.uid()`.
 - Status history lưu actor nội bộ để audit nhưng không được đưa vào public timeline.
 - Subscription chỉ ảnh hưởng rollout audience; critical official safety data vẫn không bị paywall.
+- Ảnh chờ duyệt nằm trong `report-evidence-private`; mobile không có service-role key và public view
+  không trả private storage path.

@@ -22,7 +22,8 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
 - Duplicate candidate query dựa trên category radius/window, sau đó thêm scoring.
 - [x] Ghi `report_status_history` tự động khi verification/operational status đổi.
 - [x] Live incident timeline: public read, owner update, lifecycle transition và rollout gate.
-- Media upload pipeline: signed upload, metadata, thumbnail, moderation và public URL.
+- [x] Photo evidence upload: sanitize JPEG, signed private upload, metadata, retry và pending moderation.
+- Media publication: thumbnail worker, malware/content scan, moderator approve/reject và public URL.
 - Scheduled invocation cho `expire_stale_reports`.
 - Rate limiting và abuse controls cho submit/confirmation/OTP.
 

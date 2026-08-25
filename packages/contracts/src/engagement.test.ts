@@ -4,6 +4,9 @@ import {
   addReportUpdateInputSchema,
   featureRolloutsSchema,
   notificationEventSchema,
+  localReportImageSchema,
+  prepareReportMediaUploadInputSchema,
+  prepareReportMediaUploadResultSchema,
   reportTimelineItemSchema,
   savedItemSchema,
 } from './engagement';
@@ -78,6 +81,42 @@ describe('engagement contracts', () => {
         ...base,
         kind: 'status_change',
         operationalStatus: 'rejected',
+      }).success,
+    ).toBe(false);
+  });
+
+  it('accepts only sanitized bounded JPEG evidence', () => {
+    const image = {
+      idempotencyKey: '7a01ec55-a262-4b18-a812-544f63717120',
+      uri: 'file:///cache/evidence.jpg',
+      width: 1200,
+      height: 900,
+      mimeType: 'image/jpeg',
+      fileSizeBytes: 420_000,
+    } as const;
+
+    expect(localReportImageSchema.safeParse(image).success).toBe(true);
+    expect(
+      prepareReportMediaUploadInputSchema.safeParse({
+        ...image,
+        reportId: '5c0fae3d-83d8-4b49-9228-54862b7dc06f',
+        idempotencyKey: '7a01ec55-a262-4b18-a812-544f63717120',
+        mimeType: 'image/png',
+      }).success,
+    ).toBe(false);
+    expect(localReportImageSchema.safeParse({ ...image, fileSizeBytes: 5_000_001 }).success).toBe(
+      false,
+    );
+    expect(
+      prepareReportMediaUploadResultSchema.safeParse({
+        mediaId: '5c0fae3d-83d8-4b49-9228-54862b7dc06f',
+        uploadRequired: false,
+      }).success,
+    ).toBe(true);
+    expect(
+      prepareReportMediaUploadResultSchema.safeParse({
+        mediaId: '5c0fae3d-83d8-4b49-9228-54862b7dc06f',
+        uploadRequired: true,
       }).success,
     ).toBe(false);
   });
