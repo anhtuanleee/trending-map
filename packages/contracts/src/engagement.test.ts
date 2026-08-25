@@ -1,0 +1,60 @@
+import { describe, expect, it } from 'vitest';
+
+import {
+  featureRolloutsSchema,
+  notificationEventSchema,
+  reportTimelineItemSchema,
+  savedItemSchema,
+} from './engagement';
+
+describe('engagement contracts', () => {
+  it('keeps public timeline items free of reporter identity', () => {
+    const item = reportTimelineItemSchema.parse({
+      id: '9f925a58-dae8-41ae-a87f-2754f68e5bbb',
+      reportId: '5c0fae3d-83d8-4b49-9228-54862b7dc06f',
+      kind: 'status_change',
+      body: 'Khu vực đang được xử lý.',
+      operationalStatus: 'resolving',
+      official: false,
+      sourceLabel: null,
+      createdAt: '2026-08-25T04:00:00.000Z',
+      createdBy: 'should-be-stripped',
+      trustScoreInternal: 92,
+    });
+
+    expect(item).not.toHaveProperty('createdBy');
+    expect(item).not.toHaveProperty('trustScoreInternal');
+  });
+
+  it('defaults every declared rollout to an explicit server response', () => {
+    const rollouts = featureRolloutsSchema.parse([
+      { key: 'live_incident_timeline', enabled: false, config: {} },
+      { key: 'photo_evidence_upload', enabled: false, config: { maxImages: 3 } },
+    ]);
+
+    expect(rollouts.every((rollout) => !rollout.enabled)).toBe(true);
+  });
+
+  it('validates saved items and notification events', () => {
+    expect(
+      savedItemSchema.parse({
+        itemType: 'event',
+        itemId: '1c3fdb6f-a54f-41be-acbc-0e2f5a24df6f',
+        reminderAt: null,
+        createdAt: '2026-08-25T04:00:00.000Z',
+        updatedAt: '2026-08-25T04:00:00.000Z',
+      }).itemType,
+    ).toBe('event');
+
+    expect(
+      notificationEventSchema.parse({
+        id: '709f62b2-474d-491a-8f9e-b36e64243c88',
+        type: 'official_alert',
+        aggregateType: 'report',
+        aggregateId: '5c0fae3d-83d8-4b49-9228-54862b7dc06f',
+        occurredAt: '2026-08-25T04:00:00.000Z',
+        data: { severity: 'critical' },
+      }).type,
+    ).toBe('official_alert');
+  });
+});

@@ -11,6 +11,7 @@ export const verificationStatusSchema = z.enum([
 export const operationalStatusSchema = z.enum([
   'active',
   'monitoring',
+  'resolving',
   'resolved',
   'expired',
   'rejected',
@@ -90,6 +91,7 @@ export type ReportType = z.infer<typeof reportTypeSchema>;
 export type Severity = z.infer<typeof severitySchema>;
 export type VerificationStatus = z.infer<typeof verificationStatusSchema>;
 export type OperationalStatus = z.infer<typeof operationalStatusSchema>;
+export type ReportOperationalStatus = OperationalStatus;
 export type Coordinate = z.infer<typeof coordinateSchema>;
 export type MapItem = z.infer<typeof mapItemSchema>;
 export type ReportDetail = z.infer<typeof reportDetailSchema>;
