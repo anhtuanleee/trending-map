@@ -87,8 +87,8 @@ Override này chỉ có hiệu lực khi `isDemoMode = true`; app đã cấu hì
 `photo_evidence_upload` đã có vertical slice upload ảnh nhưng rollout vẫn mặc định tắt:
 
 - Member chọn tối đa ba ảnh từ màn tạo report; guest vẫn bị auth gate ở bước submit.
-- Mobile decode có giới hạn, resize tối đa 1.600 px, re-encode JPEG quality 0,82 và không chuyển tiếp
-  EXIF/GPS của file nguồn.
+- Mobile chặn file nguồn trên 20 MB, resize tối đa 1.600 px, re-encode JPEG quality 0,82 và không
+  chuyển tiếp EXIF/GPS của file nguồn.
 - Mỗi ảnh tối đa 5 MB; client contract, Edge Function, RPC constraint và Storage bucket cùng enforce.
 - RPC tạo reservation idempotent; signed token chỉ ghi đúng path trong bucket private.
 - Retry nhận biết reservation/object đã tồn tại để tiếp tục completion mà không tạo row hoặc file mới.

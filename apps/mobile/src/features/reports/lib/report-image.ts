@@ -16,10 +16,7 @@ export async function sanitizeReportImage(input: {
     throw new Error('source_image_too_large');
   }
 
-  const context = ImageManipulator.manipulate(input.uri, {
-    maxWidth: maxDimension,
-    maxHeight: maxDimension,
-  });
+  const context = ImageManipulator.manipulate(input.uri);
   try {
     if (Math.max(input.width, input.height) > maxDimension) {
       if (input.width >= input.height) context.resize({ width: maxDimension, height: null });
