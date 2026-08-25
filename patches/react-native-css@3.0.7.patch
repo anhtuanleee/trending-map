@@ -1,0 +1,61 @@
+diff --git a/dist/commonjs/babel/import-plugin.js b/dist/commonjs/babel/import-plugin.js
+index c5f49f3796263dd99431f6179a2d88d438240d01..c9e0af714085178ce3f87ff06e57b692f886bd5c 100644
+--- a/dist/commonjs/babel/import-plugin.js
++++ b/dist/commonjs/babel/import-plugin.js
+@@ -15,7 +15,13 @@ function _default({
+   const thisModuleDist = (0, _path.resolve)(__dirname, "../../../dist");
+   const thisModuleSrc = (0, _path.resolve)(__dirname, "../../../src");
+   function isFromThisModule(filename) {
+-    return filename.startsWith(thisModuleDist) || filename.startsWith(thisModuleSrc);
++    if (!filename) return false;
++    return (
++      filename.includes(`${_path.sep}react-native-css${_path.sep}`) ||
++      filename.includes("/react-native-css/") ||
++      filename.startsWith(thisModuleDist) ||
++      filename.startsWith(thisModuleSrc)
++    );
+   }
+   return {
+     name: "Rewrite react-native to react-native-css",
+diff --git a/dist/commonjs/metro/resolver.js b/dist/commonjs/metro/resolver.js
+index 314ffa133698239ffe1bbdab5efd576828ee2e7a..94098a2ebd89f47099c31b49504ad1c58a71dce5 100644
+--- a/dist/commonjs/metro/resolver.js
++++ b/dist/commonjs/metro/resolver.js
+@@ -10,8 +10,15 @@ var _allowedModules = require("../babel/allowedModules.js");
+ const thisModuleDist = (0, _nodePath.resolve)(__dirname, "../../../dist");
+ const thisModuleSrc = (0, _nodePath.resolve)(__dirname, "../../../src");
+ function isFromThisModule(filename) {
+-  return filename.startsWith(thisModuleDist) || filename.startsWith(thisModuleSrc);
++  if (!filename) return false;
++  return (
++    filename.includes(`${_nodePath.sep}react-native-css${_nodePath.sep}`) ||
++    filename.includes("/react-native-css/") ||
++    filename.startsWith(thisModuleDist) ||
++    filename.startsWith(thisModuleSrc)
++  );
+ }
++
+ function nativeResolver(resolver, context, moduleName, platform) {
+   const resolution = resolver(context, moduleName, platform);
+   const isInternal = isFromThisModule(context.originModulePath);
+diff --git a/dist/module/metro/resolver.js b/dist/module/metro/resolver.js
+index 8d1c73b0d67600a2216653f80df26de59e791675..1dbc670936c7685bef492467f75d9a832fe44bac 100644
+--- a/dist/module/metro/resolver.js
++++ b/dist/module/metro/resolver.js
+@@ -5,8 +5,15 @@ import { allowedModules } from "../babel/allowedModules.js";
+ const thisModuleDist = resolve(__dirname, "../../../dist");
+ const thisModuleSrc = resolve(__dirname, "../../../src");
+ function isFromThisModule(filename) {
+-  return filename.startsWith(thisModuleDist) || filename.startsWith(thisModuleSrc);
++  if (!filename) return false;
++  return (
++    filename.includes(`${sep}react-native-css${sep}`) ||
++    filename.includes("/react-native-css/") ||
++    filename.startsWith(thisModuleDist) ||
++    filename.startsWith(thisModuleSrc)
++  );
+ }
++
+ export function nativeResolver(resolver, context, moduleName, platform) {
+   const resolution = resolver(context, moduleName, platform);
+   const isInternal = isFromThisModule(context.originModulePath);
