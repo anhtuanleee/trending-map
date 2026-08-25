@@ -6,15 +6,15 @@ import {
   Platform,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   TextInput,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/ui';
 import { safeReturnTo } from '@/lib/navigation';
-import { colors, radius, spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 
 import { useAuth } from '../providers/AuthProvider';
 
@@ -120,28 +120,32 @@ export function AuthScreen({ returnTo }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      style={styles.screen}
+      className="flex-1 bg-canvas"
     >
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={[
-          styles.scrollContent,
+          { flexGrow: 1, paddingHorizontal: spacing.xl },
           { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xl },
         ]}
       >
-        <Pressable accessibilityLabel="Quay lại" style={styles.back} onPress={goBack}>
+        <Pressable
+          accessibilityLabel="Quay lại"
+          className="h-11 w-11 items-center justify-center rounded-full bg-surface active:bg-primary-soft"
+          onPress={goBack}
+        >
           <ArrowLeft color={colors.ink} size={22} />
         </Pressable>
 
-        <View style={styles.content}>
-          <View style={styles.iconWrap}>
+        <View className="flex-1 justify-center py-8">
+          <View className="h-[58px] w-[58px] items-center justify-center rounded-lg bg-primary-soft">
             <ShieldCheck color={colors.primary} size={30} />
           </View>
-          <Text style={styles.eyebrow}>CỘNG ĐỒNG TIN CẬY</Text>
-          <Text style={styles.title}>
+          <Text className="mt-6 text-xs font-black text-primary">CỘNG ĐỒNG TIN CẬY</Text>
+          <Text className="mt-2 text-3xl font-black text-ink">
             {step === 'email' ? 'Đăng nhập để đóng góp' : 'Nhập mã xác minh'}
           </Text>
-          <Text style={styles.description}>
+          <Text className="mt-3 text-[15px] leading-[22px] text-muted">
             {step === 'email'
               ? 'Không cần mật khẩu. Mọi người vẫn xem được bản đồ, tài khoản chỉ cần khi báo cáo hoặc xác nhận.'
               : `Mã OTP đã được gửi tới ${normalizedEmail}.`}
@@ -149,23 +153,22 @@ export function AuthScreen({ returnTo }: Props) {
 
           {step === 'email' ? (
             <>
-              <Pressable
+              <Button
                 accessibilityLabel="Tiếp tục với Google"
-                accessibilityRole="button"
-                style={[styles.googleButton, googleLoading && styles.disabled]}
+                className="mt-6 min-h-[54px]"
                 disabled={loading || googleLoading}
+                loading={googleLoading}
+                variant="secondary"
                 onPress={() => void continueWithGoogle()}
               >
-                <Text style={styles.googleButtonText}>
-                  {googleLoading ? 'Đang mở Google…' : 'Tiếp tục với Google'}
-                </Text>
-              </Pressable>
-              <View style={styles.divider}>
-                <View style={styles.dividerLine} />
-                <Text style={styles.dividerText}>HOẶC DÙNG EMAIL</Text>
-                <View style={styles.dividerLine} />
+                {googleLoading ? 'Đang mở Google…' : 'Tiếp tục với Google'}
+              </Button>
+              <View className="mt-6 flex-row items-center gap-3">
+                <View className="h-px flex-1 bg-border" />
+                <Text className="text-[11px] font-extrabold text-muted">HOẶC DÙNG EMAIL</Text>
+                <View className="h-px flex-1 bg-border" />
               </View>
-              <Text style={styles.label}>Email</Text>
+              <Text className="mt-6 text-[13px] font-extrabold text-ink">Email</Text>
               <TextInput
                 accessibilityLabel="Email"
                 autoFocus
@@ -175,27 +178,25 @@ export function AuthScreen({ returnTo }: Props) {
                 keyboardType="email-address"
                 value={email}
                 onChangeText={setEmail}
-                style={styles.input}
+                className="mt-2 min-h-[54px] rounded-md border border-border bg-surface px-4 text-[17px] text-ink"
                 placeholder="ban@domain.com"
                 placeholderTextColor={colors.inkMuted}
               />
-              <Pressable
-                accessibilityRole="button"
-                style={[styles.primaryButton, (loading || googleLoading) && styles.disabled]}
+              <Button
+                className="mt-4 min-h-[54px]"
                 disabled={loading || googleLoading}
+                loading={loading}
                 onPress={() => void sendOtp()}
               >
-                <Text style={styles.primaryButtonText}>
-                  {loading ? 'Đang gửi…' : 'Nhận mã OTP'}
-                </Text>
-              </Pressable>
-              <Pressable style={styles.secondaryButton} onPress={() => router.replace('/')}>
-                <Text style={styles.secondaryButtonText}>Tiếp tục xem với tư cách khách</Text>
-              </Pressable>
+                {loading ? 'Đang gửi…' : 'Nhận mã OTP'}
+              </Button>
+              <Button className="mt-3" variant="secondary" onPress={() => router.replace('/')}>
+                Tiếp tục xem với tư cách khách
+              </Button>
             </>
           ) : (
             <>
-              <Text style={styles.label}>Mã OTP gồm 6 số</Text>
+              <Text className="mt-6 text-[13px] font-extrabold text-ink">Mã OTP gồm 6 số</Text>
               <TextInput
                 accessibilityLabel="Mã OTP"
                 autoFocus
@@ -204,42 +205,39 @@ export function AuthScreen({ returnTo }: Props) {
                 maxLength={6}
                 value={otp}
                 onChangeText={(value) => setOtp(value.replace(/\D/g, ''))}
-                style={[styles.input, styles.otp]}
+                className="mt-2 min-h-[54px] rounded-md border border-border bg-surface px-4 text-center text-[22px] font-extrabold tracking-[12px] text-ink"
                 placeholder="000000"
                 placeholderTextColor={colors.inkMuted}
               />
-              <Pressable
-                accessibilityRole="button"
-                style={[styles.primaryButton, loading && styles.disabled]}
+              <Button
+                className="mt-4 min-h-[54px]"
                 disabled={loading}
+                loading={loading}
                 onPress={() => void submitOtp()}
               >
-                <Text style={styles.primaryButtonText}>
-                  {loading ? 'Đang xác minh…' : 'Xác minh và tiếp tục'}
-                </Text>
-              </Pressable>
-              <Pressable
-                style={styles.secondaryButton}
+                {loading ? 'Đang xác minh…' : 'Xác minh và tiếp tục'}
+              </Button>
+              <Button
+                className="mt-3"
                 disabled={loading || resendIn > 0}
+                variant="secondary"
                 onPress={() => void sendOtp()}
               >
-                <Text style={[styles.secondaryButtonText, resendIn > 0 && styles.mutedText]}>
-                  {resendIn > 0 ? `Gửi lại mã sau ${resendIn} giây` : 'Gửi lại mã'}
-                </Text>
-              </Pressable>
+                {resendIn > 0 ? `Gửi lại mã sau ${resendIn} giây` : 'Gửi lại mã'}
+              </Button>
               <Pressable onPress={goBack}>
-                <Text style={styles.link}>Đổi email</Text>
+                <Text className="mt-4 text-center font-bold text-primary">Đổi email</Text>
               </Pressable>
             </>
           )}
 
           {demoMode ? (
-            <Text style={styles.demo}>
+            <Text className="mt-4 text-center text-xs text-muted">
               Demo mode: Google đăng nhập ngay; Email OTP chấp nhận mã bất kỳ gồm 6 số.
             </Text>
           ) : null}
           {error ? (
-            <Text accessibilityRole="alert" style={styles.error}>
+            <Text accessibilityRole="alert" className="mt-3 text-center text-danger">
               {error}
             </Text>
           ) : null}
@@ -248,81 +246,3 @@ export function AuthScreen({ returnTo }: Props) {
     </KeyboardAvoidingView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.canvas },
-  scrollContent: { flexGrow: 1, paddingHorizontal: spacing.xl },
-  back: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 22,
-    backgroundColor: colors.surface,
-  },
-  content: { flex: 1, justifyContent: 'center', paddingVertical: spacing.xxl },
-  iconWrap: {
-    width: 58,
-    height: 58,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
-  },
-  eyebrow: { marginTop: spacing.xl, color: colors.primary, fontSize: 12, fontWeight: '900' },
-  title: { marginTop: spacing.sm, color: colors.ink, fontSize: 30, fontWeight: '900' },
-  description: { marginTop: spacing.md, color: colors.inkMuted, fontSize: 15, lineHeight: 22 },
-  googleButton: {
-    marginTop: spacing.xl,
-    minHeight: 54,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-  },
-  googleButtonText: { color: colors.ink, fontSize: 16, fontWeight: '800' },
-  divider: { marginTop: spacing.xl, flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
-  dividerText: { color: colors.inkMuted, fontSize: 11, fontWeight: '800' },
-  label: { marginTop: spacing.xl, color: colors.ink, fontSize: 13, fontWeight: '800' },
-  input: {
-    marginTop: spacing.sm,
-    minHeight: 54,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    color: colors.ink,
-    paddingHorizontal: spacing.lg,
-    fontSize: 17,
-  },
-  otp: { letterSpacing: 12, textAlign: 'center', fontSize: 22, fontWeight: '800' },
-  primaryButton: {
-    marginTop: spacing.lg,
-    minHeight: 54,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-  },
-  primaryButtonText: { color: colors.surface, fontSize: 16, fontWeight: '900' },
-  secondaryButton: {
-    marginTop: spacing.md,
-    minHeight: 50,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-  },
-  secondaryButtonText: { color: colors.ink, fontSize: 14, fontWeight: '800' },
-  mutedText: { color: colors.inkMuted },
-  disabled: { opacity: 0.6 },
-  link: { marginTop: spacing.lg, color: colors.primary, textAlign: 'center', fontWeight: '700' },
-  demo: { marginTop: spacing.lg, color: colors.inkMuted, fontSize: 12, textAlign: 'center' },
-  error: { marginTop: spacing.md, color: colors.danger, textAlign: 'center' },
-});

@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { ShieldCheck, X } from 'lucide-react-native';
 import { createContext, useCallback, useContext, useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Pressable, Text, View } from 'react-native';
 
-import { colors, radius, spacing } from '@/theme';
+import { BottomSheetModal, Button } from '@/components/ui';
+import { colors } from '@/theme';
 
 type PendingAuth = {
   returnTo: string;
@@ -19,7 +19,6 @@ const AuthGateContext = createContext<AuthGateContextValue | null>(null);
 
 export function AuthGateProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [pending, setPending] = useState<PendingAuth | null>(null);
 
   const openAuthGate = useCallback((returnTo: string, title = 'Đăng nhập để đóng góp') => {
@@ -39,39 +38,36 @@ export function AuthGateProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthGateContext.Provider value={value}>
       {children}
-      <Modal animationType="slide" onRequestClose={close} transparent visible={Boolean(pending)}>
-        <Pressable
-          accessibilityLabel="Đóng yêu cầu đăng nhập"
-          style={styles.overlay}
-          onPress={close}
-        >
-          <Pressable
-            accessibilityViewIsModal
-            style={[styles.sheet, { paddingBottom: insets.bottom + spacing.xl }]}
-            onPress={(event) => event.stopPropagation()}
-          >
-            <View style={styles.sheetHeader}>
-              <View style={styles.iconWrap}>
-                <ShieldCheck color={colors.primary} size={24} />
-              </View>
-              <Pressable accessibilityLabel="Đóng" style={styles.closeButton} onPress={close}>
-                <X color={colors.inkMuted} size={20} />
-              </Pressable>
+      <BottomSheetModal
+        accessibilityLabel="Đóng yêu cầu đăng nhập"
+        visible={Boolean(pending)}
+        onClose={close}
+      >
+        <View className="px-6 pb-3">
+          <View className="flex-row items-center justify-between">
+            <View className="h-12 w-12 items-center justify-center rounded-md bg-primary-soft">
+              <ShieldCheck color={colors.primary} size={24} />
             </View>
-            <Text style={styles.title}>{pending?.title}</Text>
-            <Text style={styles.description}>
-              Mày vẫn xem được toàn bộ bản đồ. Tài khoản chỉ cần khi báo cáo, xác nhận hoặc đánh
-              giá.
-            </Text>
-            <Pressable style={styles.primaryButton} onPress={continueToAuth}>
-              <Text style={styles.primaryButtonText}>Đăng nhập bằng email</Text>
+            <Pressable
+              accessibilityLabel="Đóng"
+              className="h-11 w-11 items-center justify-center rounded-full bg-canvas active:opacity-70"
+              onPress={close}
+            >
+              <X color={colors.inkMuted} size={20} />
             </Pressable>
-            <Pressable style={styles.secondaryButton} onPress={close}>
-              <Text style={styles.secondaryButtonText}>Để sau</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
+          </View>
+          <Text className="mt-6 text-2xl font-black text-ink">{pending?.title}</Text>
+          <Text className="mt-2 text-[15px] leading-[22px] text-muted">
+            Mày vẫn xem được toàn bộ bản đồ. Tài khoản chỉ cần khi báo cáo, xác nhận hoặc đánh giá.
+          </Text>
+          <Button className="mt-6" onPress={continueToAuth}>
+            Đăng nhập bằng email
+          </Button>
+          <Button className="mt-3" variant="secondary" onPress={close}>
+            Để sau
+          </Button>
+        </View>
+      </BottomSheetModal>
     </AuthGateContext.Provider>
   );
 }
@@ -81,56 +77,3 @@ export function useAuthGatePrompt() {
   if (!value) throw new Error('useAuthGatePrompt must be used inside AuthGateProvider.');
   return value;
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: colors.overlay,
-  },
-  sheet: {
-    borderTopLeftRadius: radius.lg,
-    borderTopRightRadius: radius.lg,
-    backgroundColor: colors.surface,
-    padding: spacing.xl,
-  },
-  sheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  iconWrap: {
-    width: 48,
-    height: 48,
-    borderRadius: radius.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
-  },
-  closeButton: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 21,
-    backgroundColor: colors.canvas,
-  },
-  title: { marginTop: spacing.xl, color: colors.ink, fontSize: 24, fontWeight: '900' },
-  description: { marginTop: spacing.sm, color: colors.inkMuted, fontSize: 15, lineHeight: 22 },
-  primaryButton: {
-    minHeight: 54,
-    marginTop: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-  },
-  primaryButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
-  secondaryButton: {
-    minHeight: 50,
-    marginTop: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-  },
-  secondaryButtonText: { color: colors.ink, fontSize: 14, fontWeight: '800' },
-});

@@ -1,7 +1,7 @@
 import type { MapBounds } from '@trending-map/contracts';
 
 export const mapConfig = {
-  styleUrl: process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://demotiles.maplibre.org/style.json',
+  styleUrl: process.env.EXPO_PUBLIC_MAP_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/liberty',
   defaultCenter: [106.701, 10.776] as [number, number],
   defaultBounds: {
     west: 106.63,

@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import { Check, Map, ShieldCheck } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, radius, spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 
 export function SignedOutScreen() {
   const router = useRouter();
@@ -11,86 +11,34 @@ export function SignedOutScreen() {
 
   return (
     <View
-      style={[
-        styles.screen,
-        { paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl },
-      ]}
+      className="flex-1 justify-center bg-canvas px-6"
+      style={{ paddingTop: insets.top + spacing.xl, paddingBottom: insets.bottom + spacing.xl }}
     >
-      <View style={styles.content}>
-        <View style={styles.iconWrap}>
+      <View className="items-center">
+        <View className="h-[68px] w-[68px] items-center justify-center rounded-full bg-primary">
           <Check color={colors.surface} size={32} />
         </View>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" className="mt-6 text-3xl font-black text-ink">
           Đã đăng xuất
         </Text>
-        <Text style={styles.description}>
+        <Text className="mt-3 max-w-[320px] text-center text-[15px] leading-[23px] text-muted">
           Mày vẫn có thể xem sự kiện, cảnh báo và tình trạng xung quanh với tư cách khách.
         </Text>
-        <Pressable style={styles.primaryButton} onPress={() => router.replace('/')}>
+        <Pressable
+          className="mt-8 min-h-[54px] self-stretch flex-row items-center justify-center gap-2 rounded-md bg-primary active:bg-primary-pressed"
+          onPress={() => router.replace('/')}
+        >
           <Map color={colors.surface} size={19} />
-          <Text style={styles.primaryButtonText}>Quay lại bản đồ</Text>
+          <Text className="text-[15px] font-black text-white">Quay lại bản đồ</Text>
         </Pressable>
         <Pressable
-          style={styles.secondaryButton}
+          className="mt-3 min-h-[52px] self-stretch flex-row items-center justify-center gap-2 rounded-md border border-border bg-surface active:bg-canvas"
           onPress={() => router.replace({ pathname: '/auth', params: { returnTo: '/account' } })}
         >
           <ShieldCheck color={colors.ink} size={19} />
-          <Text style={styles.secondaryButtonText}>Đăng nhập lại</Text>
+          <Text className="text-[15px] font-extrabold text-ink">Đăng nhập lại</Text>
         </Pressable>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    justifyContent: 'center',
-    backgroundColor: colors.canvas,
-    padding: spacing.xl,
-  },
-  content: { alignItems: 'center' },
-  iconWrap: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-  },
-  title: { marginTop: spacing.xl, color: colors.ink, fontSize: 30, fontWeight: '900' },
-  description: {
-    maxWidth: 320,
-    marginTop: spacing.md,
-    color: colors.inkMuted,
-    fontSize: 15,
-    lineHeight: 23,
-    textAlign: 'center',
-  },
-  primaryButton: {
-    alignSelf: 'stretch',
-    minHeight: 54,
-    marginTop: spacing.xxl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-  },
-  primaryButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
-  secondaryButton: {
-    alignSelf: 'stretch',
-    minHeight: 52,
-    marginTop: spacing.md,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-  },
-  secondaryButtonText: { color: colors.ink, fontSize: 15, fontWeight: '800' },
-});

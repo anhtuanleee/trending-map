@@ -1,7 +1,5 @@
 import type { VerificationStatus } from '@trending-map/contracts';
-import { StyleSheet, Text, View } from 'react-native';
-
-import { colors, radius, spacing } from '@/theme';
+import { Text, View } from 'react-native';
 
 const labels: Record<VerificationStatus, string> = {
   unverified: 'Chưa xác minh',
@@ -12,23 +10,14 @@ const labels: Record<VerificationStatus, string> = {
 
 export function StatusBadge({ status }: { status: VerificationStatus }) {
   return (
-    <View style={[styles.badge, status === 'official_verified' && styles.official]}>
-      <Text style={[styles.text, status === 'official_verified' && styles.officialText]}>
+    <View
+      className={`self-start rounded-pill px-3 py-1.5 ${status === 'official_verified' ? 'bg-official-soft' : 'bg-primary-soft'}`}
+    >
+      <Text
+        className={`text-xs font-bold ${status === 'official_verified' ? 'text-official' : 'text-primary'}`}
+      >
         {labels[status]}
       </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  badge: {
-    alignSelf: 'flex-start',
-    borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-    paddingHorizontal: spacing.md,
-    paddingVertical: 6,
-  },
-  official: { backgroundColor: colors.officialSoft },
-  text: { color: colors.primary, fontSize: 12, fontWeight: '700' },
-  officialText: { color: colors.official },
-});

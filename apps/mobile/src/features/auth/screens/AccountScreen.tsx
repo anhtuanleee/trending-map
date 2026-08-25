@@ -11,18 +11,11 @@ import {
   ShieldCheck,
 } from 'lucide-react-native';
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { colors, radius, spacing } from '@/theme';
+import { Button } from '@/components/ui';
+import { colors, spacing } from '@/theme';
 
 import { useAuth } from '../providers/AuthProvider';
 
@@ -64,42 +57,43 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
 
   if (loading) {
     return (
-      <View style={styles.centered}>
+      <View className="flex-1 items-center justify-center gap-3 bg-canvas">
         <ActivityIndicator color={colors.primary} />
-        <Text style={styles.helper}>Đang tải tài khoản…</Text>
+        <Text className="text-muted">Đang tải tài khoản…</Text>
       </View>
     );
   }
 
   if (!user) {
     return (
-      <View
-        style={[
-          styles.screen,
-          { paddingTop: insets.top + spacing.md, paddingHorizontal: spacing.xl },
-        ]}
-      >
-        <Pressable accessibilityLabel="Quay lại" style={styles.back} onPress={() => router.back()}>
+      <View className="flex-1 bg-canvas px-6" style={{ paddingTop: insets.top + spacing.md }}>
+        <Pressable
+          accessibilityLabel="Quay lại"
+          className="h-11 w-11 items-center justify-center rounded-full bg-surface"
+          onPress={() => router.back()}
+        >
           <ArrowLeft color={colors.ink} size={22} />
         </Pressable>
-        <View style={styles.guestContent}>
-          <View style={styles.largeIcon}>
+        <View className="flex-1 justify-center pb-20">
+          <View className="h-16 w-16 items-center justify-center rounded-lg bg-primary-soft">
             <ShieldCheck color={colors.primary} size={34} />
           </View>
-          <Text style={styles.guestTitle}>Đăng nhập để quản lý tài khoản</Text>
-          <Text style={styles.guestDescription}>
+          <Text className="mt-6 text-[28px] font-black text-ink">
+            Đăng nhập để quản lý tài khoản
+          </Text>
+          <Text className="mt-3 text-[15px] leading-[23px] text-muted">
             Bản đồ vẫn mở cho mọi người. Đăng nhập khi mày muốn báo cáo, xác nhận hoặc theo dõi khu
             vực.
           </Text>
-          <Pressable
-            style={styles.primaryButton}
+          <Button
+            className="mt-6 min-h-[54px]"
             onPress={() => router.push({ pathname: '/auth', params: { returnTo: '/account' } })}
           >
-            <Text style={styles.primaryButtonText}>Đăng nhập bằng email</Text>
-          </Pressable>
-          <Pressable style={styles.secondaryButton} onPress={() => router.replace('/')}>
-            <Text style={styles.secondaryButtonText}>Quay lại bản đồ</Text>
-          </Pressable>
+            Đăng nhập bằng email
+          </Button>
+          <Button className="mt-3" variant="secondary" onPress={() => router.replace('/')}>
+            Quay lại bản đồ
+          </Button>
         </View>
       </View>
     );
@@ -110,62 +104,73 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
 
   return (
     <ScrollView
-      style={styles.screen}
-      contentContainerStyle={[
-        styles.accountContent,
-        { paddingTop: insets.top + spacing.md, paddingBottom: insets.bottom + spacing.xl },
-      ]}
+      className="flex-1 bg-canvas"
+      contentContainerStyle={{
+        paddingHorizontal: spacing.xl,
+        paddingTop: insets.top + spacing.md,
+        paddingBottom: insets.bottom + spacing.xl,
+      }}
     >
-      <View style={styles.header}>
-        <Pressable accessibilityLabel="Quay lại" style={styles.back} onPress={() => router.back()}>
+      <View className="flex-row items-center justify-between">
+        <Pressable
+          accessibilityLabel="Quay lại"
+          className="h-11 w-11 items-center justify-center rounded-full bg-surface"
+          onPress={() => router.back()}
+        >
           <ArrowLeft color={colors.ink} size={22} />
         </Pressable>
-        <Text style={styles.headerTitle}>Tài khoản</Text>
-        <View style={styles.headerSpacer} />
+        <Text className="text-lg font-black text-ink">Tài khoản</Text>
+        <View className="w-11" />
       </View>
 
-      <View style={styles.profile}>
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{avatarLabel}</Text>
+      <View className="my-8 flex-row items-center gap-4">
+        <View className="h-[66px] w-[66px] items-center justify-center rounded-full bg-primary">
+          <Text className="text-lg font-black text-white">{avatarLabel}</Text>
         </View>
-        <View style={styles.profileCopy}>
-          <Text style={styles.profileName}>Người dùng {userSuffix}</Text>
-          <Text style={styles.profileMeta}>{user.email ?? 'Tài khoản Trending Map'}</Text>
-          {demoMode ? <Text style={styles.demoBadge}>DEMO MODE</Text> : null}
+        <View className="flex-1">
+          <Text className="text-xl font-black text-ink">Người dùng {userSuffix}</Text>
+          <Text className="mt-1 text-[13px] text-muted">
+            {user.email ?? 'Tài khoản Trending Map'}
+          </Text>
+          {demoMode ? (
+            <Text className="mt-2 self-start rounded-pill bg-primary-soft px-2 py-1 text-[10px] font-black text-primary">
+              DEMO MODE
+            </Text>
+          ) : null}
         </View>
       </View>
 
-      <Text style={styles.sectionLabel}>TÀI KHOẢN</Text>
-      <View style={styles.card}>
-        <View style={styles.infoRow}>
+      <Text className="mb-2 mt-4 text-[11px] font-black text-primary">TÀI KHOẢN</Text>
+      <View className="rounded-lg bg-surface px-4">
+        <View className="min-h-[68px] flex-row items-center gap-3">
           <Mail color={colors.inkMuted} size={20} />
-          <View style={styles.rowCopy}>
-            <Text style={styles.rowTitle}>Email</Text>
-            <Text style={styles.rowMeta}>{user.email ?? 'Chưa có thông tin'}</Text>
+          <View className="flex-1">
+            <Text className="text-sm font-extrabold text-ink">Email</Text>
+            <Text className="mt-1 text-xs text-muted">{user.email ?? 'Chưa có thông tin'}</Text>
           </View>
         </View>
       </View>
 
       {subscriptionEntry}
 
-      <Text style={styles.sectionLabel}>CÁ NHÂN HÓA</Text>
-      <View style={styles.card}>
+      <Text className="mb-2 mt-4 text-[11px] font-black text-primary">CÁ NHÂN HÓA</Text>
+      <View className="rounded-lg bg-surface px-4">
         {upcomingItems.map(({ label, icon: Icon }, index) => (
           <View
             key={label}
-            style={[styles.infoRow, index < upcomingItems.length - 1 && styles.rowBorder]}
+            className={`min-h-[68px] flex-row items-center gap-3 ${index < upcomingItems.length - 1 ? 'border-b border-border' : ''}`}
           >
             <Icon color={colors.inkMuted} size={20} />
-            <Text style={[styles.rowTitle, styles.rowCopy]}>{label}</Text>
-            <Text style={styles.soon}>Sắp có</Text>
+            <Text className="flex-1 text-sm font-extrabold text-ink">{label}</Text>
+            <Text className="text-[11px] font-bold text-muted">Sắp có</Text>
             <ChevronRight color={colors.border} size={18} />
           </View>
         ))}
       </View>
 
-      <View style={styles.privacyCard}>
+      <View className="mt-6 flex-row items-start gap-3 rounded-lg bg-primary-soft p-4">
         <ShieldCheck color={colors.primary} size={20} />
-        <Text style={styles.privacyCopy}>
+        <Text className="flex-1 text-[13px] leading-[19px] text-muted">
           Chọn “Ẩn tên công khai” sẽ giấu danh tính trên report. Hệ thống vẫn giữ tài khoản để chống
           spam.
         </Text>
@@ -173,7 +178,7 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
 
       <Pressable
         accessibilityRole="button"
-        style={[styles.logoutButton, signingOut && styles.disabled]}
+        className={`mt-8 min-h-[54px] flex-row items-center justify-center gap-2 rounded-md border border-border bg-surface ${signingOut ? 'opacity-60' : 'active:bg-danger-soft'}`}
         disabled={signingOut}
         onPress={confirmSignOut}
       >
@@ -182,145 +187,10 @@ export function AccountScreen({ subscriptionEntry }: { subscriptionEntry?: React
         ) : (
           <LogOut color={colors.danger} size={19} />
         )}
-        <Text style={styles.logoutText}>{signingOut ? 'Đang đăng xuất…' : 'Đăng xuất'}</Text>
+        <Text className="text-[15px] font-black text-danger">
+          {signingOut ? 'Đang đăng xuất…' : 'Đăng xuất'}
+        </Text>
       </Pressable>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.canvas },
-  centered: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.md,
-    backgroundColor: colors.canvas,
-  },
-  helper: { color: colors.inkMuted },
-  accountContent: { paddingHorizontal: spacing.xl },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerTitle: { color: colors.ink, fontSize: 18, fontWeight: '900' },
-  headerSpacer: { width: 44 },
-  back: {
-    width: 44,
-    height: 44,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 22,
-    backgroundColor: colors.surface,
-  },
-  guestContent: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingBottom: 80,
-  },
-  largeIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: radius.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primarySoft,
-  },
-  guestTitle: { marginTop: spacing.xl, color: colors.ink, fontSize: 28, fontWeight: '900' },
-  guestDescription: {
-    marginTop: spacing.md,
-    color: colors.inkMuted,
-    fontSize: 15,
-    lineHeight: 23,
-  },
-  primaryButton: {
-    minHeight: 54,
-    marginTop: spacing.xl,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.md,
-  },
-  primaryButtonText: { color: colors.surface, fontSize: 15, fontWeight: '900' },
-  secondaryButton: {
-    minHeight: 50,
-    marginTop: spacing.md,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-  },
-  secondaryButtonText: { color: colors.ink, fontWeight: '800' },
-  profile: {
-    marginVertical: spacing.xxl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-  },
-  avatar: {
-    width: 66,
-    height: 66,
-    borderRadius: 33,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-  },
-  avatarText: { color: colors.surface, fontSize: 18, fontWeight: '900' },
-  profileCopy: { flex: 1 },
-  profileName: { color: colors.ink, fontSize: 20, fontWeight: '900' },
-  profileMeta: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 13 },
-  demoBadge: {
-    alignSelf: 'flex-start',
-    marginTop: spacing.sm,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primarySoft,
-    color: colors.primary,
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
-    fontSize: 10,
-    fontWeight: '900',
-  },
-  sectionLabel: {
-    marginTop: spacing.lg,
-    marginBottom: spacing.sm,
-    color: colors.primary,
-    fontSize: 11,
-    fontWeight: '900',
-  },
-  card: { borderRadius: radius.lg, backgroundColor: colors.surface, paddingHorizontal: spacing.lg },
-  infoRow: {
-    minHeight: 68,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  rowBorder: { borderBottomWidth: 1, borderBottomColor: colors.border },
-  rowCopy: { flex: 1 },
-  rowTitle: { color: colors.ink, fontSize: 14, fontWeight: '800' },
-  rowMeta: { marginTop: spacing.xs, color: colors.inkMuted, fontSize: 12 },
-  soon: { color: colors.inkMuted, fontSize: 11, fontWeight: '700' },
-  privacyCard: {
-    marginTop: spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.md,
-    borderRadius: radius.lg,
-    backgroundColor: colors.primarySoft,
-    padding: spacing.lg,
-  },
-  privacyCopy: { flex: 1, color: colors.inkMuted, fontSize: 13, lineHeight: 19 },
-  logoutButton: {
-    minHeight: 54,
-    marginTop: spacing.xxl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-  },
-  logoutText: { color: colors.danger, fontSize: 15, fontWeight: '900' },
-  disabled: { opacity: 0.6 },
-});

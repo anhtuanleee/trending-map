@@ -1,9 +1,9 @@
 import type { MapItem } from '@trending-map/contracts';
 import { Check, Clock3, MapPin, X } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 
 import { StatusBadge } from '@/components/ui';
-import { colors, radius, spacing } from '@/theme';
+import { colors } from '@/theme';
 
 type Props = {
   report: MapItem;
@@ -13,60 +13,37 @@ type Props = {
 
 export function ReportPreviewCard({ report, onClose, onConfirm }: Props) {
   return (
-    <View style={styles.card}>
-      <View style={styles.topRow}>
+    <View className="absolute bottom-[100px] left-4 right-4 rounded-card bg-surface p-4 shadow-2xl">
+      <View className="flex-row items-center justify-between">
         <StatusBadge status={report.verificationStatus} />
-        <Pressable accessibilityLabel="Đóng chi tiết" onPress={onClose} hitSlop={12}>
+        <Pressable
+          accessibilityLabel="Đóng chi tiết"
+          className="active:opacity-60"
+          hitSlop={12}
+          onPress={onClose}
+        >
           <X color={colors.inkMuted} size={20} />
         </Pressable>
       </View>
-      <Text style={styles.eyebrow}>{report.categoryName}</Text>
-      <Text style={styles.title}>{report.title}</Text>
-      <View style={styles.metaRow}>
+      <Text className="mt-3 text-xs font-extrabold text-primary">{report.categoryName}</Text>
+      <Text className="mt-1 text-xl font-extrabold text-ink">{report.title}</Text>
+      <View className="mt-2 flex-row items-center gap-1.5">
         <MapPin color={colors.inkMuted} size={15} />
-        <Text style={styles.meta}>Gần vị trí này</Text>
+        <Text className="flex-1 text-[13px] text-muted">Gần vị trí này</Text>
       </View>
-      <View style={styles.metaRow}>
+      <View className="mt-2 flex-row items-center gap-1.5">
         <Clock3 color={colors.inkMuted} size={15} />
-        <Text style={styles.meta}>Cập nhật gần đây · {report.confirmationCount} xác nhận</Text>
+        <Text className="flex-1 text-[13px] text-muted">
+          Cập nhật gần đây · {report.confirmationCount} xác nhận
+        </Text>
       </View>
-      <Pressable style={styles.button} onPress={onConfirm}>
+      <Pressable
+        className="mt-4 min-h-12 flex-row items-center justify-center gap-2 rounded-xl bg-primary active:opacity-80"
+        onPress={onConfirm}
+      >
         <Check color={colors.onPrimary} size={18} />
-        <Text style={styles.buttonText}>Tôi cũng thấy</Text>
+        <Text className="text-[15px] font-extrabold text-white">Tôi cũng thấy</Text>
       </Pressable>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  card: {
-    position: 'absolute',
-    left: spacing.lg,
-    right: spacing.lg,
-    bottom: 100,
-    borderRadius: radius.lg,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-    shadowColor: colors.shadow,
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.15,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  eyebrow: { marginTop: spacing.md, color: colors.primary, fontSize: 12, fontWeight: '800' },
-  title: { marginTop: 4, color: colors.ink, fontSize: 20, fontWeight: '800' },
-  metaRow: { marginTop: spacing.sm, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  meta: { color: colors.inkMuted, flex: 1, fontSize: 13 },
-  button: {
-    marginTop: spacing.lg,
-    minHeight: 48,
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
-  },
-  buttonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '800' },
-});

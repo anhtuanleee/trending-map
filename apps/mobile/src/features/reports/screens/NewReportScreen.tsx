@@ -9,12 +9,13 @@ import { useRouter } from 'expo-router';
 import { ArrowLeft, ChevronRight, MapPin } from 'lucide-react-native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/ui';
 import { useAuthGate } from '@/features/auth';
 import { formatCoordinate } from '@/lib/format';
-import { colors, radius, spacing } from '@/theme';
+import { colors } from '@/theme';
 
 import { ReportLocationPicker } from '../components/ReportLocationPicker';
 import { useSubmitReport } from '../hooks/useSubmitReport';
@@ -62,124 +63,140 @@ export function NewReportScreen() {
   });
 
   return (
-    <View style={[styles.screen, { paddingTop: insets.top }]}>
-      <View style={styles.header}>
-        <Pressable accessibilityLabel="Quay lại" style={styles.back} onPress={() => router.back()}>
+    <View className="flex-1 bg-canvas" style={{ paddingTop: insets.top }}>
+      <View className="min-h-[78px] flex-row items-center gap-3 border-b border-border bg-surface px-4">
+        <Pressable
+          accessibilityLabel="Quay lại"
+          className="h-[42px] w-[42px] items-center justify-center"
+          onPress={() => router.back()}
+        >
           <ArrowLeft color={colors.ink} size={22} />
         </Pressable>
-        <View style={styles.headerCopy}>
-          <Text style={styles.headerTitle}>Báo cáo mới</Text>
-          <Text style={styles.headerMeta}>Thông tin sẽ bắt đầu ở trạng thái chưa xác minh</Text>
+        <View className="flex-1">
+          <Text className="text-lg font-black text-ink">Báo cáo mới</Text>
+          <Text className="mt-0.5 text-[11px] text-muted">
+            Thông tin sẽ bắt đầu ở trạng thái chưa xác minh
+          </Text>
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.content, { paddingBottom: insets.bottom + 32 }]}>
-        <Text style={styles.sectionLabel}>LOẠI BÁO CÁO</Text>
-        <View style={styles.categoryGrid}>
-          {reportCategories.map((category) => (
-            <Pressable
-              key={category.id}
-              style={[styles.category, selectedCategory === category.id && styles.categoryActive]}
-              onPress={() => setValue('categoryId', category.id, { shouldValidate: true })}
-            >
-              <Text
-                style={[
-                  styles.categoryText,
-                  selectedCategory === category.id && styles.categoryTextActive,
-                ]}
+      <ScrollView contentContainerStyle={{ paddingBottom: insets.bottom + 32 }}>
+        <View className="gap-4 p-6">
+          <Text className="text-[11px] font-black text-primary">LOẠI BÁO CÁO</Text>
+          <View className="flex-row flex-wrap gap-2">
+            {reportCategories.map((category) => (
+              <Pressable
+                key={category.id}
+                className={`min-h-11 justify-center rounded-pill border px-4 ${selectedCategory === category.id ? 'border-ink bg-ink' : 'border-border bg-surface'}`}
+                onPress={() => setValue('categoryId', category.id, { shouldValidate: true })}
               >
-                {category.label}
+                <Text
+                  className={`text-[13px] font-bold ${selectedCategory === category.id ? 'text-white' : 'text-ink'}`}
+                >
+                  {category.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          <Text className="text-[11px] font-black text-primary">VỊ TRÍ</Text>
+          <Pressable
+            className="min-h-20 flex-row items-center gap-3 rounded-md bg-surface p-4 active:bg-primary-soft"
+            onPress={() => setLocationPickerVisible(true)}
+          >
+            <View className="h-[42px] w-[42px] items-center justify-center rounded-full bg-canvas">
+              <MapPin color={colors.primary} size={21} />
+            </View>
+            <View className="flex-1">
+              <Text className="text-sm font-extrabold text-ink">
+                {selectedLocation?.addressLabel ?? 'Chọn vị trí hiện trường'}
               </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <Text style={styles.sectionLabel}>VỊ TRÍ</Text>
-        <Pressable style={styles.locationCard} onPress={() => setLocationPickerVisible(true)}>
-          <View style={styles.locationIcon}>
-            <MapPin color={colors.primary} size={21} />
-          </View>
-          <View style={styles.locationCopy}>
-            <Text style={styles.locationTitle}>
-              {selectedLocation?.addressLabel ?? 'Chọn vị trí hiện trường'}
-            </Text>
-            <Text style={styles.locationMeta}>
-              {selectedLocation
-                ? formatCoordinate(selectedLocation.coordinate)
-                : 'Kéo pin trên bản đồ hoặc dùng GPS hiện tại'}
-            </Text>
-          </View>
-          <ChevronRight color={colors.inkMuted} size={20} />
-        </Pressable>
-        {formState.errors.coordinate ? (
-          <Text style={styles.error}>Chọn vị trí trước khi đăng báo cáo.</Text>
-        ) : null}
-
-        <Controller
-          control={control}
-          name="title"
-          render={({ field }) => (
-            <View>
-              <Text style={styles.label}>Tiêu đề</Text>
-              <TextInput
-                value={field.value}
-                onChangeText={field.onChange}
-                onBlur={field.onBlur}
-                placeholder="Ví dụ: Ngập sâu, xe máy khó đi"
-                style={styles.input}
-              />
-              {formState.errors.title ? (
-                <Text style={styles.error}>{formState.errors.title.message}</Text>
-              ) : null}
+              <Text className="mt-[3px] text-xs leading-[17px] text-muted">
+                {selectedLocation
+                  ? formatCoordinate(selectedLocation.coordinate)
+                  : 'Kéo pin trên bản đồ hoặc dùng GPS hiện tại'}
+              </Text>
             </View>
-          )}
-        />
+            <ChevronRight color={colors.inkMuted} size={20} />
+          </Pressable>
+          {formState.errors.coordinate ? (
+            <Text className="mt-1 text-xs text-danger">Chọn vị trí trước khi đăng báo cáo.</Text>
+          ) : null}
 
-        <Controller
-          control={control}
-          name="description"
-          render={({ field }) => (
-            <View>
-              <Text style={styles.label}>Mô tả hiện trường</Text>
-              <TextInput
-                value={field.value}
-                onChangeText={field.onChange}
-                onBlur={field.onBlur}
-                multiline
-                placeholder="Điều gì đang xảy ra? Ai hoặc phương tiện nào bị ảnh hưởng?"
-                style={[styles.input, styles.textarea]}
-              />
-              {formState.errors.description ? (
-                <Text style={styles.error}>{formState.errors.description.message}</Text>
-              ) : null}
-            </View>
-          )}
-        />
-
-        <Controller
-          control={control}
-          name="anonymousPublicly"
-          render={({ field }) => (
-            <View style={styles.switchRow}>
-              <View style={styles.locationCopy}>
-                <Text style={styles.locationTitle}>Ẩn tên công khai</Text>
-                <Text style={styles.locationMeta}>Hệ thống vẫn giữ tài khoản để chống spam.</Text>
+          <Controller
+            control={control}
+            name="title"
+            render={({ field }) => (
+              <View>
+                <Text className="mb-2 text-[13px] font-extrabold text-ink">Tiêu đề</Text>
+                <TextInput
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  placeholder="Ví dụ: Ngập sâu, xe máy khó đi"
+                  className="min-h-[52px] rounded-md border border-border bg-surface px-4 text-[15px] text-ink"
+                  placeholderTextColor={colors.inkMuted}
+                />
+                {formState.errors.title ? (
+                  <Text className="mt-1 text-xs text-danger">{formState.errors.title.message}</Text>
+                ) : null}
               </View>
-              <Switch value={field.value} onValueChange={field.onChange} />
-            </View>
-          )}
-        />
+            )}
+          />
 
-        <Pressable
-          style={[styles.submit, mutation.isPending && styles.submitDisabled]}
-          disabled={mutation.isPending}
-          onPress={() => void submit()}
-        >
-          <Text style={styles.submitText}>{mutation.isPending ? 'Đang gửi…' : 'Đăng báo cáo'}</Text>
-        </Pressable>
-        {mutation.isError ? (
-          <Text style={styles.error}>Không thể gửi báo cáo. Hãy thử lại.</Text>
-        ) : null}
+          <Controller
+            control={control}
+            name="description"
+            render={({ field }) => (
+              <View>
+                <Text className="mb-2 text-[13px] font-extrabold text-ink">Mô tả hiện trường</Text>
+                <TextInput
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  onBlur={field.onBlur}
+                  multiline
+                  placeholder="Điều gì đang xảy ra? Ai hoặc phương tiện nào bị ảnh hưởng?"
+                  className="min-h-[120px] rounded-md border border-border bg-surface px-4 pt-4 text-[15px] text-ink"
+                  placeholderTextColor={colors.inkMuted}
+                  textAlignVertical="top"
+                />
+                {formState.errors.description ? (
+                  <Text className="mt-1 text-xs text-danger">
+                    {formState.errors.description.message}
+                  </Text>
+                ) : null}
+              </View>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="anonymousPublicly"
+            render={({ field }) => (
+              <View className="min-h-[74px] flex-row items-center gap-4 rounded-md bg-surface p-4">
+                <View className="flex-1">
+                  <Text className="text-sm font-extrabold text-ink">Ẩn tên công khai</Text>
+                  <Text className="mt-[3px] text-xs leading-[17px] text-muted">
+                    Hệ thống vẫn giữ tài khoản để chống spam.
+                  </Text>
+                </View>
+                <Switch value={field.value} onValueChange={field.onChange} />
+              </View>
+            )}
+          />
+
+          <Button
+            className="min-h-14"
+            disabled={mutation.isPending}
+            loading={mutation.isPending}
+            onPress={() => void submit()}
+          >
+            {mutation.isPending ? 'Đang gửi…' : 'Đăng báo cáo'}
+          </Button>
+          {mutation.isError ? (
+            <Text className="mt-1 text-xs text-danger">Không thể gửi báo cáo. Hãy thử lại.</Text>
+          ) : null}
+        </View>
       </ScrollView>
 
       <ReportLocationPicker
@@ -191,87 +208,3 @@ export function NewReportScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: colors.canvas },
-  header: {
-    minHeight: 78,
-    paddingHorizontal: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  headerCopy: { flex: 1 },
-  back: { width: 42, height: 42, alignItems: 'center', justifyContent: 'center' },
-  headerTitle: { color: colors.ink, fontSize: 18, fontWeight: '900' },
-  headerMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 11 },
-  content: { padding: spacing.xl, gap: spacing.lg },
-  sectionLabel: { color: colors.primary, fontSize: 11, fontWeight: '900' },
-  categoryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  category: {
-    minHeight: 44,
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.lg,
-  },
-  categoryActive: { borderColor: colors.ink, backgroundColor: colors.ink },
-  categoryText: { color: colors.ink, fontSize: 13, fontWeight: '700' },
-  categoryTextActive: { color: colors.surface },
-  locationCard: {
-    minHeight: 80,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  locationIcon: {
-    width: 42,
-    height: 42,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 21,
-    backgroundColor: colors.canvas,
-  },
-  locationCopy: { flex: 1 },
-  locationTitle: { color: colors.ink, fontSize: 14, fontWeight: '800' },
-  locationMeta: { marginTop: 3, color: colors.inkMuted, fontSize: 12, lineHeight: 17 },
-  label: { marginBottom: spacing.sm, color: colors.ink, fontSize: 13, fontWeight: '800' },
-  input: {
-    minHeight: 52,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    color: colors.ink,
-    paddingHorizontal: spacing.lg,
-    fontSize: 15,
-  },
-  textarea: { minHeight: 120, paddingTop: spacing.lg, textAlignVertical: 'top' },
-  switchRow: {
-    minHeight: 74,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    padding: spacing.lg,
-  },
-  submit: {
-    minHeight: 56,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.md,
-    backgroundColor: colors.primary,
-  },
-  submitDisabled: { opacity: 0.6 },
-  submitText: { color: colors.surface, fontSize: 16, fontWeight: '900' },
-  error: { marginTop: spacing.xs, color: colors.danger, fontSize: 12 },
-});

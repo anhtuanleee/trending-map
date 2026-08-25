@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Keep NativeWind's deferred web runtime in manual class mode as styles load. */
+:root {
+  --css-interop-darkMode: class dark;
+}

@@ -1,5 +1,6 @@
 import { appConfig } from '@/config';
 import { safeReturnTo } from '@/lib/navigation';
+import { Platform } from 'react-native';
 
 export const googleOAuthCallbackUrl = appConfig.oauthCallbackUrl;
 
@@ -28,12 +29,20 @@ function collectParams(section: string, target: Map<string, string>) {
   }
 }
 
+export function getGoogleOAuthCallbackUrl() {
+  if (Platform.OS === 'web' && typeof window !== 'undefined') {
+    return `${window.location.origin}/auth/callback`;
+  }
+
+  return googleOAuthCallbackUrl;
+}
+
 export function isOAuthCallbackUrl(url: string) {
-  return url.startsWith(googleOAuthCallbackUrl);
+  return url.startsWith(getGoogleOAuthCallbackUrl());
 }
 
 export function createGoogleOAuthRedirectUrl(returnTo: string) {
-  return `${googleOAuthCallbackUrl}?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`;
+  return `${getGoogleOAuthCallbackUrl()}?returnTo=${encodeURIComponent(safeReturnTo(returnTo))}`;
 }
 
 export function parseOAuthCallbackUrl(url: string): OAuthCallbackParams {

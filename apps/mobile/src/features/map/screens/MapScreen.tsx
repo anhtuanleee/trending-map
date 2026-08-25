@@ -2,17 +2,14 @@ import type { MapItem } from '@trending-map/contracts';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ListFilter, LocateFixed, MapPinPlus } from 'lucide-react-native';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Camera, Map, UserLocation } from '@maplibre/maplibre-react-native';
-import type { CameraRef, TrackUserLocationChangeEvent } from '@maplibre/maplibre-react-native';
-import type { NativeSyntheticEvent } from 'react-native';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 
 import { mapCategoryFilters, mapConfig } from '@/config';
 import { useAuth, useAuthGate } from '@/features/auth';
 import { useCurrentLocation } from '@/features/location';
-import { colors, radius, spacing } from '@/theme';
+import { colors } from '@/theme';
 
-import { CommunityReportsLayer } from '../components/CommunityReportsLayer';
+import { CommunityMapSurface, type CommunityMapCameraRef } from '../components/CommunityMapSurface';
 import { MapHeaderControls } from '../components/MapHeaderControls';
 import { NearbyReportsSheet } from '../components/NearbyReportsSheet';
 import { RecentAreasSheet } from '../components/RecentAreasSheet';
@@ -27,7 +24,7 @@ export function MapScreen() {
   const params = useLocalSearchParams<{ submitted?: string }>();
   const requireAuth = useAuthGate();
   const { user } = useAuth();
-  const cameraRef = useRef<CameraRef>(null);
+  const cameraRef = useRef<CommunityMapCameraRef>(null);
   const hasCenteredOnLocation = useRef(false);
   const [selectedReport, setSelectedReport] = useState<MapItem | null>(null);
   const [followingUser, setFollowingUser] = useState(false);
@@ -101,10 +98,6 @@ export function MapScreen() {
     });
   };
 
-  const handleTrackingChange = (event: NativeSyntheticEvent<TrackUserLocationChangeEvent>) => {
-    setFollowingUser(event.nativeEvent.trackUserLocation !== null);
-  };
-
   const handleNearbySelect = (report: MapItem) => {
     setNearbyVisible(false);
     setFollowingUser(false);
@@ -143,25 +136,21 @@ export function MapScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <Map
-        style={styles.map}
-        mapStyle={mapConfig.styleUrl}
-        compass={false}
-        onRegionDidChange={viewport.handleRegionDidChange}
-      >
-        <Camera
-          ref={cameraRef}
-          initialViewState={{ center: mapConfig.defaultCenter, zoom: mapConfig.defaultZoom }}
-          minZoom={mapConfig.minimumZoom}
-          trackUserLocation={followingUser ? 'default' : undefined}
-          onTrackUserLocationChange={handleTrackingChange}
-        />
-        {currentLocation.location ? (
-          <UserLocation animated accuracy heading minDisplacement={10} />
-        ) : null}
-        <CommunityReportsLayer reports={data} onSelect={setSelectedReport} />
-      </Map>
+    <View className="flex-1 bg-canvas">
+      <CommunityMapSurface
+        ref={cameraRef}
+        reports={data}
+        followingUser={followingUser}
+        showsUserLocation={Boolean(currentLocation.location)}
+        userCoordinate={
+          currentLocation.location
+            ? [currentLocation.location.coords.longitude, currentLocation.location.coords.latitude]
+            : null
+        }
+        onReportSelect={setSelectedReport}
+        onTrackingChange={setFollowingUser}
+        onViewportChange={viewport.handleRegionDidChange}
+      />
 
       <MapHeaderControls
         subtitle={locationSubtitle}
@@ -174,31 +163,36 @@ export function MapScreen() {
       />
 
       {isLoading ? (
-        <View style={styles.loading}>
+        <View className="absolute top-[236px] self-center flex-row gap-2 rounded-pill bg-surface px-3 py-2">
           <ActivityIndicator color={colors.primary} />
-          <Text style={styles.loadingText}>Đang tải dữ liệu quanh bạn…</Text>
+          <Text className="text-xs text-muted">Đang tải dữ liệu quanh bạn…</Text>
         </View>
       ) : null}
       {isError ? (
-        <Pressable style={styles.error} onPress={() => void refetch()}>
-          <Text style={styles.errorText}>Không thể tải dữ liệu bản đồ.</Text>
-          <Text style={styles.errorAction}>Thử lại</Text>
+        <Pressable
+          className="absolute top-[236px] self-center flex-row items-center gap-2 rounded-pill bg-surface px-3 py-2"
+          onPress={() => void refetch()}
+        >
+          <Text className="text-xs text-danger">Không thể tải dữ liệu bản đồ.</Text>
+          <Text className="text-xs font-black text-primary">Thử lại</Text>
         </Pressable>
       ) : null}
       {!params.submitted && !isLoading && !isError && data.length === 0 ? (
-        <Text style={styles.empty}>Chưa có báo cáo trong khu vực này.</Text>
+        <Text className="absolute top-[236px] self-center rounded-pill bg-surface px-3 py-2 text-xs text-muted">
+          Chưa có báo cáo trong khu vực này.
+        </Text>
       ) : null}
       {currentLocation.error ? (
         <Pressable
-          style={styles.locationError}
+          className="absolute left-4 right-4 top-[276px] flex-row items-center gap-2 rounded-md bg-surface p-3"
           onPress={() =>
             currentLocation.status === 'blocked' || currentLocation.status === 'services_disabled'
               ? void currentLocation.openSettings()
               : void currentLocation.startTracking()
           }
         >
-          <Text style={styles.locationErrorText}>{currentLocation.error}</Text>
-          <Text style={styles.locationErrorAction}>
+          <Text className="flex-1 text-xs leading-[17px] text-danger">{currentLocation.error}</Text>
+          <Text className="text-xs font-black text-primary">
             {currentLocation.status === 'blocked' || currentLocation.status === 'services_disabled'
               ? 'Mở Cài đặt'
               : 'Thử lại'}
@@ -206,11 +200,13 @@ export function MapScreen() {
         </Pressable>
       ) : null}
       {params.submitted ? (
-        <Text style={styles.success}>Báo cáo đã được gửi để xác minh.</Text>
+        <Text className="absolute top-[236px] self-center rounded-pill bg-surface px-3 py-2 font-bold text-primary">
+          Báo cáo đã được gửi để xác minh.
+        </Text>
       ) : null}
 
       <Pressable
-        style={styles.locate}
+        className="absolute bottom-[156px] right-4 h-12 w-12 items-center justify-center rounded-full bg-surface active:bg-primary-soft"
         disabled={currentLocation.isBusy}
         onPress={handleLocate}
         accessibilityLabel="Về vị trí của tôi"
@@ -224,26 +220,26 @@ export function MapScreen() {
 
       <Pressable
         accessibilityLabel="Mở danh sách báo cáo gần đây"
-        style={styles.nearbyButton}
+        className="absolute bottom-[146px] left-4 min-h-14 flex-row items-center gap-2 rounded-md bg-surface px-3 active:bg-primary-soft"
         onPress={() => setNearbyVisible(true)}
       >
         <ListFilter color={colors.ink} size={18} />
         <View>
-          <Text style={styles.nearbyButtonTitle}>{modeLabel}</Text>
-          <Text style={styles.nearbyButtonMeta}>
+          <Text className="text-xs font-black text-ink">{modeLabel}</Text>
+          <Text className="mt-0.5 text-[10px] text-muted">
             {nearbyQuery.data?.length ?? 0} báo cáo · {nearbyRadiusKm} km
           </Text>
         </View>
       </Pressable>
 
       <Pressable
-        style={styles.reportButton}
+        className="absolute bottom-[78px] min-h-[52px] self-center flex-row items-center gap-2 rounded-pill bg-primary px-6 active:bg-primary-pressed"
         onPress={() =>
           requireAuth('/report/new', () => router.push('/report/new'), 'Đăng nhập để báo cáo')
         }
       >
         <MapPinPlus color={colors.onPrimary} size={20} />
-        <Text style={styles.reportButtonText}>Báo cáo tại đây</Text>
+        <Text className="text-[15px] font-extrabold text-white">Báo cáo tại đây</Text>
       </Pressable>
 
       {selectedReport ? (
@@ -278,108 +274,3 @@ export function MapScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.canvas },
-  map: { flex: 1 },
-  loading: {
-    position: 'absolute',
-    top: 236,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    gap: spacing.sm,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  loadingText: { color: colors.inkMuted, fontSize: 12 },
-  error: {
-    position: 'absolute',
-    top: 236,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    backgroundColor: colors.surface,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  errorText: { color: colors.danger, fontSize: 12 },
-  errorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
-  empty: {
-    position: 'absolute',
-    top: 236,
-    alignSelf: 'center',
-    color: colors.inkMuted,
-    backgroundColor: colors.surface,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontSize: 12,
-  },
-  locationError: {
-    position: 'absolute',
-    top: 276,
-    left: spacing.lg,
-    right: spacing.lg,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    padding: spacing.md,
-  },
-  locationErrorText: { flex: 1, color: colors.danger, fontSize: 12, lineHeight: 17 },
-  locationErrorAction: { color: colors.primary, fontSize: 12, fontWeight: '900' },
-  success: {
-    position: 'absolute',
-    top: 236,
-    alignSelf: 'center',
-    color: colors.primary,
-    backgroundColor: colors.surface,
-    borderRadius: radius.pill,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    fontWeight: '700',
-  },
-  locate: {
-    position: 'absolute',
-    right: spacing.lg,
-    bottom: 156,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  nearbyButton: {
-    position: 'absolute',
-    left: spacing.lg,
-    bottom: 146,
-    minHeight: 56,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    paddingHorizontal: spacing.md,
-  },
-  nearbyButtonTitle: { color: colors.ink, fontSize: 12, fontWeight: '900' },
-  nearbyButtonMeta: { marginTop: 2, color: colors.inkMuted, fontSize: 10 },
-  reportButton: {
-    position: 'absolute',
-    bottom: 78,
-    alignSelf: 'center',
-    minHeight: 52,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
-  },
-  reportButtonText: { color: colors.onPrimary, fontSize: 15, fontWeight: '800' },
-});

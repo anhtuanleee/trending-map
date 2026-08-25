@@ -1,7 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
-
 import { supabase } from '@/lib/supabase/client';
-
 export async function getAuthSession(): Promise<Session | null> {
   if (!supabase) return null;
 

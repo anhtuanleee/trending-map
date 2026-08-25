@@ -1,8 +1,9 @@
 import { Bell, History, Search, SlidersHorizontal, UserRound } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { appConfig, mapCategoryFilters } from '@/config';
-import { colors, radius, spacing } from '@/theme';
+import { colors, spacing } from '@/theme';
 
 type Props = {
   subtitle: string;
@@ -23,49 +24,65 @@ export function MapHeaderControls({
   onOpenRecentAreas,
   onOpenAccount,
 }: Props) {
+  const insets = useSafeAreaInsets();
+  const headerTop = Math.max(insets.top + spacing.sm, spacing.xl);
+
   return (
     <>
-      <View style={styles.header}>
-        <View style={styles.brandBlock}>
-          <Text style={styles.brand}>{appConfig.name}</Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
+      <View
+        className="absolute left-4 right-4 flex-row items-center justify-between"
+        style={{ top: headerTop }}
+      >
+        <View className="rounded-xl border border-white bg-map-overlay px-3 py-2 shadow-lg">
+          <Text className="text-lg font-black text-ink">{appConfig.name}</Text>
+          <Text className="mt-0.5 text-[11px] text-muted">{subtitle}</Text>
         </View>
-        <View style={styles.headerActions}>
-          <Pressable accessibilityLabel="Thông báo" style={styles.iconButton}>
+        <View className="flex-row gap-2">
+          <Pressable
+            accessibilityLabel="Thông báo"
+            className="h-11 w-11 items-center justify-center rounded-full border border-white bg-surface shadow-lg active:opacity-70"
+          >
             <Bell color={colors.ink} size={20} />
           </Pressable>
           <Pressable
             accessibilityLabel="Khu vực gần đây"
-            style={styles.iconButton}
+            className="h-11 w-11 items-center justify-center rounded-full border border-white bg-surface shadow-lg active:opacity-70"
             onPress={onOpenRecentAreas}
           >
             <History color={hasRecentAreas ? colors.primary : colors.ink} size={20} />
           </Pressable>
           <Pressable
             accessibilityLabel="Tài khoản"
-            style={styles.iconButton}
+            className="relative h-11 w-11 items-center justify-center rounded-full border border-white bg-surface shadow-lg active:opacity-70"
             onPress={onOpenAccount}
           >
             <UserRound color={isAuthenticated ? colors.primary : colors.ink} size={20} />
-            {isAuthenticated ? <View style={styles.accountDot} /> : null}
+            {isAuthenticated ? (
+              <View className="absolute bottom-2 right-2 h-2 w-2 rounded-full border border-surface bg-primary" />
+            ) : null}
           </Pressable>
         </View>
       </View>
 
-      <View style={styles.searchBar}>
+      <View
+        className="absolute left-4 right-4 min-h-[50px] flex-row items-center gap-2 rounded-xl border border-white bg-surface px-4 shadow-lg"
+        style={{ top: headerTop + 66 }}
+      >
         <Search color={colors.inkMuted} size={19} />
-        <Text style={styles.searchText}>Tìm khu vực hoặc sự kiện</Text>
+        <Text className="flex-1 text-sm text-muted">Tìm khu vực hoặc sự kiện</Text>
         <SlidersHorizontal color={colors.ink} size={19} />
       </View>
 
-      <View style={styles.chips}>
+      <View className="absolute left-4 flex-row gap-2" style={{ top: headerTop + 126 }}>
         {mapCategoryFilters.map((filter, index) => (
           <Pressable
             key={filter.label}
-            style={[styles.chip, index === activeFilterIndex && styles.chipActive]}
+            className={`rounded-full px-3 py-2 ${index === activeFilterIndex ? 'bg-ink' : 'bg-map-overlay'} active:opacity-70`}
             onPress={() => onFilterChange(index)}
           >
-            <Text style={[styles.chipText, index === activeFilterIndex && styles.chipTextActive]}>
+            <Text
+              className={`text-xs font-bold ${index === activeFilterIndex ? 'text-white' : 'text-ink'}`}
+            >
               {filter.label}
             </Text>
           </Pressable>
@@ -74,73 +91,3 @@ export function MapHeaderControls({
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  header: {
-    position: 'absolute',
-    top: 58,
-    left: spacing.lg,
-    right: spacing.lg,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  brandBlock: {
-    borderRadius: radius.md,
-    backgroundColor: colors.mapOverlay,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  brand: { color: colors.ink, fontSize: 18, fontWeight: '900' },
-  subtitle: { marginTop: 2, color: colors.inkMuted, fontSize: 11 },
-  iconButton: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerActions: { flexDirection: 'row', gap: spacing.sm },
-  accountDot: {
-    position: 'absolute',
-    right: 9,
-    bottom: 9,
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: colors.surface,
-    backgroundColor: colors.primary,
-  },
-  searchBar: {
-    position: 'absolute',
-    top: 124,
-    left: spacing.lg,
-    right: spacing.lg,
-    minHeight: 50,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-  searchText: { flex: 1, color: colors.inkMuted, fontSize: 14 },
-  chips: {
-    position: 'absolute',
-    top: 184,
-    left: spacing.lg,
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  chip: {
-    borderRadius: radius.pill,
-    backgroundColor: colors.mapOverlay,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-  },
-  chipActive: { backgroundColor: colors.ink },
-  chipText: { color: colors.ink, fontSize: 12, fontWeight: '700' },
-  chipTextActive: { color: colors.onPrimary },
-});

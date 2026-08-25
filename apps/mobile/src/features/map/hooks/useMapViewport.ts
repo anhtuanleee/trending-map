@@ -1,9 +1,9 @@
 import type { MapBounds } from '@trending-map/contracts';
-import type { ViewStateChangeEvent } from '@maplibre/maplibre-react-native';
 import { useEffect, useRef, useState } from 'react';
-import type { NativeSyntheticEvent } from 'react-native';
 
 import { mapConfig } from '@/config';
+
+import type { MapViewportChange } from '../model/map-viewport';
 
 type Options = {
   onUserInteraction: () => void;
@@ -26,11 +26,11 @@ export function useMapViewport({ onUserInteraction, onUserRegionChange }: Option
     [],
   );
 
-  const handleRegionDidChange = (event: NativeSyntheticEvent<ViewStateChangeEvent>) => {
-    const [west, south, east, north] = event.nativeEvent.bounds;
-    const [longitude, latitude] = event.nativeEvent.center;
-    const nextZoom = event.nativeEvent.zoom;
-    const userInteraction = event.nativeEvent.userInteraction;
+  const handleRegionDidChange = (change: MapViewportChange) => {
+    const [west, south, east, north] = change.bounds;
+    const [longitude, latitude] = change.center;
+    const nextZoom = change.zoom;
+    const userInteraction = change.userInteraction;
     if (west >= east || south >= north) return;
     if (userInteraction) onUserInteraction();
 
