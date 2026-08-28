@@ -6,6 +6,7 @@ import {
   severitySchema,
   verificationStatusSchema,
 } from './report';
+import { contentFlagReasonSchema, moderationStatusSchema, visibilityStatusSchema } from './safety';
 
 export const reportMediaModerationStatusSchema = z.enum(['uploaded', 'processing']);
 
@@ -65,6 +66,10 @@ export const reportModerationItemSchema = z.object({
   severity: severitySchema,
   verificationStatus: verificationStatusSchema,
   operationalStatus: operationalStatusSchema,
+  moderationStatus: moderationStatusSchema,
+  visibilityStatus: visibilityStatusSchema,
+  openFlagCount: z.number().int().nonnegative(),
+  flagReasons: z.array(contentFlagReasonSchema),
   confirmationCount: z.number().int().nonnegative(),
   notThereCount: z.number().int().nonnegative(),
   startsAt: z.string().datetime(),

@@ -10,6 +10,7 @@ import type { NativeSyntheticEvent } from 'react-native';
 import { mapCategoryFilters, mapConfig } from '@/config';
 import { useAuth, useAuthGate } from '@/features/auth';
 import { useCurrentLocation } from '@/features/location';
+import { CommunityMapNotice } from '@/features/safety';
 import { colors, radius, spacing } from '@/theme';
 
 import { CommunityReportsLayer } from '../components/CommunityReportsLayer';
@@ -177,6 +178,8 @@ export function MapScreen() {
         onOpenAccount={handleAccount}
       />
 
+      <CommunityMapNotice />
+
       {isLoading ? (
         <View style={styles.loading}>
           <ActivityIndicator color={colors.primary} />
@@ -300,7 +303,7 @@ const styles = StyleSheet.create({
   map: { flex: 1 },
   loading: {
     position: 'absolute',
-    top: 236,
+    top: 278,
     alignSelf: 'center',
     flexDirection: 'row',
     gap: spacing.sm,
@@ -317,7 +320,7 @@ const styles = StyleSheet.create({
   loadingText: { color: colors.inkMuted, fontSize: 12 },
   error: {
     position: 'absolute',
-    top: 236,
+    top: 278,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',
@@ -331,7 +334,7 @@ const styles = StyleSheet.create({
   errorAction: { color: colors.primary, fontSize: 12, fontWeight: '800' },
   empty: {
     position: 'absolute',
-    top: 236,
+    top: 278,
     alignSelf: 'center',
     color: colors.inkMuted,
     backgroundColor: colors.surface,
@@ -342,7 +345,7 @@ const styles = StyleSheet.create({
   },
   locationError: {
     position: 'absolute',
-    top: 276,
+    top: 318,
     left: spacing.lg,
     right: spacing.lg,
     flexDirection: 'row',
@@ -356,7 +359,7 @@ const styles = StyleSheet.create({
   locationErrorAction: { color: colors.danger, fontSize: 12, fontWeight: '800' },
   success: {
     position: 'absolute',
-    top: 236,
+    top: 278,
     alignSelf: 'center',
     flexDirection: 'row',
     alignItems: 'center',

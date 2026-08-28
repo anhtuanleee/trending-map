@@ -23,6 +23,7 @@ Tài liệu này mô tả đúng trạng thái code tại ngày 25/08/2026. Mỗ
 - [API và shared contracts](./api-and-contracts.md)
 - [Hướng dẫn phát triển](./development.md)
 - [Roadmap](./roadmap.md)
+- [Legal và content safety drafts](./legal/README.md)
 
 ## Nguyên tắc nguồn sự thật
 

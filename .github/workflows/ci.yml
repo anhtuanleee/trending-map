@@ -25,3 +25,14 @@ jobs:
       - run: pnpm test
       - run: pnpm build:admin
       - run: pnpm build:mobile:android
+
+  database:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.45.4
+      - run: supabase db start
+      - run: supabase db reset
+      - run: supabase test db

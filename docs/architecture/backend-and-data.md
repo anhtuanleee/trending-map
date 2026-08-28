@@ -18,6 +18,8 @@ erDiagram
   REPORTS ||--o{ CONFIRMATIONS : receives
   PROFILES ||--o{ CONFIRMATIONS : submits
   REPORTS ||--o{ MEDIA : contains
+  REPORTS ||--o{ SOURCES : cites
+  REPORTS ||--o{ CONTENT_FLAGS : receives
   REPORTS ||--o{ UPDATES : publishes
   PROFILES ||--o{ SAVED_ITEMS : saves
 ```
@@ -31,6 +33,8 @@ erDiagram
 | `reports`                   | Entity trung tâm, geometry, lifecycle và trust counts | Hoạt động                                         |
 | `report_confirmations`      | Một vote hiện tại cho mỗi user/report                 | Hoạt động                                         |
 | `report_media`              | Private upload, moderator claim và public publication | Photo vertical slice hoạt động                    |
+| `report_sources`            | Provenance có cấu trúc, public/private boundary riêng | Hoạt động, backfill từ nguồn legacy               |
+| `content_flags`             | Taxonomy flag an toàn và moderation priority          | Hoạt động qua authenticated command               |
 | `report_comments`           | Bình luận có soft-hide                                | Foundation                                        |
 | `report_status_history`     | Lịch sử đổi trạng thái                                | Hoạt động; trigger tự ghi                         |
 | `report_updates`            | Timeline note/status/evidence đã publish              | Hoạt động qua public read + owner command         |
@@ -42,14 +46,18 @@ erDiagram
 | `subscription_entitlements` | Server-owned mirror của Free/Plus entitlement         | Foundation; mobile read-own, billing chưa nối     |
 | `moderation_cases`          | Hàng đợi và resolution kiểm duyệt report              | Hoạt động                                         |
 | `report_moderation_actions` | Kết quả action idempotent, actor và private reason    | Hoạt động; moderator read-only                    |
-| `audit_logs`                | Actor/action/entity metadata                          | Submit đang ghi audit log                         |
+| `policy_versions`           | Metadata policy đã publish, immutable theo version    | Foundation; chưa seed khi legal draft chưa duyệt  |
+| `user_policy_acceptances`   | Acceptance ledger theo user/version                   | Foundation                                        |
+| `audit_logs`                | Actor/action/entity metadata                          | Submit/moderation/safety flag đang ghi audit      |
 
 ## Report lifecycle
 
-Report có hai trục trạng thái độc lập:
+Report có bốn trục trạng thái độc lập:
 
 - `verification_status`: độ tin cậy của thông tin.
 - `operational_status`: report còn hiệu lực/đang theo dõi/đã kết thúc hay bị loại.
+- `moderation_status`: tiến trình kiểm duyệt/fact-check/legal review.
+- `visibility_status`: public, có nhãn, giới hạn hoặc ẩn.
 
 ```mermaid
 stateDiagram-v2
@@ -62,9 +70,9 @@ stateDiagram-v2
 ```
 
 Operational values hiện có: `active`, `monitoring`, `resolving`, `resolved`, `expired`, `rejected`.
-Trigger `reports_capture_status_history` tự ghi cả thay đổi verification và operational status. RPC
-`expire_stale_reports` chuyển report quá `expires_at` sang `expired`; repo chưa cấu hình cron gọi RPC
-này.
+Trigger `reports_capture_status_history` tự ghi thay đổi verification, operational, moderation,
+visibility và removal reason vào history nội bộ. RPC `expire_stale_reports` chuyển report quá
+`expires_at` sang `expired`; repo chưa cấu hình cron gọi RPC này.
 
 ## Expiry và duplicate metadata
 
@@ -77,6 +85,7 @@ Public clients chỉ đọc:
 - `get_map_items`: dữ liệu tối thiểu cho viewport/nearby, optional `distance_meters`, radius và
   category filter; không trả reporter identity.
 - `public_report_details`: detail đã loại reporter identity, internal score và media chưa approved.
+- Public detail trả structured provenance nhưng không trả submitter identity/private verification note.
 
 `anonymous_publicly` không xóa `created_by`. Đây là privacy presentation flag; backend vẫn giữ actor để thực thi suspension, idempotency, trust và moderation.
 
@@ -91,6 +100,7 @@ Public clients chỉ đọc:
 - Report moderation queue không trả reporter/trust internals; approve/resolve/reject đi qua RPC
   caller-JWT và lưu immutable action result.
 - Direct writes vào report/confirmation bị thu hồi; write path đi qua RPC được grant cụ thể.
+- Content flag authenticated, idempotent, private theo RLS và không cho flagger tự ẩn report.
 - Timeline public read không lộ ownership; `can_update_report` chỉ trả boolean cho authenticated user.
 - Add timeline update chỉ dành cho report creator/moderator và idempotent theo report/key.
 - Member chỉ đọc metadata media do mình tạo; moderator queue được role-gate trước khi ký preview.

@@ -1,11 +1,21 @@
 import { useRouter } from 'expo-router';
-import { ArrowLeft, Check, Clock3, MapPin, Sparkles, UsersRound, X } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  Check,
+  Clock3,
+  Flag,
+  MapPin,
+  Sparkles,
+  UsersRound,
+  X,
+} from 'lucide-react-native';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { StatusBadge } from '@/components/ui';
 import { useAuthGate } from '@/features/auth';
 import { useFeatureRollout } from '@/features/feature-rollouts';
+import { ReportSafetyNotice, ReportSourcesSection } from '@/features/safety';
 import { colors, radius, spacing } from '@/theme';
 
 import { ReportTimeline } from '../components/ReportTimeline';
@@ -69,6 +79,12 @@ export function ReportDetailScreen({ id }: { id: string }) {
 
         <View style={styles.content}>
           <StatusBadge status={report.verificationStatus} />
+          <ReportSafetyNotice
+            verificationStatus={report.verificationStatus}
+            moderationStatus={report.moderationStatus}
+            visibilityStatus={report.visibilityStatus}
+            severity={report.severity}
+          />
           <Text style={styles.title}>{report.title}</Text>
           <View style={styles.metaCard}>
             <View style={styles.metaRow}>
@@ -96,6 +112,22 @@ export function ReportDetailScreen({ id }: { id: string }) {
 
           <Text style={styles.sectionLabel}>THÔNG TIN HIỆN TRƯỜNG</Text>
           <Text style={styles.description}>{report.description}</Text>
+
+          <ReportSourcesSection sources={report.sources} />
+
+          <Pressable
+            style={({ pressed }) => [styles.flagAction, pressed && styles.pressed]}
+            onPress={() =>
+              requireAuth(
+                `/report/${id}`,
+                () => router.push({ pathname: '/safety/report/[id]', params: { id } }),
+                'Đăng nhập để báo cáo nội dung',
+              )
+            }
+          >
+            <Flag color={colors.warning} size={17} />
+            <Text style={styles.flagActionText}>Báo cáo thông tin sai hoặc nội dung vi phạm</Text>
+          </Pressable>
 
           {timelineRollout.enabled ? (
             <ReportTimeline reportId={id} currentStatus={report.operationalStatus} />
@@ -241,6 +273,20 @@ const styles = StyleSheet.create({
     letterSpacing: 0.8,
   },
   description: { marginTop: spacing.sm, color: colors.inkMuted, fontSize: 16, lineHeight: 26 },
+  flagAction: {
+    marginTop: spacing.xl,
+    minHeight: 48,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.warning,
+    borderRadius: radius.lg,
+    backgroundColor: colors.warningSoft,
+    paddingHorizontal: spacing.md,
+  },
+  flagActionText: { flexShrink: 1, color: colors.ink, fontSize: 12, fontWeight: '800' },
   actionBar: {
     position: 'absolute',
     left: 0,

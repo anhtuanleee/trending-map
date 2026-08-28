@@ -51,3 +51,6 @@ verify_jwt = true
 
 [functions.moderate-report-case]
 verify_jwt = true
+
+[functions.submit-content-flag]
+verify_jwt = true

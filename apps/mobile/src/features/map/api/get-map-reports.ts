@@ -17,6 +17,8 @@ type PublicMapRow = {
   severity: MapItem['severity'];
   verification_status: MapItem['verificationStatus'];
   operational_status: MapItem['operationalStatus'];
+  moderation_status: MapItem['moderationStatus'];
+  visibility_status: MapItem['visibilityStatus'];
   starts_at: string;
   expires_at: string | null;
   confirmation_count: number;
@@ -74,6 +76,8 @@ export async function getMapReports(request: MapReportsRequest): Promise<MapItem
       severity: row.severity,
       verificationStatus: row.verification_status,
       operationalStatus: row.operational_status,
+      moderationStatus: row.moderation_status,
+      visibilityStatus: row.visibility_status,
       startsAt: row.starts_at,
       expiresAt: row.expires_at,
       confirmationCount: row.confirmation_count,

@@ -39,6 +39,12 @@ Nguyên tắc sản phẩm cốt lõi:
 | Trust         | Community verification          | **Hoạt động**  | Ba `seen` chuyển sang `community_verified`; phản đối đủ ngưỡng thành `disputed`.      |
 | Trust         | Moderator verification          | **Hoạt động**  | Provenance riêng `moderator_verified`; confirmation không tự hạ cấp trạng thái này.   |
 | Trust         | Official verification           | **Foundation** | Có source model và status; chưa có ingestion/official operator workflow.              |
+| Safety        | Structured provenance           | **Hoạt động**  | `report_sources`, public-safe `sources[]`, backfill source legacy.                    |
+| Safety        | Báo cáo nội dung vi phạm        | **Hoạt động**  | Taxonomy, idempotent RPC/Edge, mobile UI và moderation priority.                      |
+| Safety        | Moderation/visibility status    | **Hoạt động**  | Tách khỏi verification/operational; hidden/removed bị loại khỏi public boundary.      |
+| Safety        | Cảnh báo thông tin cộng đồng    | **Hoạt động**  | Map, preview, detail và composer đều có safety notice.                                |
+| Safety        | Policy versioning               | **Foundation** | Schema acceptance + draft policy; chờ legal review/hosting trước khi publish.         |
+| Safety        | Appeal và public corrections    | **Planned**    | Chưa có schema/command/UI.                                                            |
 | Comments      | Bình luận report                | **Foundation** | Có schema; chưa có policy command và UI.                                              |
 | Follow        | Theo dõi khu vực                | **Foundation** | Có polygon PostGIS + RLS; chưa có UI và notification worker.                          |
 | Notifications | Push notification               | **Foundation** | Có `push_devices`; chưa có đăng ký token end-to-end và fan-out.                       |
