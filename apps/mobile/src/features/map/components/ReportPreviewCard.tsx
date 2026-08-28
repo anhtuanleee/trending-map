@@ -25,6 +25,13 @@ export function ReportPreviewCard({ report, onClose, onConfirm }: Props) {
         <Sparkles color={colors.event} size={14} />
         <Text style={styles.eyebrow}>{report.categoryName}</Text>
       </View>
+      {report.verificationStatus === 'unverified' || report.moderationStatus === 'fact_checking' ? (
+        <Text style={styles.safetyText}>
+          {report.moderationStatus === 'fact_checking'
+            ? 'Thông tin đang được kiểm tra.'
+            : 'Báo cáo cộng đồng chưa được xác minh độc lập.'}
+        </Text>
+      ) : null}
       <Text style={styles.title}>{report.title}</Text>
       <View style={styles.metaBlock}>
         <View style={styles.metaRow}>
@@ -81,6 +88,12 @@ const styles = StyleSheet.create({
   },
   categoryRow: { marginTop: spacing.md, flexDirection: 'row', alignItems: 'center', gap: 6 },
   eyebrow: { color: colors.event, fontSize: 11, fontWeight: '800', letterSpacing: 0.4 },
+  safetyText: {
+    marginTop: spacing.sm,
+    color: colors.warning,
+    fontSize: 11,
+    fontWeight: '700',
+  },
   title: { marginTop: 6, color: colors.ink, fontSize: 22, lineHeight: 28, fontWeight: '800' },
   metaBlock: {
     marginTop: spacing.lg,

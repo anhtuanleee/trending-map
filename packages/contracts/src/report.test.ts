@@ -44,6 +44,8 @@ describe('submitReportInputSchema', () => {
       severity: 'high',
       verificationStatus: 'community_verified',
       operationalStatus: 'active',
+      moderationStatus: 'pending_review',
+      visibilityStatus: 'labeled',
       startsAt: '2026-08-24T03:24:00.000Z',
       expiresAt: null,
       confirmationCount: 14,

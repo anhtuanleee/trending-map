@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { moderationStatusSchema, publicReportSourceSchema, visibilityStatusSchema } from './safety';
+
 export const reportTypeSchema = z.enum(['incident', 'scheduled_event', 'area_alert']);
 export const severitySchema = z.enum(['info', 'low', 'medium', 'high', 'critical']);
 export const verificationStatusSchema = z.enum([
@@ -33,6 +35,8 @@ export const mapItemSchema = z.object({
   severity: severitySchema,
   verificationStatus: verificationStatusSchema,
   operationalStatus: operationalStatusSchema,
+  moderationStatus: moderationStatusSchema,
+  visibilityStatus: visibilityStatusSchema,
   startsAt: z.string().datetime(),
   expiresAt: z.string().datetime().nullable(),
   confirmationCount: z.number().int().nonnegative(),
@@ -43,6 +47,7 @@ export const reportDetailSchema = mapItemSchema.extend({
   description: z.string(),
   addressLabel: z.string().nullable(),
   sourceLabel: z.string().nullable(),
+  sources: z.array(publicReportSourceSchema),
   mediaUrls: z.array(z.string().url()),
   createdAt: z.string().datetime(),
 });

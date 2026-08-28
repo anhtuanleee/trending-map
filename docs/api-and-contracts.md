@@ -6,16 +6,18 @@
 
 ## Domain enums
 
-| Domain              | Values                                                                             |
-| ------------------- | ---------------------------------------------------------------------------------- |
-| Report type         | `incident`, `scheduled_event`, `area_alert`                                        |
-| Severity            | `info`, `low`, `medium`, `high`, `critical`                                        |
-| Verification        | `unverified`, `community_verified`, `official_verified`, `disputed`                |
-| Operational         | `active`, `monitoring`, `resolving`, `resolved`, `expired`, `rejected`             |
-| Confirmation        | `seen`, `not_there`, `incorrect`                                                   |
-| App role            | `member`, `trusted`, `official`, `moderator`                                       |
-| Subscription tier   | `free`, `plus`                                                                     |
-| Subscription status | `inactive`, `trialing`, `active`, `grace_period`, `past_due`, `expired`, `revoked` |
+| Domain              | Values                                                                                            |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| Report type         | `incident`, `scheduled_event`, `area_alert`                                                       |
+| Severity            | `info`, `low`, `medium`, `high`, `critical`                                                       |
+| Verification        | `unverified`, `community_verified`, `moderator_verified`, `official_verified`, `disputed`         |
+| Operational         | `active`, `monitoring`, `resolving`, `resolved`, `expired`, `rejected`                            |
+| Moderation          | `pending_review`, `in_review`, `approved`, `rejected`, `fact_checking`, `legal_review`, `removed` |
+| Visibility          | `public`, `labeled`, `limited`, `hidden`                                                          |
+| Confirmation        | `seen`, `not_there`, `incorrect`                                                                  |
+| App role            | `member`, `trusted`, `official`, `moderator`                                                      |
+| Subscription tier   | `free`, `plus`                                                                                    |
+| Subscription status | `inactive`, `trialing`, `active`, `grace_period`, `past_due`, `expired`, `revoked`                |
 
 ## Engagement contracts
 
@@ -59,13 +61,16 @@ Input:
 | `p_radius_meters`                         | number, nullable | Giới hạn vòng tròn cho nearby list |
 
 Output tối thiểu gồm ID, type/category, title, centroid coordinate, severity,
-verification/operational status, start/expiry, confirmation count và `distance_meters`. Query chỉ trả
-active/monitoring, chưa hết hạn, nằm trong bounds và bán kính nếu được truyền; giới hạn 1.000 rows.
+verification/operational/moderation/visibility status, start/expiry, confirmation count và
+`distance_meters`. Query loại `hidden`, `rejected` và `removed`; các report cộng đồng còn lại luôn có
+nhãn an toàn phù hợp. Query vẫn bị giới hạn 1.000 rows.
 Thứ tự ưu tiên là severity, khoảng cách, độ mới rồi verification status.
 
 ### `public_report_details` view
 
-Trả description, address, source label và approved media thumbnails bên cạnh map fields. Không trả `created_by`, `anonymous_publicly`, `trust_score_internal` hoặc user profile.
+Trả description, address, structured `sources[]` và approved media thumbnails bên cạnh map fields.
+`sourceLabel` được giữ tạm để tương thích. Không trả `created_by`, `submitted_by`, private source
+notes, removal reason, `trust_score_internal` hoặc user profile.
 
 ### `subscription_entitlements`
 
@@ -105,6 +110,13 @@ Body theo `ConfirmationInput`: `reportId`, `kind`, optional coordinate và `idem
 
 Cả hai endpoint yêu cầu Authorization header. Edge Function dùng anon key cùng caller JWT, không dùng service role cho community commands.
 
+### `POST /functions/v1/submit-content-flag`
+
+Authenticated command nhận `reportId`, taxonomy `reason`, optional description và UUID idempotency
+key. Lý do `other` bắt buộc description. RPC tạo private flag, cập nhật report thành
+`in_review`/`fact_checking`, gắn nhãn nếu cần và tăng priority của moderation case. Một flag không có
+quyền tự ẩn nội dung; quyết định visibility thuộc moderator.
+
 ### `POST /functions/v1/create-report-media-upload`
 
 Authenticated command nhận `reportId`, `mimeType`, `width`, `height`, `fileSizeBytes` và
@@ -141,7 +153,8 @@ finalizer hoặc tự cung cấp public URL.
 ### `POST /functions/v1/get-report-moderation-queue`
 
 Yêu cầu role `moderator`. Response theo `ReportModerationItem[]`, gồm nội dung report, category,
-severity, public trust/lifecycle signal và moderation priority; cố ý loại `created_by`,
+severity, public trust/lifecycle signal, moderation/visibility status, flag count/reasons và priority;
+cố ý loại `created_by`,
 `trust_score_internal`, reporter profile và resolution reason.
 
 ### `POST /functions/v1/moderate-report-case`

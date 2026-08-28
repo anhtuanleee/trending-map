@@ -15,6 +15,7 @@ import {
   MapPin,
   Music2,
   Send,
+  ShieldCheck,
 } from 'lucide-react-native';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -117,6 +118,14 @@ export function NewReportScreen() {
           <Text style={styles.progressTitle}>Điều gì đang diễn ra?</Text>
           <Text style={styles.progressDescription}>
             Chọn đúng loại để người ở gần nhận biết tình hình nhanh hơn.
+          </Text>
+        </View>
+
+        <View style={styles.safetyNotice}>
+          <ShieldCheck color={colors.primary} size={21} />
+          <Text style={styles.safetyNoticeText}>
+            Chỉ đăng điều bạn trực tiếp quan sát hoặc có nguồn đối chiếu. Báo cáo sẽ hiển thị nhãn
+            chưa xác minh trong khi chờ cộng đồng và điều phối viên kiểm tra.
           </Text>
         </View>
 
@@ -310,6 +319,17 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     opacity: 0.72,
   },
+  safetyNotice: {
+    marginTop: spacing.md,
+    flexDirection: 'row',
+    gap: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    borderRadius: radius.lg,
+    backgroundColor: colors.primarySoft,
+    padding: spacing.md,
+  },
+  safetyNoticeText: { flex: 1, color: colors.ink, fontSize: 12, lineHeight: 18 },
   categoryGrid: { flexDirection: 'row', gap: spacing.sm },
   category: {
     flex: 1,

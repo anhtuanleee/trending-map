@@ -19,6 +19,12 @@ Roadmap ưu tiên hoàn thiện vertical slice đang có trước khi mở rộn
       và rollout flags mặc định tắt.
 - [x] Admin email OTP + moderator role gate tại RPC/Edge boundary.
 - [x] Moderation case queue; approve, reject, resolve, immutable action result và audit/history.
+- [x] Tách moderation/visibility khỏi verification/operational; public RPC loại hidden/removed.
+- [x] Structured provenance và content-flag taxonomy với authenticated idempotent command.
+- [x] Safety notice ở map, preview, detail và composer.
+- [x] Versioned policy foundation và policy drafts; còn legal review/hosting/acceptance UI.
+- Appeal workflow, public correction history và reviewer independence.
+- Legal request intake/verification và `legal_reviewer` role.
 - Duplicate case detail, candidate comparison và merge command.
 - Duplicate candidate query dựa trên category radius/window, sau đó thêm scoring.
 - [x] Ghi `report_status_history` tự động khi verification/operational status đổi.

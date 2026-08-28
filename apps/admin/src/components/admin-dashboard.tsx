@@ -49,6 +49,19 @@ function readableError(error: unknown) {
   return 'Không thể hoàn tất thao tác. Hãy thử lại.';
 }
 
+const flagReasonLabels = {
+  false_information: 'Thông tin sai',
+  incorrect_location: 'Sai vị trí',
+  outdated: 'Đã hết hiệu lực',
+  privacy_violation: 'Riêng tư',
+  defamation: 'Vu khống',
+  fake_official_source: 'Giả mạo nguồn',
+  dangerous_content: 'Nguy hiểm',
+  spam: 'Spam',
+  copyright: 'Bản quyền',
+  other: 'Khác',
+} as const;
+
 export function AdminDashboard() {
   const configured = hasSupabaseConfig();
   const supabase = useMemo(() => getSupabaseBrowserClient(), []);
@@ -504,7 +517,17 @@ export function AdminDashboard() {
                         <span>{row.confirmationCount} xác nhận</span>
                         <span>{row.notThereCount} phản đối</span>
                         <span>Priority {row.priority}</span>
+                        <span>{row.moderationStatus}</span>
+                        <span>{row.visibilityStatus}</span>
                       </div>
+                      {row.openFlagCount > 0 ? (
+                        <div className="report-signals">
+                          <span>{row.openFlagCount} báo cáo vi phạm</span>
+                          {row.flagReasons.map((reason) => (
+                            <span key={reason}>{flagReasonLabels[reason]}</span>
+                          ))}
+                        </div>
+                      ) : null}
                       <label className="reason-field">
                         Ghi chú nội bộ
                         <textarea
